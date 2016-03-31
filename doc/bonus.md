@@ -26,7 +26,7 @@ You can use [stackprof](https://github.com/tmm1/stackprof).
 
 ### How to benchmark
 
-See [`doc/benchmark.md`][doc-benchmark].
+See [`doc/benchmark.md`](benchmark.md).
 
 ### How to build gem
 

@@ -1,6 +1,6 @@
 # Ruby implementation benchmark with Optcarrot
 
-![benchmark chart](doc/benchmark-optimized.png)
+![benchmark chart](benchmark-optimized.png)
 
 ## Experimental conditions
 
@@ -8,7 +8,7 @@
 * Command: `ruby -v -Ilib bin/optcarrot -r./tools/shim --benchmark examples/Lan_Master.nes`
     * This runs the first 180 frames (three seconds), and prints the fps of the last ten frames.
     * `--benchmark` mode implies no GUI, so GUI overhead is not included. 
-    * [`tools/shim.rb`](tools/shim.rb) is required for incompatibility of Ruby implementations.
+    * [`tools/shim.rb`](../tools/shim.rb) is required for incompatibility of Ruby implementations.
   * `--opt` option is added for the optimized mode.
 * Measured fps 10 times for each, and calculated the average over the runs.
 * The error bars represent the standard deviation.
@@ -41,7 +41,7 @@
 * opal: `Opal v0.10.0.dev`
   * Failed to run the default mode because of lack of Fiber.
 
-See [`tools/run-benchmark.rb`](tools/run-benchmark.rb) for the actual commands.
+See [`tools/run-benchmark.rb`](../tools/run-benchmark.rb) for the actual commands.
 
 ## Remarks
 
@@ -57,18 +57,20 @@ The optimized mode assumes that case statement is implemented with "jump table" 
   * Implementation note: In the optimized mode (`--opt` option), CPU/PPU evaluators consist of one loop with a big `case` statement dispatching upon the current opcode or clock.
 
 * The hotspot is `PPU#run` and `CPU#run`.  The optimized mode replaces them with an automatically generated and optimized source code by using `eval`.
-  * You can see the generated code with `--dump-cpu` and `--dump-ppu`.  See also [`doc/internal.md`](doc/internal.md).
+  * You can see the generated code with `--dump-cpu` and `--dump-ppu`.  See also [`doc/internal.md`](internal.md).
 
 * The hotspot uses no reflection-like features except `send` and `Method#[]`.
   * Implementation note: CPU dispatching uses `send` in the default mode.  Memory-mapped I/O is implemented by exploiting polymorphism of `Method#[]` and `Array#[]`.
 
 * If you are a MRI developer, you can reduce compile time by using `miniruby`.
 
-    $ git clone https://github.com/ruby/ruby.git
-    $ cd ruby
-    $ ./configure
-    $ make miniruby -j 4
-    $ ./miniruby /path/to/optcarrot --benchmark /path/to/Lan_Master.nes
+~~~~
+$ git clone https://github.com/ruby/ruby.git
+$ cd ruby
+$ ./configure
+$ make miniruby -j 4
+$ ./miniruby /path/to/optcarrot --benchmark /path/to/Lan_Master.nes
+~~~~
 
 ## How to benchmark
 ### How to use optcarrot as a benchmark
@@ -79,7 +81,7 @@ With `--benchmark` option, Optcarrot works in the headless mode (i.e., no GUI), 
     fps: 26.74081335620352
     checksum: 59662
 
-By default, Optcarrot depends upon [ffi][ffi] gem.  The headless mode has *zero* dependency: no gems, no external libraries, even no stdlib are required.  Unfortunately, you need to use [`tools/shim.rb`](tools/shim.rb) due to some incompatibilities between MRI and other implementations.
+By default, Optcarrot depends upon [ffi][ffi] gem.  The headless mode has *zero* dependency: no gems, no external libraries, even no stdlib are required.  Unfortunately, you need to use [`tools/shim.rb`](../tools/shim.rb) due to some incompatibilities between MRI and other implementations.
 
     $ jruby -r ./tools/shim.rb -Ilib bin/optcarrot --benchmark examples/Lan_Master.nes
 

@@ -1,0 +1,32 @@
+# Welch's t-test for performance improvement
+
+    $ gem install statsample
+    $ git clone https://github.com/mame/optcarrot.git
+    $ git clone optcarrot optcarrot.master
+    $ cd optcarrot
+    $ vim ... # try to implement optimization
+    $ ruby tools/statistic-test.rb
+
+# Detect external method call
+
+    $ optcarrot --dump-cpu | ruby tools/list-method-calls.rb
+
+# Generate benchmark chart
+
+    $ ruby tools/run-benchmark.rb all -m all
+    $ ruby tools/view-chart.rb benchmark/bm-latest.csv &
+    $ phantomjs tools/chart-images.js | ruby tools/gen-chart-png.rb
+
+# Compile ico
+
+    $ convert tools/optcarrot.ico tools/optcarrot.png
+    $ ruby tools/compile-ico.rb tools/optcarrot.png
+
+# Rewrite the whole program for Opal/1.8
+
+    $ ruby rewrite.rb
+
+# Read ROM
+
+    $ gem install arduino_firmata
+    $ ruby tools/reader.rb

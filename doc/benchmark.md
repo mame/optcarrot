@@ -5,7 +5,7 @@
 ## Experimental conditions
 
 * Core i7 4500U (1.80GHz) / Ubuntu 15.10
-* Command: `ruby -v -Ilib bin/optcarrot -r./tools/shim --benchmark examples/Lan_Master.nes`
+* Command: `ruby -v -Ilib -r./tools/shim bin/optcarrot --benchmark examples/Lan_Master.nes`
     * This runs the first 180 frames (three seconds), and prints the fps of the last ten frames.
     * `--benchmark` mode implies no GUI, so GUI overhead is not included. 
     * [`tools/shim.rb`](../tools/shim.rb) is required for incompatibility of Ruby implementations.

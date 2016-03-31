@@ -1,6 +1,6 @@
 # Ruby implementation benchmark with Optcarrot
 
-![doc/benchmark-optimized.png]
+![benchmark chart](doc/benchmark-optimized.png)
 
 ## Experimental conditions
 

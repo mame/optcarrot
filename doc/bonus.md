@@ -68,4 +68,4 @@ Or, there are [many interesting *free* ROMs](http://www.romhacking.net/homebrew/
 
 ## The meaning of Optcarrot
 
-OPTimization carrot.  Ruby deverlopers will obtain a reward (able to play NES games!) if they successfully achieve Ruby3x3.
+OPTimization carrot.  Ruby developers will obtain a reward (able to play NES games!) if they successfully achieve Ruby3x3.

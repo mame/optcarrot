@@ -25,9 +25,9 @@
 * omrpreview: `ruby 2.2.3p97 (OMR Preview r1) (2015-04-14) [x86_64-linux]`
   * `OMR_JIT_OPTIONS='-Xjit'` is specified.
 
-* jruby9k: `jruby 9.0.5.0 (2.2.3) 2016-01-26 7bee00d OpenJDK 64-Bit Server VM 25.72-b15 on 1.8.0_72-internal-b15 +jit [linux-amd64]`
+* jruby9k: `jruby 9.0.5.0 (2.2.3) 2016-01-26 7bee00d OpenJDK 64-Bit Server VM 25.72-b15 on 1.8.0_72-internal-b15 +indy +jit [linux-amd64]`
 
-* jruby17: `jruby 1.7.24 (1.9.3p551) 2016-01-20 bd68d85 on OpenJDK 64-Bit Server VM 1.8.0_72-internal-b15 +jit [linux-amd64]`
+* jruby17: `jruby 1.7.24 (1.9.3p551) 2016-01-20 bd68d85 on OpenJDK 64-Bit Server VM 1.8.0_72-internal-b15 +indy +jit [linux-amd64]`
   * `--server -Xcompile.invokedynamic=true` is specified.
 
 * rubinius: `rubinius 3.19 (2.2.2 1cc41ddc 2016-02-27 3.4 JI) [x86_64-linux-gnu]`

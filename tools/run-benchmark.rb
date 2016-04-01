@@ -178,24 +178,24 @@ end
 
 class JRuby9k < DockerImage
   FROM = "jruby:9"
-  RUBY = "jruby --server"
+  RUBY = "jruby --server -Xcompile.invokedynamic=true"
 end
 
 class JRuby9kOracle < DockerImage
   FROM = "jruby:9"
   APT = "oracle-java8-installer"
-  RUBY = "jruby --server"
+  RUBY = "jruby --server -Xcompile.invokedynamic=true"
 end
 
 class JRuby17 < DockerImage
   FROM = "jruby:1.7"
-  RUBY = "jruby --server"
+  RUBY = "jruby --server -Xcompile.invokedynamic=true"
 end
 
 class JRuby17Oracle < DockerImage
   FROM = "jruby:1.7"
   APT = "oracle-java8-installer"
-  RUBY = "jruby --server"
+  RUBY = "jruby --server -Xcompile.invokedynamic=true"
 end
 
 class Rubinius < DockerImage

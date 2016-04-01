@@ -231,12 +231,12 @@ module Optcarrot
 
       def list_opts
         puts "CPU core optimizations:"
-        CPU::OptimizedCodeBuilder::OPTIONS.each_key do |opt|
+        CPU::OptimizedCodeBuilder::OPTIONS.each do |opt|
           puts "  * #{ opt }"
         end
         puts
         puts "PPU core optimizations:"
-        PPU::OptimizedCodeBuilder::OPTIONS.each_key do |opt|
+        PPU::OptimizedCodeBuilder::OPTIONS.each do |opt|
           puts "  * #{ opt }"
         end
         puts

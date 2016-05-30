@@ -272,7 +272,7 @@ class CLI
     @argv = o.parse(ARGV)
 
     if @argv.empty?
-      o.help
+      print o.help
       exit
     end
 

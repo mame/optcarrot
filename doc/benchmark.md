@@ -15,22 +15,22 @@
 
 ## Ruby implementations
 
-* ruby23: `ruby 2.3.0p0 (2015-12-25 revision 53290) [x86_64-linux]`
-* ruby22: `ruby 2.2.4p230 (2015-12-16 revision 53155) [x86_64-linux]`
-* ruby21: `ruby 2.1.8p440 (2015-12-16 revision 53160) [x86_64-linux]`
+* ruby23: `ruby 2.3.1p112 (2016-04-26 revision 54768) [x86_64-linux]`
+* ruby22: `ruby 2.2.5p319 (2016-04-26 revision 54774) [x86_64-linux]`
+* ruby21: `ruby 2.1.9p490 (2016-03-30 revision 54437) [x86_64-linux]`
 * ruby20: `ruby 2.0.0p648 (2015-12-16 revision 53162) [x86_64-linux]`
 * ruby193: `ruby 1.9.3p551 (2014-11-13 revision 48407) [x86_64-linux]`
 * ruby187: `ruby 1.8.7 (2013-06-27 patchlevel 374) [x86_64-linux]`
 
-* omrpreview: `ruby 2.2.3p97 (OMR Preview r1) (2015-04-14) [x86_64-linux]`
+* omrpreview: `ruby 2.2.5p285 (Eclipse OMR Preview r1) (2016-03-29) [x86_64-linux]`
   * `OMR_JIT_OPTIONS='-Xjit'` is specified.
 
-* jruby9k: `jruby 9.0.5.0 (2.2.3) 2016-01-26 7bee00d OpenJDK 64-Bit Server VM 25.72-b15 on 1.8.0_72-internal-b15 +indy +jit [linux-amd64]`
+* jruby9k: `jruby 9.1.0.0 (2.3.0) 2016-05-02 a633c63 Java HotSpot(TM) 64-Bit Server VM 25.91-b14 on 1.8.0_91-b14 +indy +jit [linux-x86_64]`
 
-* jruby17: `jruby 1.7.24 (1.9.3p551) 2016-01-20 bd68d85 on OpenJDK 64-Bit Server VM 1.8.0_72-internal-b15 +indy +jit [linux-amd64]`
+* jruby17: `jruby 1.7.25 (1.9.3p551) 2016-04-13 867cb81 on Java HotSpot(TM) 64-Bit Server VM 1.8.0_91-b14 +indy +jit [linux-amd64]`
   * `--server -Xcompile.invokedynamic=true` is specified.
 
-* rubinius: `rubinius 3.19 (2.2.2 1cc41ddc 2016-02-27 3.4 JI) [x86_64-linux-gnu]`
+* rubinius: `rubinius 3.33 (2.2.2 db6f477e 2016-05-23 3.6.0) [x86_64-linux-gnu]`
 
 * mruby: `mruby 1.2.0 (2015-11-17)`
   * Patched so that `Fixnum#/` returns an Integer instead of Float.
@@ -38,7 +38,7 @@
 * topaz: `topaz (ruby-1.9.3p125) (git rev 019daf0) [x86_64-linux]`
   * Failed to run the optimized mode maybe because the generated core is so large.
 
-* opal: `Opal v0.10.0.dev`
+* opal: `Opal v0.10.0.beta3`
   * Failed to run the default mode because of lack of Fiber.
 
 See [`tools/run-benchmark.rb`](../tools/run-benchmark.rb) for the actual commands.

@@ -62,7 +62,9 @@ module Optcarrot
           3.times do |x|
             SIZE.times do |dy|
               SIZE.times do |dx|
-                colors[(224 + (y - 6) * SIZE + dy) * 256 + (256 + i * 4 + x - 20) * SIZE + dx] = color if bits[x + y * 3] == 1
+                if bits[x + y * 3] == 1
+                  colors[(224 + (y - 6) * SIZE + dy) * 256 + (256 + i * 4 + x - 20) * SIZE + dx] = color
+                end
               end
             end
           end

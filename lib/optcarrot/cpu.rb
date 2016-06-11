@@ -86,11 +86,11 @@ module Optcarrot
     end
 
     def peek_ram(addr)
-      @ram[addr - 0x0800]
+      @ram[addr & (0x0800 - 1)]
     end
 
     def poke_ram(addr, data)
-      @ram[addr - 0x0800] = data
+      @ram[addr & (0x0800 - 1)] = data
     end
 
     def peek_nop(addr)

@@ -40,6 +40,10 @@ It may run faster with the option `--opt`.
 
 This option will generate an optimized (and super-dirty) Ruby code internally, and replace some bottleneck methods with them.  See [`doc/internal.md`](doc/internal.md) in detail.
 
+## See also
+
+* [Slide deck](http://www.slideshare.net/mametter/optcarrot-a-pureruby-nes-emulator) ([Tokyo RubyKaigi 11](http://regional.rubykaigi.org/tokyo11/en/))
+
 ## Acknowledgement
 
 We appreciate all the people who devoted efforts to NES analysis.  If it had not been not for the [NESdev Wiki][nesdev-wiki], we could not create this program.  We also read the source code of Nestopia, NESICIDE, and others.  We used the test ROMs due to NESICIDE.

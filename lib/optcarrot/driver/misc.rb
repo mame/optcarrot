@@ -34,10 +34,11 @@ module Optcarrot
     end
     EMPTY_ARRAY = []
 
+    SIZE = 1
     def show_fps(colors, fps, palette)
       # darken the right-bottom corner for drawing FPS
-      217.upto(223) do |y|
-        235.upto(255) do |x|
+      (223 - 6 * SIZE).upto(223) do |y|
+        (255 - 20 * SIZE).upto(255) do |x|
           c = colors[idx = x + y * 256]
           r = ((c >> 16) & 0xff) / 4
           g = ((c >>  8) & 0xff) / 4
@@ -59,7 +60,11 @@ module Optcarrot
         bits = FONT[i <= 1 ? fps / 10**(1 - i) % 10 : i + 8]
         5.times do |y|
           3.times do |x|
-            colors[(218 + y) * 256 + i * 4 + 236 + x] = color if bits[x + y * 3] == 1
+            SIZE.times do |dy|
+              SIZE.times do |dx|
+                colors[(224 + (y - 6) * SIZE + dy) * 256 + (256 + i * 4 + x - 20) * SIZE + dx] = color if bits[x + y * 3] == 1
+              end
+            end
           end
         end
       end

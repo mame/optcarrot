@@ -60,6 +60,7 @@ module Optcarrot
     def update_chr(addr, bank)
       return if @chr_ram
       idx = addr / 0x400
+      bank %= @chr_banks.size
       return if @chr_bank_mapping[idx] == bank
       addr ^= 0x1000 if @chr_bank_swap
       @ppu.update(0)

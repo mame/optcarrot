@@ -5,7 +5,7 @@ module Optcarrot
 
     NMT_MODE = [:second, :first, :vertical, :horizontal]
     PRG_MODE = [:conseq, :conseq, :fix_first, :fix_last]
-    CHR_MODE = [:noconseq, :conseq]
+    CHR_MODE = [:conseq, :noconseq]
 
     def init
       @nmt_mode = @prg_mode = @chr_mode = nil
@@ -42,7 +42,11 @@ module Optcarrot
             update_prg(prg_mode, @prg_bank, @chr_bank_0)
             update_chr(chr_mode, @chr_bank_0, @chr_bank_1)
           when 1 # change chr_bank_0
+            # update_prg might modify @chr_bank_0 and prevent updating chr bank,
+            # so keep current value.
+            bak_chr_bank_0 = @chr_bank_0
             update_prg(@prg_mode, @prg_bank, @shift)
+            @chr_bank_0 = bak_chr_bank_0
             update_chr(@chr_mode, @shift, @chr_bank_1)
           when 2 # change chr_bank_1
             update_chr(@chr_mode, @chr_bank_0, @shift)

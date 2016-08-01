@@ -255,7 +255,7 @@ class CLI
     o = OptionParser.new
     o.on("-m=MODE", "mode (default/opt-none/opt-all/all/each)") {|v| @mode = v }
     o.on("-c=NUM", Integer, "iteration count") {|v| @count = v }
-    o.on("-r=FILE", Integer, "rom file") {|v| @romfile = v }
+    o.on("-r=FILE", String, "rom file") {|v| @romfile = v }
     o.separator("")
     o.separator("Examples:")
     o.separator("  ruby tools/run-benchmark.rb ruby23 -m=all      " \

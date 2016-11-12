@@ -35,15 +35,19 @@ module Optcarrot
     EMPTY_ARRAY = []
 
     SIZE = 1
-    def show_fps(colors, fps, palette)
+    def show_fps(colors, fps, palette, &darken)
       # darken the right-bottom corner for drawing FPS
+      darken ||= lambda { |c|
+        r = ((c >> 16) & 0xff) / 4
+        g = ((c >>  8) & 0xff) / 4
+        b = ((c >>  0) & 0xff) / 4
+        (c & 0xff000000) | (r << 16) | (g << 8) | b
+      }
+
       (223 - 6 * SIZE).upto(223) do |y|
         (255 - 20 * SIZE).upto(255) do |x|
           c = colors[idx = x + y * 256]
-          r = ((c >> 16) & 0xff) / 4
-          g = ((c >>  8) & 0xff) / 4
-          b = ((c >>  0) & 0xff) / 4
-          colors[idx] = (c & 0xff000000) | (r << 16) | (g << 8) | b
+          colors[idx] = darken.call(c)
         end
       end
 

@@ -8,6 +8,7 @@ module Optcarrot
         png:   :PNGVideo,
         gif:   :GIFVideo,
         sixel: :SixelVideo,
+        mplayer: :MPlayerVideo,
         none:  :Video,
       },
       audio: {

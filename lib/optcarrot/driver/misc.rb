@@ -36,6 +36,9 @@ module Optcarrot
 
     SIZE = 1
     def show_fps(colors, fps, palette, &darken)
+      digits = fps > 100 ? 3 : 2
+      w = (3 + digits) * 4
+
       # darken the right-bottom corner for drawing FPS
       darken ||= lambda { |c|
         r = ((c >> 16) & 0xff) / 4
@@ -45,7 +48,7 @@ module Optcarrot
       }
 
       (223 - 6 * SIZE).upto(223) do |y|
-        (255 - 20 * SIZE).upto(255) do |x|
+        (255 - w * SIZE).upto(255) do |x|
           c = colors[idx = x + y * 256]
           colors[idx] = darken.call(c)
         end
@@ -54,20 +57,21 @@ module Optcarrot
       # decide fps color
       color =
         case
+        when fps >= 90 then palette[0x19] # green
         when fps >= 60 then palette[0x11] # blue
         when fps >= 55 then palette[0x28] # yellow
         else                palette[0x16] # red
         end
 
       # draw FPS
-      5.times do |i| # show "xxFPS"
-        bits = FONT[i <= 1 ? fps / 10**(1 - i) % 10 : i + 8]
+      (3 + digits).times do |i| # show "xxFPS"
+        bits = FONT[i < digits ? fps / 10**(digits - i - 1) % 10 : i - digits + 10]
         5.times do |y|
           3.times do |x|
             SIZE.times do |dy|
               SIZE.times do |dx|
                 if bits[x + y * 3] == 1
-                  colors[(224 + (y - 6) * SIZE + dy) * 256 + (256 + i * 4 + x - 20) * SIZE + dx] = color
+                  colors[(224 + (y - 6) * SIZE + dy) * 256 + (256 + i * 4 + x - w) * SIZE + dx] = color
                 end
               end
             end

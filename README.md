@@ -32,6 +32,8 @@ See [`doc/bonus.md`](doc/bonus.md) for advanced usage.
 
 See [`doc/benchmark.md`](doc/benchmark.md) for the measurement condition.
 
+You may also want to read [@eregon's great post](https://eregon.me/blog/2016/11/28/optcarrot.html) for JRuby+Truffle potential performance after warm-up.
+
 ## Optimized mode
 
 It may run faster with the option `--opt`.

@@ -39,18 +39,21 @@ module Optcarrot
       digits = fps > 100 ? 3 : 2
       w = (3 + digits) * 4
 
-      # darken the right-bottom corner for drawing FPS
-      darken ||= lambda { |c|
-        r = ((c >> 16) & 0xff) / 4
-        g = ((c >>  8) & 0xff) / 4
-        b = ((c >>  0) & 0xff) / 4
-        (c & 0xff000000) | (r << 16) | (g << 8) | b
-      }
-
       (223 - 6 * SIZE).upto(223) do |y|
         (255 - w * SIZE).upto(255) do |x|
           c = colors[idx = x + y * 256]
-          colors[idx] = darken.call(c)
+
+          # darken the right-bottom corner for drawing FPS
+          if darken
+            c = darken.call(c)
+          else
+            r = ((c >> 16) & 0xff) / 4
+            g = ((c >>  8) & 0xff) / 4
+            b = ((c >>  0) & 0xff) / 4
+            c = (c & 0xff000000) | (r << 16) | (g << 8) | b
+          end
+
+          colors[idx] = c
         end
       end
 

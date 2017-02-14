@@ -7,7 +7,10 @@ AllCops:
         - "benchmark/Dockerfile.*"
 
 # "eval" is the swiss army knife
-Lint/Eval:
+Security/Eval:
+    Enabled: false
+
+Security/MarshalLoad:
     Enabled: false
 
 # "while true" loop is easy and fast
@@ -79,7 +82,7 @@ Style/SymbolProc:
 
 # Wrapping a code is so bad?  Case-by-case.
 Style/GuardClause:
-    MinBodyLength: 5
+    Enabled: false
 
 # I use hyphen-separated case for script program.
 Style/FileName:
@@ -99,6 +102,8 @@ Metrics/ModuleLength:
 # I accept two-screen size (about 100 lines?)
 Metrics/MethodLength:
     Max: 100
+Metrics/BlockLength:
+    Max: 100
 
 # Don't worry, my terminal is big enough
 Metrics/LineLength:
@@ -106,10 +111,29 @@ Metrics/LineLength:
 
 # Code metrics is good, but I think the default is too strict...
 Metrics/CyclomaticComplexity:
-    Max: 15
+    Max: 20
 Metrics/PerceivedComplexity:
     Max: 20
 Metrics/AbcSize:
     Max: 100
 Metrics/BlockNesting:
     Max: 5
+
+# I like `x == 0`
+Style/NumericPredicate:
+    EnforcedStyle: comparison
+
+# I like `foo1` and `foo_bar_1`
+Style/VariableNumber:
+    Enabled: false
+
+# empty is empty
+Style/EmptyMethod:
+    Enabled: false
+Lint/EmptyWhen:
+    Enabled: false
+
+# if-elsif-elsif... looks awkward to me
+Style/EmptyCaseCondition:
+    Enabled: false
+

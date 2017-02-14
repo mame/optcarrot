@@ -1173,13 +1173,14 @@ module Optcarrot
               evaluate_sprites_odd if @hclk >= 64
             end
             render_pixel
-            # rubocop:disable Style/NestedModifier
+            # rubocop:disable Style/NestedModifier, Style/IfUnlessModifierOfIfUnless:
             update_enabled_flags if @hclk != 255 if @any_show
-            # rubocop:enable Style/NestedModifier
+            # rubocop:enable Style/NestedModifier, Style/IfUnlessModifierOfIfUnless:
             wait_one_clock
           end
 
           256.step(312, 8) do
+            # rubocop:disable Style/IdenticalConditionalBranches
             if @hclk == 256
               # when 256
               open_name
@@ -1196,6 +1197,7 @@ module Optcarrot
               open_name
               wait_two_clocks
             end
+            # rubocop:enable Style/IdenticalConditionalBranches
 
             # when 258, 266, ..., 314
             # Nestopia uses open_name here?
@@ -1206,9 +1208,9 @@ module Optcarrot
             if @any_show
               buffer_idx = (@hclk - 260) / 2
               open_pattern(buffer_idx >= @sp_buffered ? @pattern_end : open_sprite(buffer_idx))
-              # rubocop:disable Style/NestedModifier
+              # rubocop:disable Style/NestedModifier, Style/IfUnlessModifierOfIfUnless:
               @regs_oam = 0 if @scanline == 238 if @hclk == 316
-              # rubocop:enable Style/NestedModifier
+              # rubocop:enable Style/NestedModifier, Style/IfUnlessModifierOfIfUnless:
             end
             wait_one_clock
 

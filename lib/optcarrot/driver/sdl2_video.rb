@@ -16,7 +16,8 @@ module Optcarrot
           SDL2::WINDOWPOS_UNDEFINED,
           SDL2::WINDOWPOS_UNDEFINED,
           TV_WIDTH, HEIGHT,
-          SDL2::WINDOW_RESIZABLE)
+          SDL2::WINDOW_RESIZABLE
+        )
       @renderer = SDL2.CreateRenderer(@window, -1, 0)
       SDL2.SetHint("SDL_RENDER_SCALE_QUALITY", "linear")
       SDL2.RenderSetLogicalSize(@renderer, TV_WIDTH, HEIGHT)
@@ -24,7 +25,8 @@ module Optcarrot
         @renderer,
         SDL2::PIXELFORMAT_8888,
         SDL2::TEXTUREACCESS_STREAMING,
-        WIDTH, HEIGHT)
+        WIDTH, HEIGHT
+      )
 
       width, height, pixels = Driver.icon_data
       @icon = SDL2.CreateRGBSurfaceFrom(pixels, width, height, 32, width * 4, 0x0000ff, 0x00ff00, 0xff0000, 0xff000000)

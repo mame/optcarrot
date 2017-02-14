@@ -35,7 +35,7 @@ module Optcarrot
     EMPTY_ARRAY = []
 
     SIZE = 1
-    def show_fps(colors, fps, palette, &darken)
+    def show_fps(colors, fps, palette)
       digits = fps > 100 ? 3 : 2
       w = (3 + digits) * 4
 
@@ -44,8 +44,8 @@ module Optcarrot
           c = colors[idx = x + y * 256]
 
           # darken the right-bottom corner for drawing FPS
-          if darken
-            c = darken.call(c)
+          if block_given?
+            c = yield c
           else
             r = ((c >> 16) & 0xff) / 4
             g = ((c >>  8) & 0xff) / 4
@@ -107,7 +107,8 @@ module Optcarrot
 
       palette = [
         0x00000000, 0xff0026ff, 0xff002cda, 0xff004000, 0xff0050ff, 0xff006000, 0xff007aff, 0xff00a000, 0xff00a4ff,
-        0xff00e000, 0xff4f5600, 0xffa0a000, 0xffe0e000]
+        0xff00e000, 0xff4f5600, 0xffa0a000, 0xffe0e000
+      ]
       dat = "38*2309(3:9&,8210982(32,=&8*1:=2,9=1#5$(2&3'?%(-@715+)A3'?'A-.<0$$++B1:$?B6<0$++)$43#%)'A@<:%B314@.<1"
       i = 66
       "54'4-6>')+((;/7#0#,2,*//..'$%-11*(00##".scan(/../) do

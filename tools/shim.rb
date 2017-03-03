@@ -77,9 +77,13 @@ end
 unless [].respond_to?(:pack) && [33, 33].pack("C*") == "!!"
   $stderr.puts "[shim] Array#pack"
   class Array
+    alias pack_orig pack
     def pack(fmt)
-      raise if fmt != "C*"
-      map {|n| n.chr }.join
+      if fmt == "C*"
+        map {|n| n.chr }.join
+      else
+        pack_orig(fmt)
+      end
     end
   end
 end
@@ -181,6 +185,52 @@ if Module.const_defined?(:Topaz)
   class String
     def %(*_args)
       "<String#format unavailable>"
+    end
+
+    def unpack(fmt)
+      if fmt == "C*"
+        return each_byte.to_a.map { |ch| ch.ord }
+      else
+        raise
+      end
+    end
+  end
+
+  require "ffi"
+  module FFI
+    class MemoryPointer
+      def read_bytes(nbytes)
+        get_bytes(0, nbytes)
+      end
+    end
+
+    class Struct
+      def self.layout(*args)
+        # ignore
+      end
+
+      def self.ptr
+        :pointer
+      end
+    end
+
+    module Library
+      alias orig_attach_function attach_function
+      def attach_function(name, *args)
+        if name == :GetVersion
+          # structs aren't complete, just say all our fields are 0
+          self.class.send(:define_method, :GetVersion) do |version|
+            def version.[](n)
+              0
+            end
+          end
+        elsif name == :SetWindowIcon
+          # this segfaults
+          self.class.send(:define_method, :SetWindowIcon) { |*args| }
+        else
+          orig_attach_function(name, *args)
+        end
+      end
     end
   end
 end

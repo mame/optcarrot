@@ -12,7 +12,7 @@ class DockerImage
   end
 
   # default
-  FROM = "ruby:2.3"
+  FROM = "ruby:2.4"
   APT = []
   URL = nil
   RUN = []
@@ -139,6 +139,10 @@ class Trunk < DockerImage
     "cd ruby && make && make install",
   ]
   RUBY = "ruby/ruby -Iruby"
+end
+
+class Ruby24 < DockerImage
+  FROM = "ruby:2.4"
 end
 
 class Ruby23 < DockerImage

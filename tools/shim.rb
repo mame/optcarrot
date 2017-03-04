@@ -77,7 +77,7 @@ end
 unless [].respond_to?(:pack) && [33, 33].pack("C*") == "!!"
   $stderr.puts "[shim] Array#pack"
   class Array
-    alias pack_orig pack
+    alias pack_orig pack if [].respond_to(:pack)
     def pack(fmt)
       if fmt == "C*"
         map {|n| n.chr }.join
@@ -179,7 +179,7 @@ unless "".respond_to?(:tr) && !Module.const_defined?(:Topaz)
   end
 end
 
-if Module.const_defined?(:Topaz)
+if Module.const_defined?(:Topaz) && RUBY_ENGINE != "opal"
   # Topaz aborts when evaluating String#%...
   $stderr.puts "[shim] String#%"
   class String
@@ -196,42 +196,47 @@ if Module.const_defined?(:Topaz)
     end
   end
 
-  require "ffi"
-  module FFI
-    class MemoryPointer
-      def read_bytes(nbytes)
-        get_bytes(0, nbytes)
-      end
-    end
-
-    class Struct
-      def self.layout(*args)
-        # ignore
+  begin
+    $stderr.puts "[shim] FFI patched for topaz"
+    require "ffi"
+    module FFI
+      class MemoryPointer
+        def read_bytes(nbytes)
+          get_bytes(0, nbytes)
+        end
       end
 
-      def self.ptr
-        :pointer
-      end
-    end
+      class Struct
+        def self.layout(*args)
+          # ignore
+        end
 
-    module Library
-      alias orig_attach_function attach_function
-      def attach_function(name, *args)
-        if name == :GetVersion
-          # structs aren't complete, just say all our fields are 0
-          self.class.send(:define_method, :GetVersion) do |version|
-            def version.[](n)
-              0
+        def self.ptr
+          :pointer
+        end
+      end
+
+      module Library
+        alias orig_attach_function attach_function
+        def attach_function(name, *args)
+          if name == :GetVersion
+            # structs aren't complete, just say all our fields are 0
+            self.class.send(:define_method, :GetVersion) do |version|
+              def version.[](n)
+                0
+              end
             end
+          elsif name == :SetWindowIcon
+            # this segfaults
+            self.class.send(:define_method, :SetWindowIcon) { |*args| }
+          else
+            orig_attach_function(name, *args)
           end
-        elsif name == :SetWindowIcon
-          # this segfaults
-          self.class.send(:define_method, :SetWindowIcon) { |*args| }
-        else
-          orig_attach_function(name, *args)
         end
       end
     end
+  rescue LoadError
+    $stderr.puts "[shim] (failed to load FFI for topaz)"
   end
 end
 

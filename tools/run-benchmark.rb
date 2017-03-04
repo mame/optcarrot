@@ -239,11 +239,10 @@ end
 class Opal < DockerImage
   APT = "nodejs-legacy"
   RUN = [
-    "gem install tilt rack hike sprockets sourcemap",
-    "git clone --depth 1 https://github.com/opal/opal.git",
+    "gem install opal",
   ]
   REWRITE = true
-  CMD = "ruby -I opal/lib opal/bin/opal -v -I . -r ./tools/shim.rb bin/optcarrot -- --benchmark -f 60 $OPTIONS"
+  CMD = "opal -v -I . -r ./tools/shim.rb bin/optcarrot -- --benchmark -f 60 $OPTIONS"
 end
 
 ###############################################################################

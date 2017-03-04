@@ -77,7 +77,7 @@ end
 unless [].respond_to?(:pack) && [33, 33].pack("C*") == "!!"
   $stderr.puts "[shim] Array#pack"
   class Array
-    alias pack_orig pack if [].respond_to(:pack)
+    alias pack_orig pack if [].respond_to?(:pack)
     def pack(fmt)
       if fmt == "C*"
         map {|n| n.chr }.join
@@ -179,7 +179,7 @@ unless "".respond_to?(:tr) && !Module.const_defined?(:Topaz)
   end
 end
 
-if Module.const_defined?(:Topaz) && RUBY_ENGINE != "opal"
+if Module.const_defined?(:Topaz)
   # Topaz aborts when evaluating String#%...
   $stderr.puts "[shim] String#%"
   class String
@@ -198,7 +198,7 @@ if Module.const_defined?(:Topaz) && RUBY_ENGINE != "opal"
 
   begin
     $stderr.puts "[shim] FFI patched for topaz"
-    require "ffi"
+    require "ffi" if RUBY_ENGINE != "opal"
     module FFI
       class MemoryPointer
         def read_bytes(nbytes)

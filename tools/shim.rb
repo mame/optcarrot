@@ -189,7 +189,7 @@ if Module.const_defined?(:Topaz) && RUBY_ENGINE != "opal"
 
     def unpack(fmt)
       if fmt == "C*"
-        return each_byte.to_a.map { |ch| ch.ord }
+        return each_byte.to_a.map {|ch| ch.ord }
       else
         raise
       end
@@ -207,7 +207,7 @@ if Module.const_defined?(:Topaz) && RUBY_ENGINE != "opal"
       end
 
       class Struct
-        def self.layout(*args)
+        def self.layout(*_args)
           # ignore
         end
 
@@ -222,13 +222,13 @@ if Module.const_defined?(:Topaz) && RUBY_ENGINE != "opal"
           if name == :GetVersion
             # structs aren't complete, just say all our fields are 0
             self.class.send(:define_method, :GetVersion) do |version|
-              def version.[](n)
+              def version.[](_n)
                 0
               end
             end
           elsif name == :SetWindowIcon
             # this segfaults
-            self.class.send(:define_method, :SetWindowIcon) { |*args| }
+            self.class.send(:define_method, :SetWindowIcon) {|*_args| }
           else
             orig_attach_function(name, *args)
           end

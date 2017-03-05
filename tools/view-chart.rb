@@ -24,7 +24,11 @@ csv.each do |row|
 end
 
 data = []
-%w(ruby24 ruby23 ruby22 ruby21 ruby20 ruby193 ruby187 omrpreview jruby9k jruby17 rubinius mruby topaz opal).each do |name|
+%w(
+  ruby24 ruby23 ruby22 ruby21 ruby20 ruby193 ruby187
+  omrpreview
+  jruby9k jruby17 rubinius mruby topaz opal
+).each do |name|
   row = table[name]
   data << [name.dump, *(row["default"] || row["opt-none"]), *(row["opt-all"] || [0, "null", "null", "failure".dump])]
 end

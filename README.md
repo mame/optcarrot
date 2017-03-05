@@ -32,6 +32,8 @@ See [`doc/bonus.md`](doc/bonus.md) for advanced usage.
 
 See [`doc/benchmark.md`](doc/benchmark.md) for the measurement condition.
 
+See also [Ruby Releases Benchmarks](https://rubybench.org/ruby/ruby/releases?result_type=Optcarrot%20Lan_Master.nes) and [Ruby Commits Benchmarks](https://rubybench.org/ruby/ruby/commits?result_type=Optcarrot%20Lan_Master.nes&display_count=2000) for the continuous benchmark results.
+
 You may also want to read [@eregon's great post](https://eregon.me/blog/2016/11/28/optcarrot.html) for JRuby+Truffle potential performance after warm-up.
 
 ## Optimized mode

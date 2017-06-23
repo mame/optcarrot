@@ -1,4 +1,4 @@
-# Optcarrot ProTips(TM)
+# Optcarrot ProTips&trade;
 ## How to install SDL2
 
 If you are using Debian/Ubuntu, just do:
@@ -9,7 +9,7 @@ In Windows, get [`SDL2.dll`](https://www.libsdl.org/), put it into the current d
 
 ## Advanced usage
 
-### How to test optcarrot
+### How to test Optcarrot
 
     $ ruby tools/run-tests.rb
 
@@ -42,13 +42,13 @@ See [`doc/benchmark.md`](benchmark.md).
 * MMC3 (4)
 
 ## Joke features
-### Zip reading
+### ZIP reading
 
-Optcarrot supports loading a ROM in a zip file.  `zlib` library is required.
+Optcarrot supports loading a ROM in a ZIP file.  `zlib` library is required.
 
     $ bin/optcarrot examples/alter_ego.zip
 
-(`Optcarrot::ROM.zip_extract` in `lib/optcarrot/rom.rb` parses a zip file.)
+(`Optcarrot::ROM.zip_extract` in `lib/optcarrot/rom.rb` parses a ZIP file.)
 
 ### PNG/GIF/Sixel video output
 
@@ -60,7 +60,7 @@ Each encoder is implemented in `lib/optcarrot/driver/*_video.rb`.
 
 ## ROM Reader
 
-You *must* get a commercial ROM in a legal way.  You can buy a cartiridge, and read a ROM data from it.  (I heard this is legal since NES cartridge is not crypted at all, but I am not a laywer.  Do at your own risk.)
+You *must* get a commercial ROM in a legal way.  You can buy a cartridge, and read ROM data from it.  (I heard this is legal since NES cartridges are not encrypted at all, but I am not a laywer.  Do at your own risk.)
 
 I created my own ROM reader based on ["HongKong with Arduino"](http://hongkongarduino.web.fc2.com/).  See also `tools/reader.rb`.  It requires `arduino_firmata`.
 

@@ -7,7 +7,7 @@
 * Core i7 4500U (1.80GHz) / Ubuntu 16.10
 * Command: `ruby -v -Ilib -r./tools/shim bin/optcarrot --benchmark examples/Lan_Master.nes`
   * This runs the first 180 frames (three seconds), and prints the fps of the last ten frames.
-  * `--benchmark` mode implies no GUI, so GUI overhead is not included. 
+  * `--benchmark` mode implies no GUI, so GUI overhead is not included.
   * [`tools/shim.rb`](../tools/shim.rb) is required for incompatibility of Ruby implementations.
   * `--opt` option is added for the optimized mode.
 * Measured fps 10 times for each, and calculated the average over the runs.
@@ -82,7 +82,7 @@ With `--benchmark` option, Optcarrot works in the headless mode (i.e., no GUI), 
     fps: 26.74081335620352
     checksum: 59662
 
-By default, Optcarrot depends upon [ffi][ffi] gem.  The headless mode has *zero* dependency: no gems, no external libraries, even no stdlib are required.  Unfortunately, you need to use [`tools/shim.rb`](../tools/shim.rb) due to some incompatibilities between MRI and other implementations.
+By default, Optcarrot depends upon [ffi] gem.  The headless mode has *zero* dependency: no gems, no external libraries, even no stdlib are required.  Unfortunately, you need to use [`tools/shim.rb`](../tools/shim.rb) due to some incompatibilities between MRI and other implementations.
 
     $ jruby -r ./tools/shim.rb -Ilib bin/optcarrot --benchmark examples/Lan_Master.nes
 

@@ -38,12 +38,12 @@ Style/RedundantReturn:
     Enabled: false
 
 # I like `foo {|x| bar(x) }` and `foo { bar }`
-Style/SpaceInsideBlockBraces:
+Layout/SpaceInsideBlockBraces:
     EnforcedStyleForEmptyBraces: space
     SpaceBeforeBlockParameters: false
 
 # `"foo#{bar}baz"` looks too dense to me
-Style/SpaceInsideStringInterpolation:
+Layout/SpaceInsideStringInterpolation:
     EnforcedStyle: space
 
 # I consistently use double quotes
@@ -85,7 +85,7 @@ Style/GuardClause:
     Enabled: false
 
 # I use hyphen-separated case for script program.
-Style/FileName:
+Naming/FileName:
     Exclude:
         - 'tools/*.rb'
 
@@ -124,7 +124,7 @@ Style/NumericPredicate:
     EnforcedStyle: comparison
 
 # I like `foo1` and `foo_bar_1`
-Style/VariableNumber:
+Naming/VariableNumber:
     Enabled: false
 
 # empty is empty
@@ -137,3 +137,23 @@ Lint/EmptyWhen:
 Style/EmptyCaseCondition:
     Enabled: false
 
+# `rescue StandardError` looks redundant to me
+Lint/RescueWithoutErrorClass:
+    Enabled: false
+
+# `END` is always my heredoc delimiter
+Naming/HeredocDelimiterNaming:
+    Enabled: false
+
+# I like `%w()`
+Style/PercentLiteralDelimiters:
+    PreferredDelimiters:
+        '%w': '()'
+
+# I cannot use `%i()` since I want to make this code run in 1.8
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+# `0 <= n && n <= 0x7f` is completely innocent
+Style/YodaCondition:
+    Enabled: false

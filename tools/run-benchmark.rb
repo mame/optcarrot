@@ -208,6 +208,7 @@ end
 
 class MRuby < DockerImage
   APT = "bison"
+  # rubocop:disable Layout/IndentHeredoc:
   CONFIG = <<-END.lines.map {|l| "echo #{ l.chomp.dump } >> mruby/optcarrot_config.rb" }
 MRuby::Build.new do |conf|
   toolchain :gcc
@@ -219,11 +220,12 @@ MRuby::Build.new do |conf|
   conf.gem mgem: "mruby-pack"
 end
   END
+  # rubocop:enable Layout/IndentHeredoc:
   RUN = [
     "git clone --depth 1 https://github.com/mruby/mruby.git",
     # integer division patch
     "sed -i 's:" \
-      "SET_FLOAT_VALUE(mrb, regs\\[a\\], (mrb_float)x / (mrb_float)y);:" \
+      "SET_FLOAT_VALUE(mrb, regs\\[a\\], (mrb_float)x / y);:" \
       "SET_INT_VALUE(regs[a], x / y);:' mruby/src/vm.c",
     *CONFIG,
     "cd mruby && MRUBY_CONFIG=optcarrot_config.rb ./minirake",

@@ -91,12 +91,12 @@ module Optcarrot
       )
     end
 
-    # rubocop:disable Style/MethodName
+    # rubocop:disable Naming/MethodName
     # typedef sfSoundStreamGetDataCallback
     def self.SoundStreamGetDataCallback(blk)
       FFI::Function.new(:int, [SoundStreamChunk.by_ref, :pointer], blk, blocking: true)
     end
-    # rubocop:enable Style/MethodName
+    # rubocop:enable Naming/MethodName
 
     attach_function(:sfClock_create, [], :pointer)
     attach_function(:sfClock_destroy, [:pointer], :void)

@@ -141,11 +141,11 @@ module Optcarrot
       )
     end
 
-    # rubocop:disable Style/MethodName
+    # rubocop:disable Naming/MethodName
     def self.AudioCallback(blk)
       FFI::Function.new(:void, [:pointer, :pointer, :int], blk)
     end
-    # rubocop:enable Style/MethodName
+    # rubocop:enable Naming/MethodName
 
     # attach_functions
 

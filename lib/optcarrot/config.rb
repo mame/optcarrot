@@ -62,7 +62,7 @@ module Optcarrot
     }
 
     DEFAULT_OPTIONS = {}
-    OPTIONS.each do |_kind, opts|
+    OPTIONS.each_value do |opts|
       opts.each do |id, opt|
         next if opt[:shortcut]
         DEFAULT_OPTIONS[id] = opt[:default] if opt.key?(:default)
@@ -118,7 +118,7 @@ module Optcarrot
       end
 
       def find_option(arg)
-        OPTIONS.each do |_kind, opts|
+        OPTIONS.each_value do |opts|
           opts.each do |id_base, opt|
             [id_base, *opt[:aliases]].each do |id|
               id = id.to_s.tr("_", "-")

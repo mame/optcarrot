@@ -565,7 +565,7 @@ module Optcarrot
       pat = (pat0 >> 1 & 0x55) | (pat1 & 0xaa) | ((pat0 & 0x55) | (pat1 << 1 & 0xaa)) << 8
       x_base = @sp_buffer[buffer_idx + 3]
       palette_base = 0x10 + ((byte2 & 3) << 2) # OAM byte2 bit0-1: Palette
-      @sp_visible = @sp_map.clear unless @sp_visible
+      @sp_visible ||= @sp_map.clear
       8.times do |dx|
         x = x_base + dx
         clr = (pat >> (pos[dx] * 2)) & 3

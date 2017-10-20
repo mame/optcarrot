@@ -17,7 +17,7 @@
            +------------------------+
 
 * NES
-  * CPU: Central Processing unit (1.8 MHz)
+  * CPU: Central Processing Unit (1.8 MHz)
   * PPU: Picture Processing Unit (5.3 MHz: CPU clock x 3)
     * Generates NTSC video output
   * APU: Audio Processing Unit (1.8 MHz)
@@ -89,21 +89,21 @@ This generates a palette data.
 
 The performance bottleneck of Optcarrot is PPU emulation.  It takes about 80% of the execution time.
 
-Optcarrot has two PPU emulation cores: the default core and the generated core.
+Optcarrot has two PPU emulation cores: the default core and the optimized core.
 
 * The default core: Slow, but its source code is (relatively) clean by using Fiber.
 
-* The generated core: Fast, but it source code is super-dirty.
-  It consists of a big while-loop that includes one case-when statement.
+* The optimized core: Fast, but it source code is super-dirty.
+  It consists of a while-loop that includes one big case-when statement.
 
 Casual Ruby users should write clean code. So Ruby should aim to achieve 60 fps by the default core in future.
-The generated core is my play ground to research a promising approach to improve the performance of Ruby implementations.
+The optimized core is a play ground to research a promising approach to improve the performance of Ruby implementations.
 
-CPU emulation is the second bottleneck.  Optcarrot also has two CPU emulation core in similar way.
+CPU emulation is the second bottleneck.  Optcarrot also has two CPU emulation core in the same fashion.
 
 ## Optimized core
 
-The generated core is dynamically generated.  Optcarrot performs the following steps at the invocation:
+The source code of optimized core is dynamically generated.  Optcarrot performs the following steps at the startup:
 
 1. Read the source code of the default core, i.e., `s = File.read(__FILE__)`
 2. Apply a series of string manipulations and generate the source code, i.e., `s = s.gsub(...)`
@@ -266,9 +266,9 @@ Before
       while @hclk < @hclk_target
         case @hclk
         when 0
-	  clk_0 if @enabled
-	when 1
-	  clk_1 if @enabled
+          clk_0 if @enabled
+        when 1
+          clk_1 if @enabled
         ...
         end
       end
@@ -281,9 +281,9 @@ After
         while @hclk < @hclk_target
           case @hclk
           when 0
-	    clk_0
-	  when 1
-	    clk_1
+            clk_0
+          when 1
+            clk_1
           ...
           end
         end
@@ -291,9 +291,9 @@ After
         while @hclk < @hclk_target
           case @hclk
           when 0
-	    # skip
-	  when 1
-	    # skip
+            # skip
+          when 1
+            # skip
           ...
           end
         end
@@ -308,9 +308,9 @@ Before
       while @hclk < @hclk_target
         case @hclk
         when 0
-	  clk_0
-	when 1
-	  clk_1
+          clk_0
+        when 1
+          clk_1
         ...
         end
       end
@@ -322,20 +322,20 @@ After
       while @hclk < @hclk_target
         case @hclk
         when 0
-	  if @hclk + 8 < @hclk_target
-	    clk_0
-	    clk_1
-	    clk_2
-	    clk_3
-	    clk_4
-	    clk_5
-	    clk_6
-	    clk_7
-	  else
-	    clk_0
-	  end
-	when 1
-	  clk_1
+          if @hclk + 8 < @hclk_target
+            clk_0
+            clk_1
+            clk_2
+            clk_3
+            clk_4
+            clk_5
+            clk_6
+            clk_7
+          else
+            clk_0
+          end
+        when 1
+          clk_1
         ...
         end
       end
@@ -383,7 +383,7 @@ Before
         case @hclk
         when 0, 8, 16, 24, 32
           foo if @hclk = 16
-	  clk_0_mod_8
+          clk_0_mod_8
         ...
         end
       end
@@ -395,10 +395,10 @@ After
       while @hclk < @hclk_target
         case @hclk
         when 0, 8, 24, 32
-	  clk_0_mod_8
+          clk_0_mod_8
         when 16
           foo
-	  clk_0_mod_8
+          clk_0_mod_8
         ...
         end
       end

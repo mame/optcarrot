@@ -403,3 +403,17 @@ After
         end
       end
     end
+
+## oneline
+
+Before
+
+    def run
+      while @hclk < @hclk_target
+        ....
+      end
+    end
+
+After
+
+    def run;while @hclk < @hclk_target;....;end;end

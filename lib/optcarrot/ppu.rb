@@ -1262,7 +1262,7 @@ module Optcarrot
       OPTIONS = [
         :method_inlining, :ivar_localization,
         :split_show_mode, :split_a12_checks, :clock_specialization,
-        :fastpath, :batch_render_pixels,
+        :fastpath, :batch_render_pixels, :oneline,
       ]
 
       def build
@@ -1298,12 +1298,16 @@ module Optcarrot
 
         code = localize_instance_variables(code) if @ivar_localization
 
-        gen(
+        code = gen(
           "def self.run",
           *(@loglevel >= 3 ? ["  debug_logging(@scanline, @hclk, @hclk_target)"] : []),
           indent(2, code),
           "end",
         )
+
+        code = oneline(code) if @oneline
+
+        code
       end
 
       COMMANDS = {
@@ -1396,6 +1400,11 @@ module Optcarrot
           "  end",
           "end",
         ))
+      end
+
+      # remove all newlines (this will reduce `trace` instructions)
+      def oneline(code)
+        code.gsub(/^ *|#.*/, "").gsub("[\n", "[").gsub(/\n *\]/, "]").tr("\n", ";")
       end
 
       # inline method calls

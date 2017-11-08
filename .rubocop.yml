@@ -157,3 +157,16 @@ Style/SymbolArray:
 # `0 <= n && n <= 0x7f` is completely innocent
 Style/YodaCondition:
     Enabled: false
+
+# I understand but `while true` is faster than `loop do`
+Lint/LiteralAsCondition:
+    Enabled: false
+
+# What I want to do is to puts a message to stderr, not to warn users
+Style/StderrPuts:
+    Exclude:
+        - 'tools/shim.rb'
+
+# Leave me alone
+Style/CommentedKeyword:
+    Enabled: false

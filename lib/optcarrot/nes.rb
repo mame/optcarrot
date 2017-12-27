@@ -19,6 +19,7 @@ module Optcarrot
 
       @frame = 0
       @frame_target = @conf.frames == 0 ? nil : @conf.frames
+      @fps_history = [] if @conf.print_fps_history
     end
 
     def inspect
@@ -47,6 +48,7 @@ module Optcarrot
 
       @input.tick(@frame, @pads)
       @fps = @video.tick(@ppu.output_pixels)
+      @fps_history << @fps if @conf.print_fps_history
       @audio.tick(@apu.output)
 
       @frame += 1
@@ -56,6 +58,10 @@ module Optcarrot
     def dispose
       if @fps
         @conf.info("fps: %.2f (in the last 10 frames)" % @fps)
+        if @conf.print_fps_history
+          puts "frame,fps-history"
+          @fps_history.each_with_index {|fps, frame| puts "#{ frame },#{ fps }" }
+        end
         puts "fps: #{ @fps }" if @conf.print_fps
       end
       puts "checksum: #{ @ppu.output_pixels.pack("C*").sum }" if @conf.print_video_checksum && @video.class == Video

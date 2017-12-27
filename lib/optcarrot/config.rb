@@ -45,6 +45,7 @@ module Optcarrot
       },
       profiling: {
         print_fps: { type: :switch, desc: "print fps of last 10 frames", default: false },
+        print_fps_history: { type: :switch, desc: "print all fps values for each frame", default: false },
         print_video_checksum: { type: :switch, desc: "print checksum of the last video output", default: false },
         stackprof: { shortcut: "--stackprof-mode=cpu", aliases: :p },
         stackprof_mode: { type: "MODE", desc: "run under stackprof", default: nil },

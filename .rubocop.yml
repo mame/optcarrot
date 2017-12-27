@@ -10,12 +10,11 @@ AllCops:
 Security/Eval:
     Enabled: false
 
+# Marshal.load is needed when needed
 Security/MarshalLoad:
     Enabled: false
 
 # "while true" loop is easy and fast
-Lint/LiteralInCondition:
-    Enabled: false
 Lint/Loop:
     Enabled: false
 Style/InfiniteLoop:
@@ -138,7 +137,7 @@ Style/EmptyCaseCondition:
     Enabled: false
 
 # `rescue StandardError` looks redundant to me
-Lint/RescueWithoutErrorClass:
+Style/RescueStandardError:
     Enabled: false
 
 # `END` is always my heredoc delimiter
@@ -169,4 +168,12 @@ Style/StderrPuts:
 
 # Leave me alone
 Style/CommentedKeyword:
+    Enabled: false
+
+# I want to casually use %s for simple format
+Style/FormatStringToken:
+    Enabled: false
+
+# Indeed, if having a single-line body is not so smart, but just not smart
+Style/IfUnlessModifier:
     Enabled: false

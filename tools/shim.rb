@@ -431,3 +431,5 @@ end
 if RUBY_ENGINE == "mruby"
   eval(File.read(File.join(File.dirname(File.dirname(__FILE__)), "bin/optcarrot")))
 end
+
+# rubocop:enable Style/Documentation

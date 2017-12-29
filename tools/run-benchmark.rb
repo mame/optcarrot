@@ -20,9 +20,14 @@ class DockerImage
   RUBY = "ruby"
   CMD = "RUBY -v -Ilib -r ./tools/shim bin/optcarrot --benchmark $OPTIONS"
   SUPPORTED_MODE = :any
+  SLOW = false
 
   def self.tag
     name.to_s.downcase
+  end
+
+  def self.fast?
+    !self::SLOW
   end
 
   def self.dockerfile_text
@@ -184,6 +189,7 @@ class Ruby193 < DockerImage
   URL = "https://cache.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p551.tar.bz2"
   RUN = ["cd ruby*/ && ./configure && make ruby"]
   RUBY = "ruby*/ruby --disable-gems"
+  SLOW = true
 end
 
 class Ruby187 < DockerImage
@@ -191,6 +197,7 @@ class Ruby187 < DockerImage
   RUN = ["cd ruby*/ && ./configure && make ruby"]
   REWRITE = true
   RUBY = "ruby*/ruby -v -W0 -I ruby*/lib"
+  SLOW = true
 end
 
 class TruffleRuby < DockerImage
@@ -210,6 +217,7 @@ end
 class JRuby9k < DockerImage
   FROM = "jruby:9"
   RUBY = "jruby --server -Xcompile.invokedynamic=true"
+  SLOW = true
 end
 
 class JRuby9kOracle < DockerImage
@@ -221,16 +229,19 @@ end
 class JRuby17 < DockerImage
   FROM = "jruby:1.7"
   RUBY = "jruby --server -Xcompile.invokedynamic=true"
+  SLOW = true
 end
 
 class JRuby17Oracle < DockerImage
   FROM = "jruby:1.7"
   APT = "oracle-java8-installer"
   RUBY = "jruby --server -Xcompile.invokedynamic=true"
+  SLOW = true
 end
 
 class Rubinius < DockerImage
   FROM = "rubinius/docker"
+  SLOW = true
 end
 
 class MRuby < DockerImage
@@ -242,6 +253,7 @@ class MRuby < DockerImage
     "cd mruby && MRUBY_CONFIG=mruby_optcarrot_config.rb ./minirake",
   ]
   CMD = "mruby/bin/mruby --version && mruby/bin/mruby tools/shim.rb --benchmark $OPTIONS"
+  SLOW = true
 end
 
 class Topaz < DockerImage
@@ -256,6 +268,7 @@ class Opal < DockerImage
   ]
   REWRITE = true
   CMD = "opal -v -I . -r ./tools/shim.rb bin/optcarrot -- --benchmark -f 60 $OPTIONS"
+  SLOW = true
 end
 
 ###############################################################################
@@ -295,6 +308,7 @@ class CLI
 
     @tags = @argv.shift.split(",")
     @tags = DockerImage::IMAGES.map {|img| img.tag } if @tags == %w(all)
+    @tags = DockerImage::IMAGES.map {|img| img.tag if img.fast? }.compact if @tags == %w(fastimpls)
     @tags = DockerImage::IMAGES.map {|img| img.tag } - @tags[1..-1] if @tags.first == "not"
   end
 

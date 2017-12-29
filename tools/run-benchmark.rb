@@ -228,6 +228,19 @@ class Topaz < DockerImage
   RUBY = "topaz/bin/topaz"
 end
 
+class TruffleRuby < DockerImage
+  FROM = "fedora:26"
+  graalvm_url = "http://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html"
+  graalvm = "graalvm-0.30.2-linux-amd64-jdk8.tar.gz"
+  RUN = [
+    "echo && echo 'Download GraalVM from' && echo '#{graalvm_url}' && echo 'and move it to optcarrot/' &&" \
+    "echo 'This step is manual currently (sorry)' && echo",
+    [:add, graalvm, "."],
+    "graalvm-0.30.2/bin/ruby -v"
+  ]
+  RUBY = "graalvm-0.30.2/bin/ruby"
+end
+
 class Opal < DockerImage
   APT = "nodejs-legacy"
   RUN = [

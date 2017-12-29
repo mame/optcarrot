@@ -130,9 +130,13 @@ class DockerImage
     options << romfile
 
     r, w = IO.pipe
+    now = Time.now
     spawn("docker", "run", "-e", "OPTIONS=" + options.join(" "), "--rm", tag, out: w)
     w.close
     out = r.read
+    elapsed = Time.now - now
+
+    ((@elapsed_time ||= {})[mode] ||= []) << elapsed
 
     ruby_v, *fps_history, fps, checksum = out.lines.map {|line| line.chomp }
     if history
@@ -163,6 +167,11 @@ class DockerImage
   def self.result_line(mode)
     @results ||= {}
     [tag, mode, @ruby_v, @checksum, *@results[mode]]
+  end
+
+  def self.elapsed_time(mode)
+    @elapsed_time ||= {}
+    [tag, mode, @ruby_v, @checksum, *@elapsed_time[mode]]
   end
 
   def self.fps_history(mode, count)
@@ -441,6 +450,17 @@ class CLI
     link = File.join(BENCHMARK_DIR, "bm-latest.csv")
     File.unlink(link) if File.exist?(link)
     File.symlink(out, link)
+
+    out = File.join(BENCHMARK_DIR, "elapsed-time-#@timestamp.csv")
+
+    CSV.open(out, "w") do |csv|
+      csv << ["name", "mode", "ruby -v", "checksum", *(1..@count).map {|i| "run #{ i }" }]
+      each_mode do |mode|
+        each_target_image do |img|
+          csv << img.elapsed_time(mode)
+        end
+      end
+    end
 
     return unless @history
 

@@ -21,6 +21,7 @@ class DockerImage
   CMD = "RUBY -v -Ilib -r ./tools/shim bin/optcarrot --benchmark $OPTIONS"
   SUPPORTED_MODE = :any
   SLOW = false
+  DOCKERINCLUDE = []
 
   def self.tag
     name.to_s.downcase
@@ -83,9 +84,26 @@ class DockerImage
     end
   end
 
+  def self.create_dockerignore
+    # DIRTY HACK; this will be removed after the docker image of TruffleRuby is released
+    open(File.join(File.dirname(__dir__), ".dockerignore"), "w") do |f|
+      f.puts "*"
+      (%w(
+        bin/
+        examples/
+        lib/
+        tools/shim.rb
+        benchmark/*-core-opt-*.rb
+      ) + self::DOCKERINCLUDE).each do |v|
+        f.puts "!#{ v }"
+      end
+    end
+  end
+
   def self.build
     create_dockerfile
     pregenerate
+    create_dockerignore
     system("docker", "build", "-t", tag, "-f", dockerfile_path, File.dirname(BENCHMARK_DIR))
   end
 
@@ -201,16 +219,12 @@ class Ruby187 < DockerImage
 end
 
 class TruffleRuby < DockerImage
-  FROM = "fedora:26"
-  graalvm_url = "http://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html"
-  graalvm = "graalvm-0.30.2-linux-amd64-jdk8.tar.gz"
-  graalvm_dir = graalvm[/^graalvm-\d+(\.\d+)+/]
+  FROM = "buildpack-deps:xenial"
+  DOCKERINCLUDE = %w(graalvm-0.30.2-linux-amd64-jdk8.tar.gz)
   RUN = [
-    "echo && echo 'Download GraalVM from' && echo '#{graalvm_url}' && echo 'and move it to optcarrot/' &&" \
-    "echo 'This step is manual currently (sorry)' && echo",
-    [:add, graalvm, "."]
+    [:add, "graalvm-*.tar.gz", "."]
   ]
-  RUBY = "#{graalvm_dir}/bin/ruby"
+  RUBY = "graalvm-*/bin/ruby"
   SUPPORTED_MODE = %w(default)
 end
 

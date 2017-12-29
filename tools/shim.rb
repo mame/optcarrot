@@ -172,21 +172,26 @@ if RUBY_ENGINE == "opal"
   end
 end
 
-unless "".respond_to?(:tr) && !Module.const_defined?(:Topaz)
+if !"".respond_to?(:tr) || Module.const_defined?(:Topaz)
   $stderr.puts "[shim] String#tr"
   class String
     alias tr gsub
   end
 end
 
-if Module.const_defined?(:Topaz)
+if !"".respond_to?(:%) || Module.const_defined?(:Topaz)
   # Topaz aborts when evaluating String#%...
   $stderr.puts "[shim] String#%"
   class String
     def %(*_args)
       "<String#format unavailable>"
     end
+  end
+end
 
+unless "".respond_to?(:unpack)
+  $stderr.puts "[shim] String#unpack"
+  class String
     def unpack(fmt)
       if fmt == "C*"
         return each_byte.to_a.map {|ch| ch.ord }
@@ -194,49 +199,6 @@ if Module.const_defined?(:Topaz)
         raise
       end
     end
-  end
-
-  begin
-    $stderr.puts "[shim] FFI patched for topaz"
-    require "ffi" if RUBY_ENGINE != "opal"
-    module FFI
-      class MemoryPointer
-        def read_bytes(nbytes)
-          get_bytes(0, nbytes)
-        end
-      end
-
-      class Struct
-        def self.layout(*_args)
-          # ignore
-        end
-
-        def self.ptr
-          :pointer
-        end
-      end
-
-      module Library
-        alias orig_attach_function attach_function
-        def attach_function(name, *args)
-          if name == :GetVersion
-            # structs aren't complete, just say all our fields are 0
-            self.class.send(:define_method, :GetVersion) do |version|
-              def version.[](_n)
-                0
-              end
-            end
-          elsif name == :SetWindowIcon
-            # this segfaults
-            self.class.send(:define_method, :SetWindowIcon) {|*_args| }
-          else
-            orig_attach_function(name, *args)
-          end
-        end
-      end
-    end
-  rescue LoadError
-    $stderr.puts "[shim] (failed to load FFI for topaz)"
   end
 end
 

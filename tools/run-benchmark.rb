@@ -19,6 +19,7 @@ class DockerImage
   REWRITE = false
   RUBY = "ruby"
   CMD = "RUBY -v -Ilib -r ./tools/shim bin/optcarrot --benchmark $OPTIONS"
+  SUPPORTED_MODE = :any
 
   def self.tag
     name.to_s.downcase
@@ -84,6 +85,12 @@ class DockerImage
   end
 
   def self.run(mode, romfile)
+    if self::SUPPORTED_MODE != :any && !self::SUPPORTED_MODE.include?(mode)
+      puts "#{ tag } does not support the mode `#{ mode }'"
+      ((@results ||= {})[mode] ||= []) << nil
+      return
+    end
+
     options = []
     case mode
     when "default"
@@ -239,6 +246,7 @@ class TruffleRuby < DockerImage
     [:add, graalvm, "."]
   ]
   RUBY = "#{graalvm_dir}/bin/ruby"
+  SUPPORTED_MODE = %w(default)
 end
 
 class Opal < DockerImage

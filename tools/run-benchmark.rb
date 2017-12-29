@@ -169,13 +169,13 @@ end
 
 class Ruby193 < DockerImage
   URL = "https://cache.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p551.tar.bz2"
-  RUN = ["cd ruby*/ && ./configure && make"]
+  RUN = ["cd ruby*/ && ./configure && make ruby"]
   RUBY = "ruby*/ruby --disable-gems"
 end
 
 class Ruby187 < DockerImage
   URL = "https://cache.ruby-lang.org/pub/ruby/1.8/ruby-1.8.7-p374.tar.bz2"
-  RUN = ["cd ruby*/ && ./configure && make"]
+  RUN = ["cd ruby*/ && ./configure && make ruby"]
   REWRITE = true
   RUBY = "ruby*/ruby -v -W0 -I ruby*/lib"
 end

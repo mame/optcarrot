@@ -48,7 +48,9 @@ class DockerImage
       lines << "RUN wget -q #{ self::URL }"
       lines << "RUN tar xjf #{ File.basename(self::URL) }"
     end
-    self::RUN.each {|line| lines << "RUN #{ line }" }
+    self::RUN.each do |line|
+      lines << (line.is_a?(Array) && line[0] == :add ? "ADD #{ line.drop(1).join(" ") }" : "RUN #{ line }")
+    end
     lines << "ADD . ."
     lines << "RUN ruby tools/rewrite.rb" if self::REWRITE
     lines << "CMD #{ self::CMD.sub("RUBY") { self::RUBY } }"
@@ -211,28 +213,12 @@ class Rubinius < DockerImage
 end
 
 class MRuby < DockerImage
-  APT = "bison"
-  # rubocop:disable Layout/IndentHeredoc:
-  CONFIG = <<-END.lines.map {|l| "echo #{ l.chomp.dump } >> mruby/optcarrot_config.rb" }
-MRuby::Build.new do |conf|
-  toolchain :gcc
-  conf.gembox "default"
-  conf.gem core: "mruby-eval"
-  conf.gem mgem: "mruby-method"
-  conf.gem mgem: "mruby-io"
-  conf.gem mgem: "mruby-regexp-pcre"
-  conf.gem mgem: "mruby-pack"
-end
-  END
-  # rubocop:enable Layout/IndentHeredoc:
+  FROM = "buildpack-deps:xenial"
+  APT = %w(bison ruby)
   RUN = [
     "git clone --depth 1 https://github.com/mruby/mruby.git",
-    # integer division patch
-    "sed -i 's:" \
-      "SET_FLOAT_VALUE(mrb, regs\\[a\\], (mrb_float)x / y);:" \
-      "SET_INT_VALUE(regs[a], x / y);:' mruby/src/vm.c",
-    *CONFIG,
-    "cd mruby && MRUBY_CONFIG=optcarrot_config.rb ./minirake",
+    [:add, "tools/mruby_optcarrot_config.rb", "mruby/"],
+    "cd mruby && MRUBY_CONFIG=mruby_optcarrot_config.rb ./minirake",
   ]
   CMD = "mruby/bin/mruby --version && mruby/bin/mruby tools/shim.rb --benchmark $OPTIONS"
 end

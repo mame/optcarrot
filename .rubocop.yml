@@ -177,3 +177,7 @@ Style/FormatStringToken:
 # Indeed, if having a single-line body is not so smart, but just not smart
 Style/IfUnlessModifier:
     Enabled: false
+
+# `(1 + 1)**-1` looks awkward
+Layout/SpaceAroundOperators:
+    Enabled: false

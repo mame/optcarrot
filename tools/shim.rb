@@ -364,9 +364,44 @@ unless Module.const_defined?(:Process)
   end
 end
 unless Process.respond_to?(:clock_gettime) && Process.const_defined?(:CLOCK_MONOTONIC)
-  $stderr.puts "[shim] Process.clock_gettime"
-  def Process.clock_gettime(*)
-    Time.now.to_f
+  if RUBY_ENGINE == "mruby"
+    $stderr.puts "[shim] Process.clock_gettime for mruby (MRB_WITHOUT_FLOAT)"
+    class DummyTime
+      def initialize
+        t = gettimeofday
+        @usec = t[:tv_sec] * 1_000_000 + t[:tv_usec]
+      end
+      attr_reader :usec
+      def -(other)
+        MFloat.new(@usec - other.usec)
+      end
+    end
+    class MFloat
+      def initialize(val)
+        @val = val
+      end
+
+      def /(other)
+        MFloat.new(@val / other)
+      end
+
+      def **(other)
+        raise if other != -1
+        MFloat.new(1_000_000_000_000 / @val)
+      end
+
+      def to_s
+        (@val / 1_000_000).to_s + "." + (@val % 1_000_000).to_s.rjust(6, "0")
+      end
+    end
+    def Process.clock_gettime(*)
+      DummyTime.new
+    end
+  else
+    $stderr.puts "[shim] Process.clock_gettime by Time"
+    def Process.clock_gettime(*)
+      Time.now.to_f
+    end
   end
   Process::CLOCK_MONOTONIC = nil unless Process.const_defined?(:CLOCK_MONOTONIC)
 end

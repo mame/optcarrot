@@ -15,9 +15,10 @@
 
 ## Ruby implementations
 
-* ruby24: `ruby 2.4.0p0 (2016-12-24 revision 57164) [x86_64-linux]`
-* ruby23: `ruby 2.3.3p222 (2016-11-21 revision 56859) [x86_64-linux]`
-* ruby22: `ruby 2.2.6p396 (2016-11-15 revision 56800) [x86_64-linux]`
+* ruby25: `ruby 2.5.0p0 (2017-12-25 revision 61468) [x86_64-linux]`
+* ruby24: `ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]`
+* ruby23: `ruby 2.3.6p384 (2017-12-14 revision 61254) [x86_64-linux]`
+* ruby22: `ruby 2.2.9p480 (2017-12-15 revision 61259) [x86_64-linux]`
 * ruby21: `ruby 2.1.10p492 (2016-04-01 revision 54464) [x86_64-linux]`
 * ruby20: `ruby 2.0.0p648 (2015-12-16 revision 53162) [x86_64-linux]`
 * ruby193: `ruby 1.9.3p551 (2014-11-13 revision 48407) [x86_64-linux]`
@@ -26,20 +27,20 @@
 * omrpreview: `ruby 2.2.5p285 (Eclipse OMR Preview r1) (2016-03-29) [x86_64-linux]`
   * `OMR_JIT_OPTIONS='-Xjit'` is specified.
 
-* jruby9k: `jruby 9.1.7.0 (2.3.1) 2017-01-11 68056ae Java HotSpot(TM) 64-Bit Server VM 25.121-b13 on 1.8.0_121-b13 +indy +jit [linux-x86_64]
+* jruby9k: `jruby 9.1.15.0 (2.3.3) 2017-12-07 929fde8 OpenJDK 64-Bit Server VM 25.151-b12 on 1.8.0_151-8u151-b12-1~deb9u1-b12 +indy +jit [linux-x86_64]`
 
-* jruby17: `jruby 1.7.25 (1.9.3p551) 2016-04-13 867cb81 on Java HotSpot(TM) 64-Bit Server VM 1.8.0_121-b13 +indy +jit [linux-amd64]`
+* jruby17: `jruby 1.7.27 (1.9.3p551) 2017-05-11 8cdb01a on OpenJDK 64-Bit Server VM 1.8.0_151-8u151-b12-1~deb9u1-b12 +indy +jit [linux-amd64]`
   * `--server -Xcompile.invokedynamic=true` is specified.
 
-* rubinius: `rubinius 3.72 (2.3.1 6d56979c 2017-02-21 3.8.0) [x86_64-linux-gnu]`
+* rubinius: `rubinius 3.86 (2.3.1 26a33d0a 2017-09-27 3.8.0) [x86_64-linux-gnu]`
 
-* mruby: `mruby 1.2.0 (2015-11-17)`
-  * Patched so that `Fixnum#/` returns an Integer instead of Float.
+* mruby: `mruby 1.3.0 (2017-7-4)`
+  * Configured with `MRB_WITHOUT_FLOAT` option
 
-* topaz: `topaz (ruby-1.9.3p125) (git rev 019daf0) [x86_64-linux]`
+* topaz: `topaz (ruby-2.4.0p0) (git rev 09bd502) [x86_64-linux]`
   * Failed to run the optimized mode maybe because the generated core is so large.
 
-* opal: `Opal v0.10.3`
+* opal: `Opal v0.11.0`
   * Failed to run the default mode because of lack of Fiber.
 
 See [`tools/run-benchmark.rb`](../tools/run-benchmark.rb) for the actual commands.

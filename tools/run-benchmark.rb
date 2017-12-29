@@ -262,9 +262,9 @@ class CLI
     @romfile = "examples/Lan_Master.nes"
 
     o = OptionParser.new
-    o.on("-m=MODE", "mode (default/opt-none/opt-all/all/each)") {|v| @mode = v }
-    o.on("-c=NUM", Integer, "iteration count") {|v| @count = v }
-    o.on("-r=FILE", String, "rom file") {|v| @romfile = v }
+    o.on("-m MODE", "mode (default/opt-none/opt-all/all/each)") {|v| @mode = v }
+    o.on("-c NUM", Integer, "iteration count") {|v| @count = v }
+    o.on("-r FILE", String, "rom file") {|v| @romfile = v }
     o.separator("")
     o.separator("Examples:")
     latest = DockerImage::IMAGES.find {|n| n.tag != "trunk" }.tag

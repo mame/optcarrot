@@ -107,7 +107,7 @@ class DockerImage
     system("docker", "build", "-t", tag, "-f", dockerfile_path, File.dirname(BENCHMARK_DIR))
   end
 
-  def self.run(mode, romfile)
+  def self.run(mode, romfile, history: nil)
     if self::SUPPORTED_MODE != :any && !self::SUPPORTED_MODE.include?(mode)
       puts "#{ tag } does not support the mode `#{ mode }'"
       ((@results ||= {})[mode] ||= []) << nil
@@ -126,6 +126,7 @@ class DockerImage
     else
       options << mode
     end
+    options << "--frames #{ history }" << "--print-fps-history" if history
     options << romfile
 
     r, w = IO.pipe
@@ -133,8 +134,13 @@ class DockerImage
     w.close
     out = r.read
 
-    puts out
-    ruby_v, fps, checksum = out.lines.map {|line| line.chomp }
+    ruby_v, *fps_history, fps, checksum = out.lines.map {|line| line.chomp }
+    if history
+      raise "fps history broken: #{ fps_history.first }" unless fps_history.first.start_with?("frame,")
+      fps_history.shift
+      ((@fps_histories ||= {})[mode] ||= []) << fps_history.map {|s| s.split(",")[1].to_f }
+    end
+    puts ruby_v, fps, checksum
     fps = fps[/^fps: (\d+\.\d+)$/, 1] if fps
     checksum = checksum[/^checksum: (\d+)$/, 1] if checksum
 
@@ -157,6 +163,12 @@ class DockerImage
   def self.result_line(mode)
     @results ||= {}
     [tag, mode, @ruby_v, @checksum, *@results[mode]]
+  end
+
+  def self.fps_history(mode, count)
+    @fps_histories ||= {}
+    fps_history = (@fps_histories[mode] ||= [])[count]
+    [tag, *fps_history]
   end
 end
 
@@ -294,11 +306,13 @@ class CLI
     @mode = "default"
     @count = 1
     @romfile = "examples/Lan_Master.nes"
+    @history = nil
 
     o = OptionParser.new
     o.on("-m MODE", "mode (default/opt-none/opt-all/all/each)") {|v| @mode = v }
     o.on("-c NUM", Integer, "iteration count") {|v| @count = v }
     o.on("-r FILE", String, "rom file") {|v| @romfile = v }
+    o.on("-h NUM", Integer, "frame for fps history") {|v| @history = v }
     o.separator("")
     o.separator("Examples:")
     latest = DockerImage::IMAGES.find {|n| n.tag != "trunk" }.tag
@@ -335,7 +349,7 @@ class CLI
   end
 
   def run_benchmark
-    @out = File.join(BENCHMARK_DIR, Time.now.strftime("bm-%Y%m%d%H%M%S.csv"))
+    @timestamp = Time.now.strftime("%Y%m%d%H%M%S")
     each_target_image do |img|
       banner("build #{ img.tag }")
       img.build
@@ -344,7 +358,7 @@ class CLI
       each_mode do |mode|
         each_target_image do |img|
           banner("measure #{ img.tag } / #{ mode } (#{ i + 1 } / #{ @count })")
-          img.run(mode, @romfile)
+          img.run(mode, @romfile, history: @history)
           save_csv
         end
       end
@@ -413,7 +427,9 @@ class CLI
   end
 
   def save_csv
-    CSV.open(@out, "w") do |csv|
+    out = File.join(BENCHMARK_DIR, "bm-#@timestamp.csv")
+
+    CSV.open(out, "w") do |csv|
       csv << ["name", "mode", "ruby -v", "checksum", *(1..@count).map {|i| "run #{ i }" }]
       each_mode do |mode|
         each_target_image do |img|
@@ -424,7 +440,27 @@ class CLI
 
     link = File.join(BENCHMARK_DIR, "bm-latest.csv")
     File.unlink(link) if File.exist?(link)
-    File.symlink(@out, link)
+    File.symlink(out, link)
+
+    return unless @history
+
+    each_mode do |mode|
+      @count.times do |i|
+        out = File.join(BENCHMARK_DIR, "fps-history-#{ mode }-#{ i + 1 }-#@timestamp.csv")
+        CSV.open(out, "w") do |csv|
+          columns = []
+          each_target_image do |img|
+            fps_history = img.fps_history(mode, i)
+            fps_history << nil until fps_history.size == @history + 1
+            columns << fps_history
+          end
+          columns.unshift(["frame", *(1..@history)])
+          columns.transpose.each do |row|
+            csv << row
+          end
+        end
+      end
+    end
   end
 end
 

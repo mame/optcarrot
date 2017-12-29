@@ -27,8 +27,8 @@
 * omrpreview: `ruby 2.2.5p285 (Eclipse OMR Preview r1) (2016-03-29) [x86_64-linux]`
   * `OMR_JIT_OPTIONS='-Xjit'` is specified.
 
+* truffleruby: `truffleruby 0.30.2, like ruby 2.3.5 <Java HotSpot(TM) 64-Bit Server VM 1.8.0_151-b12 with Graal> [linux-x86_64]`
 * jruby9k: `jruby 9.1.15.0 (2.3.3) 2017-12-07 929fde8 OpenJDK 64-Bit Server VM 25.151-b12 on 1.8.0_151-8u151-b12-1~deb9u1-b12 +indy +jit [linux-x86_64]`
-
 * jruby17: `jruby 1.7.27 (1.9.3p551) 2017-05-11 8cdb01a on OpenJDK 64-Bit Server VM 1.8.0_151-8u151-b12-1~deb9u1-b12 +indy +jit [linux-amd64]`
   * `--server -Xcompile.invokedynamic=true` is specified.
 

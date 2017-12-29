@@ -193,6 +193,20 @@ class Ruby187 < DockerImage
   RUBY = "ruby*/ruby -v -W0 -I ruby*/lib"
 end
 
+class TruffleRuby < DockerImage
+  FROM = "fedora:26"
+  graalvm_url = "http://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html"
+  graalvm = "graalvm-0.30.2-linux-amd64-jdk8.tar.gz"
+  graalvm_dir = graalvm[/^graalvm-\d+(\.\d+)+/]
+  RUN = [
+    "echo && echo 'Download GraalVM from' && echo '#{graalvm_url}' && echo 'and move it to optcarrot/' &&" \
+    "echo 'This step is manual currently (sorry)' && echo",
+    [:add, graalvm, "."]
+  ]
+  RUBY = "#{graalvm_dir}/bin/ruby"
+  SUPPORTED_MODE = %w(default)
+end
+
 class JRuby9k < DockerImage
   FROM = "jruby:9"
   RUBY = "jruby --server -Xcompile.invokedynamic=true"
@@ -233,20 +247,6 @@ end
 class Topaz < DockerImage
   URL = "http://builds.topazruby.com/topaz-linux64-09bd5024e8ada175f08e228c75598a173319b285.tar.bz2"
   RUBY = "topaz/bin/topaz"
-end
-
-class TruffleRuby < DockerImage
-  FROM = "fedora:26"
-  graalvm_url = "http://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html"
-  graalvm = "graalvm-0.30.2-linux-amd64-jdk8.tar.gz"
-  graalvm_dir = graalvm[/^graalvm-\d+(\.\d+)+/]
-  RUN = [
-    "echo && echo 'Download GraalVM from' && echo '#{graalvm_url}' && echo 'and move it to optcarrot/' &&" \
-    "echo 'This step is manual currently (sorry)' && echo",
-    [:add, graalvm, "."]
-  ]
-  RUBY = "#{graalvm_dir}/bin/ruby"
-  SUPPORTED_MODE = %w(default)
 end
 
 class Opal < DockerImage

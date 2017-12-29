@@ -25,7 +25,7 @@ end
 
 data = []
 %w(
-  ruby24 ruby23 ruby22 ruby21 ruby20 ruby193 ruby187
+  ruby25 ruby24 ruby23 ruby22 ruby21 ruby20 ruby193 ruby187
   omrpreview
   jruby9k jruby17 rubinius mruby topaz opal
 ).each do |name|

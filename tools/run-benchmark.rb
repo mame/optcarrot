@@ -12,7 +12,7 @@ class DockerImage
   end
 
   # default
-  FROM = "ruby:2.4"
+  FROM = "ruby:2.5"
   APT = []
   URL = nil
   RUN = []
@@ -141,6 +141,10 @@ class Trunk < DockerImage
   RUBY = "ruby/ruby -Iruby"
 end
 
+class Ruby25 < DockerImage
+  FROM = "ruby:2.5"
+end
+
 class Ruby24 < DockerImage
   FROM = "ruby:2.4"
 end
@@ -263,16 +267,17 @@ class CLI
     o.on("-r=FILE", String, "rom file") {|v| @romfile = v }
     o.separator("")
     o.separator("Examples:")
-    o.separator("  ruby tools/run-benchmark.rb ruby23 -m=all      " \
-                "# run ruby23 (default mode, opt-none mode, opt-all mode)")
-    o.separator("  ruby tools/run-benchmark.rb ruby23             # run ruby23 (default mode)")
-    o.separator("  ruby tools/run-benchmark.rb ruby23 -m=opt-none # run ruby23 (opt-none mode)")
-    o.separator("  ruby tools/run-benchmark.rb ruby23 -m=opt-all  # run ruby23 (opt-all mode)")
-    o.separator("  ruby tools/run-benchmark.rb all -m=all         # run all (default mode)")
-    o.separator("  ruby tools/run-benchmark.rb all -c 30 -m=all   # run all (default mode) (30 times for each image)")
-    o.separator("  ruby tools/run-benchmark.rb not,trunk,ruby23   # run all but trunk and ruby23")
-    o.separator("  ruby tools/run-benchmark.rb ruby23 bash        # custom command")
-    o.separator("  ruby tools/run-benchmark.rb -r foo.nes ruby23")
+    latest = DockerImage::IMAGES.find {|n| n.tag != "trunk" }.tag
+    o.separator("  ruby tools/run-benchmark.rb #{ latest } -m all       " \
+                "# run #{ latest } (default mode, opt-none mode, opt-all mode)")
+    o.separator("  ruby tools/run-benchmark.rb #{ latest }              # run #{ latest } (default mode)")
+    o.separator("  ruby tools/run-benchmark.rb #{ latest } -m opt-none  # run #{ latest } (opt-none mode)")
+    o.separator("  ruby tools/run-benchmark.rb #{ latest } -m opt-all   # run #{ latest } (opt-all mode)")
+    o.separator("  ruby tools/run-benchmark.rb all -m all          # run all (default mode)")
+    o.separator("  ruby tools/run-benchmark.rb all -c 30 -m all    # run all (default mode) (30 times for each image)")
+    o.separator("  ruby tools/run-benchmark.rb not,trunk,#{ latest }    # run all but trunk and #{ latest }")
+    o.separator("  ruby tools/run-benchmark.rb #{ latest } bash         # custom command")
+    o.separator("  ruby tools/run-benchmark.rb -r foo.nes #{ latest }")
 
     @argv = o.parse(ARGV)
 

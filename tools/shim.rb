@@ -167,7 +167,9 @@ if RUBY_ENGINE == "opal"
   class String
     alias bytes_orig bytes
     def bytes
-      force_encoding("BINARY").bytes_orig
+      a = []
+      bytes_orig.each_slice(2) {|b0, _b1| a << b0 }
+      a
     end
   end
 end
@@ -284,39 +286,37 @@ unless File.respond_to?(:extname)
   end
 end
 
-unless File.respond_to?(:binread)
-  if RUBY_ENGINE == "opal"
-    $stderr.puts "[shim] File.binread (for opal/nodejs)"
-    class Blob
-      def initialize(buf)
-        @buf = buf
-      end
+if RUBY_ENGINE == "opal"
+  $stderr.puts "[shim] File.binread (for opal/nodejs)"
+  class Blob
+    def initialize(buf)
+      @buf = buf
+    end
 
-      # rubocop:disable Style/CommandLiteral
-      def bytes
-        %x{
-          var __buf__ = #{ @buf };
-          var __ary__ = [];
-          for (var i = 0, length = __buf__.length; i < length; i++) {
-            __ary__.push(__buf__[i]);
-          }
-          return __ary__;
+    # rubocop:disable Style/CommandLiteral
+    def bytes
+      %x{
+        var __buf__ = #{ @buf };
+        var __ary__ = [];
+        for (var i = 0, length = __buf__.length; i < length; i++) {
+          __ary__.push(__buf__[i]);
         }
-      end
-      # rubocop:enable Style/CommandLiteral
+        return __ary__;
+      }
     end
+    # rubocop:enable Style/CommandLiteral
+  end
 
-    class File
-      def self.binread(f)
-        Blob.new(`#{ node_require(:fs) }.readFileSync(#{ f })`)
-      end
+  class File
+    def self.binread(f)
+      Blob.new(`#{ node_require(:fs) }.readFileSync(#{ f })`)
     end
-  else
-    $stderr.puts "[shim] File.binread (by using open)"
-    class File
-      def self.binread(file)
-        open(file, "rb") {|f| f.read }
-      end
+  end
+elsif !File.respond_to?(:binread)
+  $stderr.puts "[shim] File.binread (by using open)"
+  class File
+    def self.binread(file)
+      open(file, "rb") {|f| f.read }
     end
   end
 end

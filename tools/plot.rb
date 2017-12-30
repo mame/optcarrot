@@ -22,7 +22,7 @@ pyimport "matplotlib.pyplot", as: "plt"
       df_
     end
     ax = mean.plot(
-      kind: :barh, figsize: [8, summary ? 7 : 13], width: 0.8,
+      kind: :barh, figsize: [8, oneshot ? summary ? 7 : 13 : 2], width: 0.8,
       xerr: std, ecolor: "lightgray", legend: !summary)
     ax.set_title(
       oneshot ?

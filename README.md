@@ -30,7 +30,7 @@ See [`doc/bonus.md`](doc/bonus.md) for advanced usage.
 
 ![benchmark chart](doc/benchmark-summary.png)
 
-See [`doc/benchmark.md`](doc/benchmark.md) for the measurement condition.
+See [`doc/benchmark.md`](doc/benchmark.md) for the measurement condition and some other charts.
 
 See also [Ruby Releases Benchmarks](https://rubybench.org/ruby/ruby/releases?result_type=Optcarrot%20Lan_Master.nes) and [Ruby Commits Benchmarks](https://rubybench.org/ruby/ruby/commits?result_type=Optcarrot%20Lan_Master.nes&display_count=2000) for the continuous benchmark results.
 

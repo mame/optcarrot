@@ -1,6 +1,9 @@
 # Ruby implementation benchmark with Optcarrot
 
 ![benchmark chart](benchmark-full.png)
+![fps history chart (up to 180 frames)](fps-history-180.png)
+![fps history chart (up to 3000 frames)](fps-history-3000.png)
+![startup-time chart](startup-time.png)
 
 ## Experimental conditions
 
@@ -44,12 +47,6 @@
   * Failed to run the default mode because of lack of Fiber.
 
 See [`tools/run-benchmark.rb`](../tools/run-benchmark.rb) for the actual commands.
-
-## Other charts
-
-![fps history chart (up to 180 frames)](fps-history-180.png)
-![fps history chart (up to 3000 frames)](fps-history-3000.png)
-![startup-time chart](startup-time.png)
 
 ## Remarks
 

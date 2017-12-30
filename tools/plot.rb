@@ -47,7 +47,7 @@ pyimport "matplotlib.pyplot", as: "plt"
       summary ? "doc/benchmark-summary.png" : "doc/benchmark-full.png"
     :
       "doc/startup-time.png"
-    plt.savefig(f, bbox_inches: "tight")
+    plt.savefig(f, dpi: 80, bbox_inches: "tight")
     plt.close()
   end
 end
@@ -58,6 +58,6 @@ fps_df = fps_df[PyCall::List.new(["ruby25", "ruby20", "truffleruby", "jruby9kora
   ax = df_.plot(title: "fps history (up to #{ PyCall.len(df_) } frames)", figsize: [8, 6])
   ax.set_xlabel("frames")
   ax.set_ylabel("frames per second")
-  plt.savefig("doc/fps-history-#{ PyCall.len(df_) }.png", bbox_inches: "tight")
+  plt.savefig("doc/fps-history-#{ PyCall.len(df_) }.png", dpi: 80, bbox_inches: "tight")
   plt.close
 end

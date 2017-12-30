@@ -26,7 +26,7 @@ pyimport "matplotlib.pyplot", as: "plt"
       xerr: std, ecolor: "lightgray", legend: !summary)
     ax.set_title(
       oneshot ?
-        "Ruby implementation benchmark with Optcarrot"
+        "Ruby implementation benchmark with Optcarrot (180 frames)"
       :
         "Start-up time (the time to show the first frame)"
     )

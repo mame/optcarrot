@@ -28,7 +28,7 @@ See [`doc/bonus.md`](doc/bonus.md) for advanced usage.
 
 ## Benchmark example
 
-![benchmark chart](doc/benchmark-default.png)
+![benchmark chart](doc/benchmark-summary.png)
 
 See [`doc/benchmark.md`](doc/benchmark.md) for the measurement condition.
 

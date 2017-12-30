@@ -13,16 +13,26 @@
 
 # Generate benchmark chart
 
+    $ rm -rf benchmark
     $ ruby tools/run-benchmark.rb all -m all
-    $ ruby tools/view-chart.rb benchmark/bm-latest.csv &
-    $ phantomjs tools/chart-images.js | ruby tools/gen-chart-png.rb
+    $ cp benchmark/*-oneshot.csv oneshot.csv
+
+    $ rm -rf benchmark
+    $ ruby tools/run-benchmark.rb all -h 1 -c 10
+    $ cp benchmark/*-elapsed-time.csv elapsed-time.csv
+
+    $ rm -rf benchmark
+    $ ruby tools/run-benchmark.rb ruby25,ruby20,truffleruby,jruby9k,topaz -h 3000
+    $ cp benchmark/*-fps-history-default-1.csv fps-history.csv
+
+    $ ruby tools/plot.rb oneshot.csv elapsed-time.csv fps-history.csv
 
 # Compile ico
 
     $ convert tools/optcarrot.ico tools/optcarrot.png
     $ ruby tools/compile-ico.rb tools/optcarrot.png
 
-# Rewrite the whole program for Opal/1.8
+# Rewrite the whole program for Opal and Ruby 1.8
 
     $ ruby rewrite.rb
 

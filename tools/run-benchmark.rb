@@ -93,6 +93,7 @@ class DockerImage
         examples/
         lib/
         tools/shim.rb
+        tools/rewrite.rb
         benchmark/*-core-opt-*.rb
       ) + self::DOCKERINCLUDE).each do |v|
         f.puts "!#{ v }"
@@ -139,7 +140,7 @@ class DockerImage
     ((@elapsed_time ||= {})[mode] ||= []) << elapsed
 
     ruby_v, *fps_history, fps, checksum = out.lines.map {|line| line.chomp }
-    if history
+    if history && !fps_history.empty?
       raise "fps history broken: #{ fps_history.first }" unless fps_history.first.start_with?("frame,")
       fps_history.shift
       ((@fps_histories ||= {})[mode] ||= []) << fps_history.map {|s| s.split(",")[1].to_f }
@@ -436,8 +437,7 @@ class CLI
   end
 
   def save_csv
-    out = File.join(BENCHMARK_DIR, "bm-#@timestamp.csv")
-
+    out = File.join(BENCHMARK_DIR, "#{ @timestamp }-oneshot.csv")
     CSV.open(out, "w") do |csv|
       csv << ["name", "mode", "ruby -v", "checksum", *(1..@count).map {|i| "run #{ i }" }]
       each_mode do |mode|
@@ -447,12 +447,7 @@ class CLI
       end
     end
 
-    link = File.join(BENCHMARK_DIR, "bm-latest.csv")
-    File.unlink(link) if File.exist?(link)
-    File.symlink(out, link)
-
-    out = File.join(BENCHMARK_DIR, "elapsed-time-#@timestamp.csv")
-
+    out = File.join(BENCHMARK_DIR, "#{ @timestamp }-elapsed-time.csv")
     CSV.open(out, "w") do |csv|
       csv << ["name", "mode", "ruby -v", "checksum", *(1..@count).map {|i| "run #{ i }" }]
       each_mode do |mode|
@@ -466,7 +461,7 @@ class CLI
 
     each_mode do |mode|
       @count.times do |i|
-        out = File.join(BENCHMARK_DIR, "fps-history-#{ mode }-#{ i + 1 }-#@timestamp.csv")
+        out = File.join(BENCHMARK_DIR, "#{ @timestamp }-fps-history-#{ mode }-#{ i + 1 }.csv")
         CSV.open(out, "w") do |csv|
           columns = []
           each_target_image do |img|

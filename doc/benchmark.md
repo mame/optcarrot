@@ -11,8 +11,9 @@
 * Command: `ruby -v -Ilib -r./tools/shim bin/optcarrot --benchmark examples/Lan_Master.nes`
   * This runs the first 180 frames (three seconds), and prints the fps of the last ten frames.
   * `--benchmark` mode implies no GUI, so GUI overhead is not included.
-  * [`tools/shim.rb`](../tools/shim.rb) is required for incompatibility of Ruby implementations.
+  * [`tools/shim.rb`](../tools/shim.rb) ios required for incompatibility of Ruby implementations.
   * `--opt` option is added for the optimized mode.
+  * Furthermore, [`tools/rewrite.rb`](../tools/rewrite.rb) is used for some implementations (currently, Ruby 1.8 and Opal) to work with syntax incompatibility.  See [`tools/run-benchmark.rb`](../tools/run-benchmark.rb) in detail.
 * Measured fps 10 times for each, and calculated the average over the runs.
 * The error bars represent the standard deviation.
 

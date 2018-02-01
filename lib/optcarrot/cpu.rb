@@ -3,6 +3,8 @@ require_relative "opt"
 module Optcarrot
   # CPU implementation
   class CPU
+    extend RDL::Annotate
+
     NMI_VECTOR   = 0xfffa
     RESET_VECTOR = 0xfffc
     IRQ_VECTOR   = 0xfffe
@@ -20,6 +22,7 @@ module Optcarrot
     ###########################################################################
     # initialization
 
+    #type "(Optcarrot::Config) -> self"
     def initialize(conf)
       @conf = conf
 
@@ -56,8 +59,10 @@ module Optcarrot
 
       @opcode = nil
       @ppu_sync = false
+      self
     end
 
+    type "() -> %any"
     def reset
       # registers
       @_a = @_x = @_y = 0
@@ -140,6 +145,8 @@ module Optcarrot
     # other APIs
 
     attr_reader :ram
+    attr_writer_type :apu, "Optcarrot::APU"
+    attr_writer_type :ppu, "Optcarrot::PPU"
     attr_writer :apu, :ppu, :ppu_sync
 
     def current_clock
@@ -182,11 +189,13 @@ module Optcarrot
       64.times {|i| sp_ram[i * 4 + 2] &= 0xe3 }
     end
 
+    type "() -> %any"
     def boot
       @clk = CLK_7
       @_pc = peek16(RESET_VECTOR)
     end
 
+    type "() -> %any"
     def vsync
       @ppu.sync(@clk) if @ppu_sync
 
@@ -922,6 +931,7 @@ module Optcarrot
       @clk_target = clock
     end
 
+    type "() -> %any"
     def run
       do_clock
       begin

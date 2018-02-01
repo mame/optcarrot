@@ -1,6 +1,8 @@
 module Optcarrot
   # Cartridge class (with NROM mapper implemented)
   class ROM
+    extend RDL::Annotate
+
     MAPPER_DB = { 0x00 => self }
 
     # These are optional
@@ -32,6 +34,7 @@ module Optcarrot
       raise "failed to extract ROM file from `#{ filename }'"
     end
 
+    type "self.load", "(Optcarrot::Config, Optcarrot::CPU, Optcarrot::PPU) -> Optcarrot::ROM", typecheck: :call
     def self.load(conf, cpu, ppu)
       filename = conf.romfile
       basename = File.basename(filename)
@@ -101,6 +104,7 @@ module Optcarrot
     def init
     end
 
+    type "() -> %any"
     def reset
       @cpu.add_mappings(0x8000..0xffff, @prg_ref, nil)
     end
@@ -122,9 +126,11 @@ module Optcarrot
       @wrk[addr - 0x6000] = data if @wrk_writable
     end
 
+    type "() -> %any"
     def vsync
     end
 
+    type "() -> %any"
     def load_battery
       return unless @battery
       sav = @basename + ".sav"
@@ -133,6 +139,7 @@ module Optcarrot
       @wrk.replace(sav.bytes)
     end
 
+    type "() -> %any"
     def save_battery
       return unless @battery
       sav = @basename + ".sav"

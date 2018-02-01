@@ -3,6 +3,7 @@ require "ffi"
 module Optcarrot
   # A minimal binding for SDL2
   module SDL2
+    extend RDL::Annotate
     extend FFI::Library
     ffi_lib "SDL2"
 
@@ -206,7 +207,17 @@ module Optcarrot
       functions.delete(:ClearQueuedAudio)
     end
 
+    types = {
+      :int => "Integer",
+      :uint32 => "Integer",
+      :string => "String",
+      :pointer => "%any",
+      :void => "%any",
+      AudioSpec.ptr => "%any",
+    }
     functions.each do |name, params|
+      args, ret = params
+      RDL.type "Optcarrot::SDL2", name, "(#{ args.map {|t| types[t] }.join(",") }) -> #{ types[ret] }"
       attach_function(name, :"SDL_#{ name }", *params)
     end
   end

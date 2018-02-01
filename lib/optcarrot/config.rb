@@ -1,6 +1,8 @@
 module Optcarrot
   # config manager and logger
   class Config
+    extend RDL::Annotate
+
     OPTIONS = {
       optimization: {
         opt_ppu: {
@@ -62,25 +64,32 @@ module Optcarrot
       },
     }
 
+    RDL_TYPE = { int: "Integer", switch: "%bool" }
+
     DEFAULT_OPTIONS = {}
     OPTIONS.each_value do |opts|
       opts.each do |id, opt|
         next if opt[:shortcut]
         DEFAULT_OPTIONS[id] = opt[:default] if opt.key?(:default)
+        attr_reader_type id, RDL_TYPE[opt[:type]] || "String"
         attr_reader id
       end
     end
     attr_reader :romfile
 
+    type "(Array<String>) -> self"
     def initialize(opt)
+      opt = opt.__getobj__ if opt.class == SimpleDelegator
       opt = Parser.new(opt).options if opt.is_a?(Array)
       DEFAULT_OPTIONS.merge(opt).each {|id, val| instance_variable_set(:"@#{ id }", val) }
+      self
     end
 
     def debug(msg)
       puts "[DEBUG] " + msg if @loglevel >= 3
     end
 
+    type "(String) -> %any"
     def info(msg)
       puts "[INFO] " + msg if @loglevel >= 2
     end

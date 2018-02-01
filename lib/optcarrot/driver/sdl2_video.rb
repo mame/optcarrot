@@ -4,6 +4,9 @@ require_relative "misc"
 module Optcarrot
   # Video output driver for SDL2
   class SDL2Video < Video
+    extend RDL::Annotate
+
+    type "() -> %any"
     def init
       SDL2.InitSubSystem(SDL2::INIT_VIDEO)
       @ticks_log = [0] * 11
@@ -37,6 +40,7 @@ module Optcarrot
       end
     end
 
+    type "(%real) -> %any"
     def change_window_size(scale)
       if scale
         SDL2.SetWindowFullscreen(@window, 0)
@@ -48,6 +52,7 @@ module Optcarrot
       end
     end
 
+    type "() -> %any"
     def dispose
       SDL2.FreeSurface(@icon)
       SDL2.DestroyTexture(@texture)
@@ -56,6 +61,7 @@ module Optcarrot
       SDL2.QuitSubSystem(SDL2::INIT_VIDEO)
     end
 
+    type "(Array) -> %any"
     def tick(colors)
       prev_ticks = @ticks_log[0]
       wait = prev_ticks + 1000 - SDL2.GetTicks * NES::FPS

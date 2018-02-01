@@ -1,6 +1,8 @@
 module Optcarrot
   # Pad pair implementation (NES has two built-in game pad.)
   class Pads
+    extend RDL::Annotate
+
     def inspect
       "#<#{ self.class }>"
     end
@@ -8,13 +10,16 @@ module Optcarrot
     ###########################################################################
     # initialization
 
+    type "(Optcarrot::Config, Optcarrot::CPU, Optcarrot::APU) -> self"
     def initialize(conf, cpu, apu)
       @conf = conf
       @cpu = cpu
       @apu = apu
       @pads = [Pad.new, Pad.new]
+      self
     end
 
+    type "() -> %any"
     def reset
       @cpu.add_mappings(0x4016, method(:peek_401x), method(:poke_4016))
       @cpu.add_mappings(0x4017, method(:peek_401x), @apu.method(:poke_4017)) # delegate 4017H to APU
@@ -47,6 +52,8 @@ module Optcarrot
   ###########################################################################
   # each pad
   class Pad
+    extend RDL::Annotate
+
     A      = 0
     B      = 1
     SELECT = 2

@@ -4,9 +4,25 @@ module Optcarrot
 
   # NES emulation main
   class NES
+    extend RDL::Annotate
+    var_type :@cpu, "Optcarrot::CPU"
+    var_type :@apu, "Optcarrot::APU"
+    var_type :@ppu, "Optcarrot::PPU"
+    var_type :@rom, "Optcarrot::ROM"
+    var_type :@pads, "Optcarrot::Pads"
+    var_type :@video, "Optcarrot::Video"
+    var_type :@audio, "Optcarrot::Audio"
+    var_type :@input, "Optcarrot::Input"
+    var_type :@frame, "Integer"
+    var_type :@frame_target, "Integer or nil"
+    var_type :@fps, "%real"
+    var_type :@conf, "Optcarrot::Config"
+    var_type :@fps_history, "Array<%real>"
+
     FPS = 60
 
-    def initialize(conf = ARGV)
+    type "(?Array<String>) -> self", typecheck: :call
+    def initialize(conf = RDL.type_cast(ARGV, "Array<String>", force: true))
       @conf = Config.new(conf)
 
       @video, @audio, @input = Driver.load(@conf)
@@ -19,15 +35,17 @@ module Optcarrot
 
       @frame = 0
       @frame_target = @conf.frames == 0 ? nil : @conf.frames
-      @fps_history = [] if @conf.print_fps_history
+      @fps_history = RDL.type_cast([], "Array<%real>", force: true) if @conf.print_fps_history
     end
 
+    type "() -> String", typecheck: :call
     def inspect
       "#<#{ self.class }>"
     end
 
     attr_reader :fps, :video, :audio, :input, :cpu, :ppu, :apu
 
+    type "() -> %any", typecheck: :call
     def reset
       @cpu.reset
       @apu.reset
@@ -38,6 +56,7 @@ module Optcarrot
       @rom.load_battery
     end
 
+    type "() -> %any", typecheck: :call
     def step
       @ppu.setup_frame
       @cpu.run
@@ -55,6 +74,9 @@ module Optcarrot
       @conf.info("frame #{ @frame }") if @conf.loglevel >= 2
     end
 
+    RDL.type :Array, :pack, '(String) -> String'
+
+    type "() -> %any", typecheck: :call
     def dispose
       if @fps
         @conf.info("fps: %.2f (in the last 10 frames)" % @fps)
@@ -71,6 +93,12 @@ module Optcarrot
       @rom.save_battery
     end
 
+    require "stackprof"
+    RDL.type :StackProf, "self.start", '({ mode: Symbol, out: String }) -> nil'
+    RDL.type :StackProf, "self.stop", '() -> nil'
+    RDL.type :StackProf, "self.results", '() -> nil'
+
+    type "() -> %any", typecheck: :call
     def run
       reset
 

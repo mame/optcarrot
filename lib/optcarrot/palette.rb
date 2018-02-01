@@ -1,9 +1,12 @@
 module Optcarrot
   # NES palette generators
   module Palette
+    extend RDL::Annotate
+
     module_function
 
     # I don't know where this palette definition came from, but many emulators uses this
+    RDL.type "Optcarrot::Palette", "self.defacto_palette", "() -> Array"
     def defacto_palette
       [
         [1.00, 1.00, 1.00], # default
@@ -35,6 +38,7 @@ module Optcarrot
     end
 
     # Nestopia generates a palette systematically (cool!), but it is not compatible with nes-tests-rom
+    RDL.type "Optcarrot::Palette", "self.nestopia_palette", "() -> Array"
     def nestopia_palette
       (0..511).map do |n|
         tint, level, color = n >> 6 & 7, n >> 4 & 3, n & 0x0f

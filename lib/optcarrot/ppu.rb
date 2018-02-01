@@ -3,6 +3,8 @@ require_relative "opt"
 module Optcarrot
   # PPU implementation (video output)
   class PPU
+    extend RDL::Annotate
+
     # clock/timing constants (stolen from Nestopia)
     RP2C02_CC         = 4
     RP2C02_HACTIVE    = RP2C02_CC * 256
@@ -58,6 +60,7 @@ module Optcarrot
     ###########################################################################
     # initialization
 
+    type "(Optcarrot::Config, Optcarrot::CPU, Array<Integer>) -> self"
     def initialize(conf, cpu, palette)
       @conf = conf
       @cpu = cpu
@@ -79,6 +82,7 @@ module Optcarrot
       setup_lut
     end
 
+    type "(?Hash) -> %any"
     def reset(opt = {})
       if opt.fetch(:mapping, true)
         # setup mapped memory
@@ -220,6 +224,7 @@ module Optcarrot
     ###########################################################################
     # other APIs
 
+    attr_reader_type :output_pixels, "Array"
     attr_reader :output_pixels
 
     def set_chr_mem(mem, writable)
@@ -249,12 +254,14 @@ module Optcarrot
       sync(data_setup + @cpu.update)
     end
 
+    type "() -> %any"
     def setup_frame
       @output_pixels.clear
       @odd_frame = !@odd_frame
       @vclk, @hclk_target, @cpu.next_frame_clock = @hclk == HCLOCK_DUMMY ? DUMMY_FRAME : BOOT_FRAME
     end
 
+    type "() -> %any"
     def vsync
       if @hclk_target != FOREVER_CLOCK
         @hclk_target = FOREVER_CLOCK

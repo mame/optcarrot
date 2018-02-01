@@ -1,6 +1,8 @@
 module Optcarrot
   # APU implementation (audio output)
   class APU
+    extend RDL::Annotate
+
     CLK_M2_MUL   = 6
     CLK_NTSC     = 39_375_000 * CLK_M2_MUL
     CLK_NTSC_DIV = 11
@@ -21,6 +23,7 @@ module Optcarrot
     ###########################################################################
     # initialization
 
+    type "(Optcarrot::Config, Optcarrot::CPU, Integer, Integer) -> self"
     def initialize(conf, cpu, rate, bits)
       @conf = conf
       @cpu = cpu
@@ -49,6 +52,7 @@ module Optcarrot
       @dmc_clock = 0
 
       reset(false)
+      self
     end
 
     def reset_mapping
@@ -105,6 +109,7 @@ module Optcarrot
       @frame_irq_clock = (@frame_counter / @fixed_clock) - CPU::CLK_1
     end
 
+    type "(?%bool) -> %any"
     def reset(mapping = true)
       @cycles_ratecounter = 0
       @frame_divider = 0
@@ -128,6 +133,7 @@ module Optcarrot
     ###########################################################################
     # other APIs
 
+    attr_reader_type :output, "Array"
     attr_reader :output
 
     def do_clock
@@ -157,6 +163,7 @@ module Optcarrot
       delta
     end
 
+    type "() -> %any"
     def vsync
       flush_sound
       update(@cpu.current_clock)

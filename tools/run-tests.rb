@@ -199,7 +199,7 @@ SOUND_SHA1 = {
 # parse nes-test-roms/test_roms.xml
 Test = Struct.new(:runframes, :filename, :filepath, :tvsha1, :input_log)
 TESTS = []
-open(File.join(TEST_DIR, "test_roms.xml")) {|io| REXML::Document.new(io) }.root.elements.each do |elem|
+File.open(File.join(TEST_DIR, "test_roms.xml")) {|io| REXML::Document.new(io) }.root.elements.each do |elem|
   # pal is not supported
   next if elem.attributes["system"] == "pal"
   filename = elem.attributes["filename"].tr("\\", "/")

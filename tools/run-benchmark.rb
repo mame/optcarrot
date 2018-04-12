@@ -86,7 +86,7 @@ class DockerImage
 
   def self.create_dockerignore
     # DIRTY HACK; this will be removed after the docker image of TruffleRuby is released
-    open(File.join(File.dirname(__dir__), ".dockerignore"), "w") do |f|
+    File.open(File.join(File.dirname(__dir__), ".dockerignore"), "w") do |f|
       f.puts "*"
       (%w(
         bin/

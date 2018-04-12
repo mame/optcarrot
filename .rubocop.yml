@@ -1,6 +1,7 @@
 AllCops:
     Exclude:
         - "*-core.rb"
+        - "tools/plot.rb"
         - "tmp/**"
         - "test/**"
         - "benchmark/*-core-opt-*.rb"
@@ -51,8 +52,10 @@ Style/StringLiterals:
 Style/StringLiteralsInInterpolation:
     EnforcedStyle: double_quotes
 
-# A trailing comma in array literal is super cool
-Style/TrailingCommaInLiteral:
+# A trailing comma in array/hash literal is super cool
+Style/TrailingCommaInArrayLiteral:
+    Enabled: false
+Style/TrailingCommaInHashLiteral:
     Enabled: false
 
 # I don't like this so much but virtually needed for ffi struct layout
@@ -180,4 +183,8 @@ Style/IfUnlessModifier:
 
 # `(1 + 1)**-1` looks awkward
 Layout/SpaceAroundOperators:
+    Enabled: false
+
+# One-letter variable is cute
+Naming/UncommunicativeMethodParamName:
     Enabled: false

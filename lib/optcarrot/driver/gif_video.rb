@@ -6,7 +6,7 @@ module Optcarrot
     def init
       super
 
-      @f = open(File.basename(@conf.video_output) + ".gif", "wb")
+      @f = File.open(File.basename(@conf.video_output) + ".gif", "wb")
 
       @palette, colors = Driver.quantize_colors(@palette_rgb)
 

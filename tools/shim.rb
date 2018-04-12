@@ -316,7 +316,7 @@ elsif !File.respond_to?(:binread)
   $stderr.puts "[shim] File.binread (by using open)"
   class File
     def self.binread(file)
-      open(file, "rb") {|f| f.read }
+      File.open(file, "rb") {|f| f.read }
     end
   end
 end

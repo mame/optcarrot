@@ -1,9 +1,10 @@
-# Benchmark definition for benchmark_driver.gem
-type: command_stdout
-name: optcarrot
+type: ruby_stdout
+name: Optcarrot Lan_Master.nes
 command: -r./tools/shim.rb bin/optcarrot --benchmark examples/Lan_Master.nes
-metrics_type:
-  unit: fps
-stdout_to_metrics: |
-  match = stdout.match(/^fps: (?<fps>\d+\.\d+)$/)
-  Float(match[:fps])
+metrics:
+  Number of frames:
+    unit: fps
+    from_stdout: 'Float(stdout.match(/^fps: (?<fps>\d+\.\d+)$/)[:fps])'
+environment:
+  Checksum:
+    from_stdout: 'Integer(stdout.match(/^checksum: (?<checksum>\d+)$/)[:checksum])'

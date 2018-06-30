@@ -21,7 +21,6 @@ class DockerImage
   CMD = "RUBY -v -Ilib -r ./tools/shim bin/optcarrot --benchmark $OPTIONS"
   SUPPORTED_MODE = :any
   SLOW = false
-  DOCKERINCLUDE = []
 
   def self.tag
     name.to_s.downcase
@@ -84,27 +83,9 @@ class DockerImage
     end
   end
 
-  def self.create_dockerignore
-    # DIRTY HACK; this will be removed after the docker image of TruffleRuby is released
-    File.open(File.join(File.dirname(__dir__), ".dockerignore"), "w") do |f|
-      f.puts "*"
-      (%w(
-        bin/
-        examples/
-        lib/
-        tools/shim.rb
-        tools/rewrite.rb
-        benchmark/*-core-opt-*.rb
-      ) + self::DOCKERINCLUDE).each do |v|
-        f.puts "!#{ v }"
-      end
-    end
-  end
-
   def self.build
     create_dockerfile
     pregenerate
-    create_dockerignore
     system("docker", "build", "-t", tag, "-f", dockerfile_path, File.dirname(BENCHMARK_DIR))
   end
 
@@ -242,7 +223,6 @@ end
 
 class TruffleRuby < DockerImage
   FROM = "buildpack-deps:xenial"
-  DOCKERINCLUDE = %w(graalvm-0.30.2-linux-amd64-jdk8.tar.gz)
   RUN = [
     [:add, "graalvm-*.tar.gz", "."]
   ]

@@ -52,7 +52,7 @@ class DockerImage
     end
     if self::URL
       lines << "RUN wget -q #{ self::URL }"
-      lines << "RUN tar xjf #{ File.basename(self::URL) }"
+      lines << "RUN tar xf #{ File.basename(self::URL) }"
     end
     self::RUN.each do |line|
       lines << (line.is_a?(Array) && line[0] == :add ? "ADD #{ line.drop(1).join(" ") }" : "RUN #{ line }")
@@ -222,11 +222,10 @@ class Ruby187 < DockerImage
 end
 
 class TruffleRuby < DockerImage
+  URL = "https://github.com/oracle/graal/releases/download/vm-1.0.0-rc3/graalvm-ce-1.0.0-rc3-linux-amd64.tar.gz"
   FROM = "buildpack-deps:xenial"
-  RUN = [
-    [:add, "graalvm-*.tar.gz", "."]
-  ]
-  RUBY = "graalvm-*/bin/ruby"
+  RUN = ["cd graalvm-* && bin/gu install ruby"]
+  RUBY = "graalvm-*/bin/ruby --jvm"
   SUPPORTED_MODE = %w(default)
 end
 

@@ -3,7 +3,7 @@ module Optcarrot
   module Palette
     module_function
 
-    # I don't know where this palette definition came from, but many emulators uses this
+    # I don't know where this palette definition came from, but many emulators are using this palette
     def defacto_palette
       [
         [1.00, 1.00, 1.00], # default

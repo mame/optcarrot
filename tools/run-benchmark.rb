@@ -223,7 +223,7 @@ end
 
 class TruffleRuby < DockerImage
   URL = "https://github.com/oracle/graal/releases/download/vm-1.0.0-rc3/graalvm-ce-1.0.0-rc3-linux-amd64.tar.gz"
-  FROM = "buildpack-deps:xenial"
+  FROM = "buildpack-deps:bionic"
   RUN = ["cd graalvm-* && bin/gu install ruby"]
   RUBY = "graalvm-*/bin/ruby --jvm"
   SUPPORTED_MODE = %w(default)
@@ -260,7 +260,7 @@ class Rubinius < DockerImage
 end
 
 class MRuby < DockerImage
-  FROM = "buildpack-deps:xenial"
+  FROM = "buildpack-deps:bionic"
   APT = %w(bison ruby)
   RUN = [
     "git clone --depth 1 https://github.com/mruby/mruby.git",

@@ -86,7 +86,7 @@ class DockerImage
   def self.build
     create_dockerfile
     pregenerate
-    system("docker", "build", "-t", tag, "-f", dockerfile_path, File.dirname(BENCHMARK_DIR))
+    system("docker", "build", "-t", tag, "-f", dockerfile_path, File.dirname(BENCHMARK_DIR)) || raise
   end
 
   def self.run(mode, romfile, history: nil)
@@ -143,7 +143,7 @@ class DockerImage
   end
 
   def self.test(cmd = %w(bash))
-    system("docker", "run", "--rm", "-ti", tag, *cmd)
+    system("docker", "run", "--rm", "-ti", tag, *cmd) || raise
   end
 
   def self.result_line(mode)

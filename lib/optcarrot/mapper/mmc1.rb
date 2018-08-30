@@ -3,7 +3,7 @@ module Optcarrot
   class MMC1 < ROM
     MAPPER_DB[0x01] = self
 
-    NMT_MODE = [:second, :first, :vertical, :horizontal]
+    NMT_MODE = [:first, :second, :vertical, :horizontal]
     PRG_MODE = [:conseq, :conseq, :fix_first, :fix_last]
     CHR_MODE = [:conseq, :noconseq]
 

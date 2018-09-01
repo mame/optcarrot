@@ -68,25 +68,27 @@ module Optcarrot
       return if prg_mode == @prg_mode && prg_bank == @prg_bank && chr_bank_0 == @chr_bank_0
       @prg_mode, @prg_bank, @chr_bank_0 = prg_mode, prg_bank, chr_bank_0
 
+      high_bit = chr_bank_0 & (0x10 & (@prg_banks.size - 1))
+      prg_bank_ex = ((@prg_bank & 0x0f) | high_bit) & (@prg_banks.size - 1)
       case @prg_mode
       when :conseq
-        lower = (@chr_bank_0 & 0x10) | (@prg_bank & 0x0e)
+        lower = prg_bank_ex & ~1
         upper = lower + 1
       when :fix_first
         lower = 0
-        upper = @prg_bank & 0x0f
+        upper = prg_bank_ex
       when :fix_last
-        lower = @prg_bank & 0x0f
-        upper = -1
+        lower = prg_bank_ex
+        upper = ((@prg_banks.size - 1) & 0x0f) | high_bit
       end
       @prg_ref[0x8000, 0x4000] = @prg_banks[lower]
       @prg_ref[0xc000, 0x4000] = @prg_banks[upper]
     end
 
     def update_chr(chr_mode, chr_bank_0, chr_bank_1)
-      return if @chr_ram
       return if chr_mode == @chr_mode && chr_bank_0 == @chr_bank_0 && chr_bank_1 == @chr_bank_1
       @chr_mode, @chr_bank_0, @chr_bank_1 = chr_mode, chr_bank_0, chr_bank_1
+      return if @chr_ram
 
       @ppu.update(0)
       if @chr_mode == :conseq

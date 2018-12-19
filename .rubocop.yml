@@ -188,3 +188,11 @@ Layout/SpaceAroundOperators:
 # One-letter variable is cute
 Naming/UncommunicativeMethodParamName:
     Enabled: false
+
+# It highly depends on the context
+Layout/EmptyLineAfterGuardClause:
+    Enabled: false
+
+# Hash table literal is a kind of an art, difficult for machine
+Style/AlignHash:
+    Enabled: false

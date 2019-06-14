@@ -91,10 +91,6 @@ Naming/FileName:
     Exclude:
         - 'tools/*.rb'
 
-# `'abc'.casecmp('ABC') == 0` looks very stupid to me
-Performance/Casecmp:
-    Enabled: false
-
 # I don't care class/module size
 Metrics/ClassLength:
     Max: 1000
@@ -194,5 +190,9 @@ Layout/EmptyLineAfterGuardClause:
     Enabled: false
 
 # Hash table literal is a kind of an art, difficult for machine
-Style/AlignHash:
+Layout/AlignHash:
+    Enabled: false
+
+# The program needs to work on old rubies
+Style/SafeNavigation:
     Enabled: false

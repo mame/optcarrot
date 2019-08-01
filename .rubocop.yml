@@ -196,3 +196,7 @@ Layout/AlignHash:
 # The program needs to work on old rubies
 Style/SafeNavigation:
     Enabled: false
+
+# I want to use %w() only when the length is long
+Style/WordArray:
+    Enabled: false

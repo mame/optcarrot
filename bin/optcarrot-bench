@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+# I'm too lazy to type `-Ilib` every time...
+require_relative "../lib/optcarrot"
+
+argv = ["-b", File.join(__dir__, "../examples/Lan_Master.nes")]
+Optcarrot::NES.new(argv).run

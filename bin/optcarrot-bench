@@ -3,5 +3,5 @@
 # I'm too lazy to type `-Ilib` every time...
 require_relative "../lib/optcarrot"
 
-argv = ["-b", File.join(__dir__, "../examples/Lan_Master.nes")] + ARGV
+argv = ["-b", "--no-print-video-checksum", File.join(__dir__, "../examples/Lan_Master.nes")] + ARGV
 Optcarrot::NES.new(argv).run

@@ -392,7 +392,7 @@ end
 
 if !Module.const_defined?(:Fiber) && RUBY_ENGINE != "opal"
   $stderr.puts "[shim] Fiber"
-  require "thread" # rubocop:disable Lint/UnneededRequireStatement
+  require "thread" # rubocop:disable Lint/RedundantRequireStatement
 
   Thread.abort_on_exception = true
   class Fiber

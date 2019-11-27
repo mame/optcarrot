@@ -182,7 +182,7 @@ Layout/SpaceAroundOperators:
     Enabled: false
 
 # One-letter variable is cute
-Naming/UncommunicativeMethodParamName:
+Naming/MethodParameterName:
     Enabled: false
 
 # It highly depends on the context
@@ -190,7 +190,7 @@ Layout/EmptyLineAfterGuardClause:
     Enabled: false
 
 # Hash table literal is a kind of an art, difficult for machine
-Layout/AlignHash:
+Layout/HashAlignment:
     Enabled: false
 
 # The program needs to work on old rubies

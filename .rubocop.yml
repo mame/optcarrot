@@ -74,10 +74,6 @@ Style/ParallelAssignment:
 Style/PerlBackrefs:
     Enabled: false
 
-# I have forgotten `Kernel#fail`.
-Style/SignalException:
-    EnforcedStyle: only_raise
-
 # I think `{|ary| ary.size }` is not so bad since its type is explicit
 Style/SymbolProc:
     Enabled: false

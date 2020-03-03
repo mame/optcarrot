@@ -77,7 +77,7 @@ module Optcarrot
       if @conf.stackprof_mode
         require "stackprof"
         out = @conf.stackprof_output.sub("MODE", @conf.stackprof_mode)
-        StackProf.start(mode: @conf.stackprof_mode.to_sym, out: out)
+        StackProf.start(mode: @conf.stackprof_mode.to_sym, out: out, raw: true)
       end
 
       step until @frame == @frame_target

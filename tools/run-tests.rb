@@ -56,7 +56,7 @@ EXCLUDES = [
   "other/read2004.nes",
 ]
 
-# rubocop:disable Metrics/LineLength
+# rubocop:disable Layout/LineLength
 SOUND_SHA1 = {
   ["apu_mixer/dmc.nes", "dbPq1gWhVJbjPvi61pn/0dUVy/s="] => "7A5a8FmCvRTKu/zqQNodaIqUJR0=",
   ["apu_mixer/noise.nes", "eZG7kHcDAzvFUFMXjZynRd3ZyRU="] => "4YaRtnR8eT+V4l4t9/Q4ARPr7sI=",
@@ -194,7 +194,7 @@ SOUND_SHA1 = {
   ["vbl_nmi_timing/6.nmi_disable.nes", "tIJKYXx4bCWegJzob7wDNqXfYk0="] => "tF7TZ4GW++l6UxKySjL7Qh8XnbE=",
   ["vbl_nmi_timing/7.nmi_timing.nes", "7qr77ue+0LN1Rr3g51kSfjNTCj8="] => "tF7TZ4GW++l6UxKySjL7Qh8XnbE=",
 }
-# rubocop:enable Metrics/LineLength
+# rubocop:enable Layout/LineLength
 
 # parse nes-test-roms/test_roms.xml
 Test = Struct.new(:runframes, :filename, :filepath, :tvsha1, :input_log)

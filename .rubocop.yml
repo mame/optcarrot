@@ -104,7 +104,7 @@ Metrics/BlockLength:
     Max: 100
 
 # Don't worry, my terminal is big enough
-Metrics/LineLength:
+Layout/LineLength:
     Max: 120
 
 # Code metrics is good, but I think the default is too strict...

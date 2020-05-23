@@ -36,16 +36,6 @@ class DockerImage
     lines << "WORKDIR /root"
     apts = [*self::APT]
     apts << "wget" << "bzip2" if self::URL
-    if apts.include?("oracle-java8-installer")
-      lines <<
-        "RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main'" \
-          " > /etc/apt/sources.list.d/webupd8team-java.list"
-      lines << "RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886"
-      lines <<
-        "RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" \
-          " | debconf-set-selections"
-      lines << "ENV JAVA_HOME /usr/lib/jvm/java-8-oracle"
-    end
     unless apts.empty?
       lines << "RUN apt-get update"
       lines << "RUN apt-get install -y #{ apts * " " }"
@@ -229,28 +219,9 @@ class TruffleRuby < DockerImage
   SUPPORTED_MODE = %w(default)
 end
 
-class JRuby9k < DockerImage
+class JRuby < DockerImage
   FROM = "jruby:9"
-  RUBY = "jruby --server -Xcompile.invokedynamic=true"
-  SLOW = true
-end
-
-class JRuby9kOracle < DockerImage
-  FROM = "jruby:9"
-  APT = "oracle-java8-installer"
-  RUBY = "jruby --server -Xcompile.invokedynamic=true"
-end
-
-class JRuby17 < DockerImage
-  FROM = "jruby:1.7"
-  RUBY = "jruby --server -Xcompile.invokedynamic=true"
-  SLOW = true
-end
-
-class JRuby17Oracle < DockerImage
-  FROM = "jruby:1.7"
-  APT = "oracle-java8-installer"
-  RUBY = "jruby --server -Xcompile.invokedynamic=true"
+  RUBY = "jruby -Xcompile.invokedynamic=true"
   SLOW = true
 end
 

@@ -103,7 +103,7 @@ class DockerImage
 
     r, w = IO.pipe
     now = Time.now
-    spawn("docker", "run", "-e", "OPTIONS=" + options.join(" "), "--rm", tag, out: w)
+    spawn("docker", "run", "--security-opt=seccomp=unconfined", "-e", "OPTIONS=" + options.join(" "), "--rm", tag, out: w)
     w.close
     out = r.read
     elapsed = Time.now - now

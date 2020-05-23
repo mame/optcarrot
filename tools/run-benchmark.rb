@@ -235,7 +235,7 @@ class Ruby187 < DockerImage
 end
 
 class TruffleRuby < DockerImage
-  URL = "https://github.com/oracle/graal/releases/download/vm-1.0.0-rc3/graalvm-ce-1.0.0-rc3-linux-amd64.tar.gz"
+  URL = "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.2/graalvm-ce-java11-linux-amd64-19.3.2.tar.gz"
   FROM = "buildpack-deps:bionic"
   RUN = ["cd graalvm-* && bin/gu install ruby"]
   RUBY = "graalvm-*/bin/ruby --jvm"

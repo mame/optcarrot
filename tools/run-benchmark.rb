@@ -271,7 +271,7 @@ class Topaz < DockerImage
 end
 
 class Opal < DockerImage
-  APT = "nodejs-legacy"
+  APT = "nodejs"
   RUN = [
     "gem install opal",
   ]

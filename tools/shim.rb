@@ -74,6 +74,10 @@ if ![].respond_to?(:freeze) || RUBY_ENGINE == "opal"
   end
 end
 
+if RUBY_ENGINE == "opal"
+  require "corelib/array/pack"
+end
+
 unless [].respond_to?(:pack) && [33, 33].pack("C*") == "!!"
   $stderr.puts "[shim] Array#pack"
   class Array

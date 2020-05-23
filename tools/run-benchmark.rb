@@ -211,12 +211,6 @@ class Ruby22 < DockerImage
   FROM = "ruby:2.2-slim"
 end
 
-class OMRPreview < DockerImage
-  # https://github.com/rubyomr-preview/rubyomr-preview
-  FROM = "rubyomrpreview/rubyomrpreview"
-  RUBY = "OMR_JIT_OPTIONS='-Xjit' ruby --disable-gems"
-end
-
 class Ruby21 < DockerImage
   FROM = "ruby:2.1-slim"
 end

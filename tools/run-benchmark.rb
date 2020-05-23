@@ -280,6 +280,25 @@ class Opal < DockerImage
   SLOW = true
 end
 
+#class Artichoke < DockerImage
+#  APT = %w(llvm clang bison ruby)
+#  FROM = "rustlang/rust:nightly-buster"
+#  RUN = [
+#    "git clone --depth 1 https://github.com/artichoke/artichoke.git",
+#    "cd artichoke && cargo build --release",
+#  ]
+#  CMD = "artichoke/target/release/artichoke -V && artichoke/target/release/artichoke bin/optcarrot --benchmark $OPTIONS"
+#end
+
+class RuRuby < DockerImage
+  FROM = "rustlang/rust:nightly-buster"
+  RUN = [
+    "git clone --depth 1 https://github.com/sisshiki1969/ruruby.git",
+    "cd ruruby && cargo build --release",
+  ]
+  CMD = "git -C ruruby/ rev-parse HEAD && ruruby/target/release/ruruby bin/optcarrot --benchmark $OPTIONS"
+end
+
 ###############################################################################
 
 # A simple command-line interface

@@ -12,7 +12,7 @@ class DockerImage
   end
 
   # default
-  FROM = "ruby:2.5"
+  FROM = "ruby:2.7"
   APT = []
   URL = nil
   RUN = []

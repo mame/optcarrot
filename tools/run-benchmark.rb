@@ -155,15 +155,44 @@ end
 
 ###############################################################################
 
-class Trunk < DockerImage
+class MasterMJIT < DockerImage
   APT = "bison"
   RUN = [
     "git clone --depth 1 https://github.com/ruby/ruby.git",
     "cd ruby && autoconf",
-    "cd ruby && ./configure --prefix=`pwd`/local",
+    "cd ruby && ./configure --prefix=`pwd`/local cppflags=-DNDEBUG",
+    "cd ruby && make && make install",
+  ]
+  RUBY = "ruby/ruby --jit -Iruby"
+end
+
+class Ruby27MJIT < DockerImage
+  FROM = "ruby:2.7"
+  RUBY = "ruby --jit"
+end
+
+class Ruby26MJIT < DockerImage
+  FROM = "ruby:2.6"
+  RUBY = "ruby --jit"
+end
+
+class Master < DockerImage
+  APT = "bison"
+  RUN = [
+    "git clone --depth 1 https://github.com/ruby/ruby.git",
+    "cd ruby && autoconf",
+    "cd ruby && ./configure --prefix=`pwd`/local cppflags=-DNDEBUG",
     "cd ruby && make && make install",
   ]
   RUBY = "ruby/ruby -Iruby"
+end
+
+class Ruby27 < DockerImage
+  FROM = "ruby:2.7"
+end
+
+class Ruby26 < DockerImage
+  FROM = "ruby:2.6"
 end
 
 class Ruby25 < DockerImage
@@ -275,7 +304,7 @@ class CLI
     o.on("-h NUM", Integer, "frame for fps history") {|v| @history = v }
     o.separator("")
     o.separator("Examples:")
-    latest = DockerImage::IMAGES.find {|n| n.tag != "trunk" }.tag
+    latest = DockerImage::IMAGES.find {|n| n.tag != "master" }.tag
     o.separator("  ruby tools/run-benchmark.rb #{ latest } -m all       " \
                 "# run #{ latest } (default mode, opt-none mode, opt-all mode)")
     o.separator("  ruby tools/run-benchmark.rb #{ latest }              # run #{ latest } (default mode)")
@@ -283,7 +312,7 @@ class CLI
     o.separator("  ruby tools/run-benchmark.rb #{ latest } -m opt-all   # run #{ latest } (opt-all mode)")
     o.separator("  ruby tools/run-benchmark.rb all -m all          # run all (default mode)")
     o.separator("  ruby tools/run-benchmark.rb all -c 30 -m all    # run all (default mode) (30 times for each image)")
-    o.separator("  ruby tools/run-benchmark.rb not,trunk,#{ latest }    # run all but trunk and #{ latest }")
+    o.separator("  ruby tools/run-benchmark.rb not,master,#{ latest }   # run all but master and #{ latest }")
     o.separator("  ruby tools/run-benchmark.rb #{ latest } bash         # custom command")
     o.separator("  ruby tools/run-benchmark.rb -r foo.nes #{ latest }")
 

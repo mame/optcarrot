@@ -266,7 +266,7 @@ class MRuby < DockerImage
 end
 
 class Topaz < DockerImage
-  URL = "http://builds.topazruby.com/topaz-linux64-09bd5024e8ada175f08e228c75598a173319b285.tar.bz2"
+  URL = "http://builds.topazruby.com/topaz-linux64-9287c22053d4b2b5f97fa1c65d7d04d5826f9c89.tar.bz2"
   RUBY = "topaz/bin/topaz"
 end
 

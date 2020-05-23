@@ -4,6 +4,7 @@ require "rexml/document"
 TEST_DIR = File.join(__dir__, "nes-test-roms")
 unless File.exist?(TEST_DIR)
   system("git", "clone", "https://github.com/christopherpow/nes-test-roms.git", TEST_DIR)
+  system("git", "-C", TEST_DIR, "checkout", "c0cc4cd8937dac4bb6080c82be0fc2e346dc8754")
 end
 
 EXCLUDES = [

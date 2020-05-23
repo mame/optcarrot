@@ -1,4 +1,5 @@
 AllCops:
+    NewCops: enable
     Exclude:
         - "*-core.rb"
         - "tools/plot.rb"
@@ -196,3 +197,12 @@ Style/SafeNavigation:
 # I want to use %w() only when the length is long
 Style/WordArray:
     Enabled: false
+
+# I want to align lines
+Layout/SpaceAroundMethodCallOperator:
+    Enabled: false
+
+# shim is shim
+Layout/EmptyLinesAroundAttributeAccessor:
+    Exclude:
+        - 'tools/shim.rb'

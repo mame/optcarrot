@@ -103,7 +103,9 @@ class DockerImage
 
     r, w = IO.pipe
     now = Time.now
-    spawn("docker", "run", "--security-opt=seccomp=unconfined", "-e", "OPTIONS=" + options.join(" "), "--rm", tag, out: w)
+    spawn(
+      "docker", "run", "--security-opt=seccomp=unconfined", "-e", "OPTIONS=" + options.join(" "), "--rm", tag, out: w
+    )
     w.close
     out = r.read
     elapsed = Time.now - now
@@ -280,15 +282,16 @@ class Opal < DockerImage
   SLOW = true
 end
 
-#class Artichoke < DockerImage
-#  APT = %w(llvm clang bison ruby)
-#  FROM = "rustlang/rust:nightly-buster"
-#  RUN = [
-#    "git clone --depth 1 https://github.com/artichoke/artichoke.git",
-#    "cd artichoke && cargo build --release",
-#  ]
-#  CMD = "artichoke/target/release/artichoke -V && artichoke/target/release/artichoke bin/optcarrot --benchmark $OPTIONS"
-#end
+# class Artichoke < DockerImage
+#   APT = %w(llvm clang bison ruby)
+#   FROM = "rustlang/rust:nightly-buster"
+#   RUN = [
+#     "git clone --depth 1 https://github.com/artichoke/artichoke.git",
+#     "cd artichoke && cargo build --release",
+#   ]
+#   CMD = "artichoke/target/release/artichoke -V && " +
+#         "artichoke/target/release/artichoke bin/optcarrot --benchmark $OPTIONS"
+# end
 
 class RuRuby < DockerImage
   FROM = "rustlang/rust:nightly-buster"

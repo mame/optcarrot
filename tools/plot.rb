@@ -8,8 +8,6 @@ pyimport "matplotlib.pyplot", as: "plt"
 
 [true, false].each do |oneshot|
   df = pd.read_csv(oneshot ? ARGV[0] : ARGV[1], index_col: ["mode", "name"])
-  df = df[df.index.get_level_values(1) != "jruby9k"]
-  df = df[df.index.get_level_values(1) != "jruby17"]
   df = df.filter(regex: "run \\d+").stack().to_frame("fps")
   idx = df.index.drop_duplicates
   gp = df["fps"].groupby(level: ["mode", "name"])
@@ -53,7 +51,7 @@ pyimport "matplotlib.pyplot", as: "plt"
 end
 
 fps_df = pd.read_csv(ARGV[2], index_col: "frame")
-fps_df = fps_df[PyCall::List.new(["ruby25", "ruby20", "truffleruby", "jruby9koracle", "topaz"])]
+fps_df = fps_df[PyCall::List.new(["ruby27", "ruby20", "truffleruby", "jruby", "topaz"])]
 [fps_df[1..180], fps_df].each do |df_|
   ax = df_.plot(title: "fps history (up to #{ PyCall.len(df_) } frames)", figsize: [8, 6])
   ax.set_xlabel("frames")

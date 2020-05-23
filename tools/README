@@ -18,7 +18,7 @@
     $ cp benchmark/*-oneshot.csv oneshot.csv
 
     $ rm -rf benchmark
-    $ ruby tools/run-benchmark.rb all -h 1 -c 10
+    $ ruby tools/run-benchmark.rb ruby27,ruby20,truffleruby,jruby,topaz -h 1 -c 10
     $ cp benchmark/*-elapsed-time.csv elapsed-time.csv
 
     $ rm -rf benchmark

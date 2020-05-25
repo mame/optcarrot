@@ -26,6 +26,7 @@ pyimport "matplotlib.pyplot", as: "plt"
     ax = mean.plot(
       kind: :barh, figsize: [8, oneshot ? summary ? 7 : 13 : 2], width: 0.8,
       xerr: std, ecolor: "lightgray", legend: !summary)
+    ax.legend(title: "mode", loc: "lower right") unless summary
     ax.set_title(
       oneshot ?
         "Ruby implementation benchmark with Optcarrot (180 frames)"

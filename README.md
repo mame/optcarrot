@@ -29,6 +29,7 @@ See [`doc/bonus.md`](doc/bonus.md) for advanced usage.
 ## Benchmark example
 
 ![benchmark chart](doc/benchmark-summary.png)
+![fps history chart (up to 3000 frames)](doc/fps-history-3000.png)
 
 See [`doc/benchmark.md`](doc/benchmark.md) for the measurement condition and some other charts.
 

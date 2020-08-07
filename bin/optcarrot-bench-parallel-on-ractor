@@ -41,7 +41,6 @@ Optcarrot::PPU::DUMMY_FRAME.freeze
 Optcarrot::PPU::BOOT_FRAME.freeze
 Optcarrot::PPU::SP_PIXEL_POSITIONS.each {|k, v| k.freeze; v.freeze }.freeze
 Optcarrot::PPU::TILE_LUT.each {|a| a.each {|a| a.each {|a| a.freeze }.freeze }.freeze }.freeze
-Optcarrot::PPU::TILE_LUT.each {|a| a.each {|a| a.each {|a| a.freeze }.freeze }.freeze }.freeze
 Optcarrot::PPU::NMT_TABLE.each {|k, v| k.freeze; v.freeze }.freeze
 Optcarrot::CPU::DISPATCH.each {|a| a.freeze }.freeze
 Optcarrot::ROM::MAPPER_DB.freeze

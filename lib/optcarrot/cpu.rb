@@ -49,6 +49,8 @@ module Optcarrot
       @irq_flags = 0
       @jammed = false
 
+      @poke_nop = CPU.method(:poke_nop)
+
       reset
 
       # temporary store (valid only during each operation)
@@ -116,13 +118,12 @@ module Optcarrot
 
       (addr.is_a?(Integer) ? [addr] : addr).each do |a|
         @fetch[a] = peek
-        @store[a] = poke || PokeNop
+        @store[a] = poke || @poke_nop
       end
     end
 
     def self.poke_nop(_addr, _data)
     end
-    PokeNop = method(:poke_nop)
 
     def fetch(addr)
       @fetch[addr][addr]

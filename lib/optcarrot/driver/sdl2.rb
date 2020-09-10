@@ -151,8 +151,8 @@ module Optcarrot
 
     functions = {
       InitSubSystem: [[:uint32], :int],
-      QuitSubSystem: [[:uint32], :void, blocking: true],
-      Delay: [[:int], :void, blocking: true],
+      QuitSubSystem: [[:uint32], :void, { blocking: true }],
+      Delay: [[:int], :void, { blocking: true }],
       GetError: [[], :string],
       GetTicks: [[], :uint32],
 
@@ -177,9 +177,9 @@ module Optcarrot
       RenderCopy: [[:pointer, :pointer, :pointer, :pointer], :int],
       RenderPresent: [[:pointer], :int],
 
-      OpenAudioDevice: [[:string, :int, AudioSpec.ptr, AudioSpec.ptr, :int], :uint32, blocking: true],
-      PauseAudioDevice: [[:uint32, :int], :void, blocking: true],
-      CloseAudioDevice: [[:uint32], :void, blocking: true],
+      OpenAudioDevice: [[:string, :int, AudioSpec.ptr, AudioSpec.ptr, :int], :uint32, { blocking: true }],
+      PauseAudioDevice: [[:uint32, :int], :void, { blocking: true }],
+      CloseAudioDevice: [[:uint32], :void, { blocking: true }],
 
       NumJoysticks: [[], :int],
       JoystickOpen: [[:int], :pointer],
@@ -207,7 +207,8 @@ module Optcarrot
     end
 
     functions.each do |name, params|
-      attach_function(name, :"SDL_#{ name }", *params)
+      opt = params.last.is_a?(Hash) ? params.pop : {}
+      attach_function(name, :"SDL_#{ name }", *params, **opt)
     end
   end
 end

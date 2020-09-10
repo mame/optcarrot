@@ -9,6 +9,7 @@ class DockerImage
   IMAGES = []
   def self.inherited(klass)
     IMAGES << klass
+    super
   end
 
   # default

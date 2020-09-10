@@ -23,11 +23,12 @@ module Optcarrot
       initialize: [[], :void],
       default_driver_id: [[], :int],
       open_live: [[:int, :pointer, :pointer], :pointer],
-      play: [[:pointer, :pointer, :int], :uint32, blocking: true],
+      play: [[:pointer, :pointer, :int], :uint32, { blocking: true }],
       close: [[:pointer], :int],
       shutdown: [[], :void],
     }.each do |name, params|
-      attach_function(name, :"ao_#{ name }", *params)
+      opt = params.last.is_a?(Hash) ? params.pop : {}
+      attach_function(name, :"ao_#{ name }", *params, **opt)
     end
   end
 

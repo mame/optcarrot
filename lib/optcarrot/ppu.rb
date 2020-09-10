@@ -650,6 +650,7 @@ module Optcarrot
         @scroll_addr_5_14 += 0x1000
       else
         mask = @scroll_addr_5_14 & 0x03e0
+        # rubocop:disable Style/CaseLikeIf
         if mask == 0x03a0
           @scroll_addr_5_14 ^= 0x0800
           @scroll_addr_5_14 &= 0x0c00
@@ -658,6 +659,7 @@ module Optcarrot
         else
           @scroll_addr_5_14 = (@scroll_addr_5_14 & 0x0fe0) + 32
         end
+        # rubocop:enable Style/CaseLikeIf
       end
 
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000 # make cache consistent
@@ -927,7 +929,7 @@ module Optcarrot
     # This method definition also serves as a template for OptimizedCodeBuilder.
     # Comments like "when NNN" are markers for the purpose.
     #
-    # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize, Style/SoleNestedConditional
     def main_loop
       # when 685
 
@@ -1252,7 +1254,7 @@ module Optcarrot
         wait_frame
       end
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize, Style/SoleNestedConditional
 
     ###########################################################################
     # optimized core generator

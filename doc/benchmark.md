@@ -1,9 +1,7 @@
 # Ruby implementation benchmark with Optcarrot
 
 ![benchmark chart](benchmark-full.png)
-![fps history chart (up to 180 frames)](fps-history-180.png)
-![fps history chart (up to 3000 frames)](fps-history-3000.png)
-![startup-time chart](startup-time.png)
+![benchmark chart for 3000 frames](benchmark-full-3000.png)
 
 ## Experimental conditions
 
@@ -18,9 +16,8 @@
 * The error bars represent the standard deviation.
 
 ## Ruby implementations
-
-* master: `ruby 2.8.0dev (2020-05-21T04:31:36Z master ba7f4bb0af) [x86_64-linux]`
-* ruby27: `ruby 2.7.1p83 (2020-03-31 revision a0c7c23c9c) [x86_64-linux]`
+* master: `ruby 3.0.0dev (2020-12-21T04:25:03Z master 74a7877836) [x86_64-linux]`
+* ruby27: `ruby 2.7.2p137 (2020-10-01 revision 5445e04352) [x86_64-linux]`
 * ruby26: `ruby 2.6.6p146 (2020-03-31 revision 67876) [x86_64-linux]`
 * ruby25: `ruby 2.5.8p224 (2020-03-31 revision 67882) [x86_64-linux]`
 * ruby24: `ruby 2.4.10p364 (2020-03-31 revision 67879) [x86_64-linux]`
@@ -33,13 +30,13 @@
 
 * mastermjit, ruby27mjit, ruby26mjit: ruby with `--jit`
 
-* truffleruby: `truffleruby 19.3.2, like ruby 2.6.5, GraalVM CE JVM [x86_64-linux]`
-* jruby: `jruby 9.2.11.1 (2.5.7) 2020-03-25 b1f55b1a40 OpenJDK 64-Bit Server VM 25.252-b09 on 1.8.0_252-b09 +indy +jit [linux-x86_64]`
+* truffleruby: `truffleruby 20.1.0, like ruby 2.6.5, GraalVM CE JVM [x86_64-linux]`
+* jruby: `jruby 9.2.13.0 (2.5.7) 2020-08-03 9a89c94bcc OpenJDK 64-Bit Server VM 25.275-b01 on 1.8.0_275-b01 +indy +jit [linux-x86_64]`
   * `--server -Xcompile.invokedynamic=true` is specified.
 
 * rubinius: `rubinius 3.107 (2.3.1 387c4887 2018-07-15 5.0.0git-929163d) [x86_64-linux-gnu]`
 
-* mruby: `mruby 2.1.0 (2019-11-19)`
+* mruby: `mruby 3.0.0preview (2020-10-16)`
   * Configured with `MRB_WITHOUT_FLOAT` option
 
 * topaz: `topaz (ruby-2.4.0p0) (git rev 9287c22) [x86_64-linux]`
@@ -48,7 +45,7 @@
 * opal: `Opal v1.0.3`
   * Failed to run the default mode because of lack of Fiber.
 
-* ruruby: `288730f1f31cf51802ab5ddd69cc7272e32c426b`
+* ruruby: `177a21150686500b2752be7be31b99b796b2539f`
 
 See [`tools/run-benchmark.rb`](../tools/run-benchmark.rb) for the actual commands.
 
@@ -103,6 +100,8 @@ By default, Optcarrot depends upon [ffi] gem.  The headless mode has *zero* depe
 This script will build docker images for some Ruby implementations, run a benchmark on them, and create `benchmark/bm-latest.csv`.
 
     $ ruby tools/run-benchmark.rb all -m all -c 10
+    $ ruby tools/run-benchmark.rb mastermjit,master,ruby27mjit,ruby27,ruby20,truffleruby,jruby,topaz -c 10 -m all -f 3000
+    $ ruby tools/plot.rb benchmark/*-oneshot-180.csv benchmark/*-oneshot-3000.csv
 
 Note that it will take a few hours.  If you want to specify target, do:
 

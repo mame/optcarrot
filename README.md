@@ -28,7 +28,13 @@ See [`doc/bonus.md`](doc/bonus.md) for advanced usage.
 
 ## Benchmark example
 
+Here is FPS after 3 seconds in the game's clock.
+
 ![benchmark chart](doc/benchmark-summary.png)
+
+Here is FPS after 50 seconds in the game's clock. (Only fast implementations are listed.)
+
+![benchmark chart for 3000 frames](doc/benchmark-summary-3000.png)
 
 See [`doc/benchmark.md`](doc/benchmark.md) for the measurement condition and some other charts.
 

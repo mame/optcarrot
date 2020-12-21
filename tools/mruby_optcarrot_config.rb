@@ -13,6 +13,7 @@ MRuby::Build.new do |conf|
   conf.gem core: "mruby-io"
   conf.gem core: "mruby-pack"
   conf.gem core: "mruby-metaprog"
+  conf.gem core: "mruby-exit"
   conf.gem mgem: "mruby-gettimeofday"
   conf.gem mgem: "mruby-method"
   conf.gem mgem: "mruby-regexp-pcre"

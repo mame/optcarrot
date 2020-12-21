@@ -80,7 +80,7 @@ class DockerImage
     system("docker", "build", "-t", tag, "-f", dockerfile_path, File.dirname(BENCHMARK_DIR)) || raise
   end
 
-  def self.run(mode, romfile, history: nil)
+  def self.run(mode, romfile, target_frame: nil, history: false)
     if self::SUPPORTED_MODE != :any && !self::SUPPORTED_MODE.include?(mode)
       puts "#{ tag } does not support the mode `#{ mode }'"
       ((@results ||= {})[mode] ||= []) << nil
@@ -99,7 +99,8 @@ class DockerImage
     else
       options << mode
     end
-    options << "--frames #{ history }" << "--print-fps-history" if history
+    options << "--frames #{ target_frame }" if target_frame
+    options << "--print-fps-history" if history
     options << romfile
 
     r, w = IO.pipe
@@ -158,8 +159,12 @@ end
 
 ###############################################################################
 
+# https://github.com/rbenv/ruby-build/wiki
+MasterAPT = %(autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev git ruby)
+
 class MasterMJIT < DockerImage
-  APT = "bison"
+  FROM = "ubuntu:20.04"
+  APT = MasterAPT
   RUN = [
     "git clone --depth 1 https://github.com/ruby/ruby.git",
     "cd ruby && autoconf",
@@ -180,7 +185,8 @@ class Ruby26MJIT < DockerImage
 end
 
 class Master < DockerImage
-  APT = "bison"
+  FROM = "ubuntu:20.04"
+  APT = MasterAPT
   RUN = [
     "git clone --depth 1 https://github.com/ruby/ruby.git",
     "cd ruby && autoconf",
@@ -239,7 +245,7 @@ end
 
 class TruffleRuby < DockerImage
   URL = "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-linux-amd64-20.1.0.tar.gz"
-  FROM = "buildpack-deps:bionic"
+  FROM = "buildpack-deps:focal"
   RUN = ["cd graalvm-* && bin/gu install ruby"]
   RUBY = "graalvm-*/bin/ruby --jvm"
   SUPPORTED_MODE = %w(default)
@@ -257,7 +263,7 @@ class Rubinius < DockerImage
 end
 
 class MRuby < DockerImage
-  FROM = "buildpack-deps:bionic"
+  FROM = "buildpack-deps:focal"
   APT = %w(bison ruby)
   RUN = [
     "git clone --depth 1 https://github.com/mruby/mruby.git",
@@ -318,10 +324,11 @@ class CLI
     o.on("-m MODE", "mode (default/opt-none/opt-all/all/each)") {|v| @mode = v }
     o.on("-c NUM", Integer, "iteration count") {|v| @count = v }
     o.on("-r FILE", String, "rom file") {|v| @romfile = v }
-    o.on("-h NUM", Integer, "frame for fps history") {|v| @history = v }
+    o.on("-f FRAME", Integer, "target frame") {|v| @target_frame = v }
+    o.on("-h", Integer, "fps history mode") {|v| @history = v }
     o.separator("")
     o.separator("Examples:")
-    latest = DockerImage::IMAGES.find {|n| n.tag != "master" }.tag
+    latest = DockerImage::IMAGES.find {|n| !n.tag.start_with?("master") && !n.tag.include?("mjit") }.tag
     o.separator("  ruby tools/run-benchmark.rb #{ latest } -m all       " \
                 "# run #{ latest } (default mode, opt-none mode, opt-all mode)")
     o.separator("  ruby tools/run-benchmark.rb #{ latest }              # run #{ latest } (default mode)")
@@ -364,7 +371,7 @@ class CLI
       each_mode do |mode|
         each_target_image do |img|
           banner("measure #{ img.tag } / #{ mode } (#{ i + 1 } / #{ @count })")
-          img.run(mode, @romfile, history: @history)
+          img.run(mode, @romfile, target_frame: @target_frame, history: @history)
           save_csv
         end
       end
@@ -433,7 +440,7 @@ class CLI
   end
 
   def save_csv
-    out = File.join(BENCHMARK_DIR, "#{ @timestamp }-oneshot.csv")
+    out = File.join(BENCHMARK_DIR, "#{ @timestamp }-oneshot-#{ @target_frame || 180 }.csv")
     CSV.open(out, "w") do |csv|
       csv << ["name", "mode", "ruby -v", "checksum", *(1..@count).map {|i| "run #{ i }" }]
       each_mode do |mode|
@@ -443,7 +450,7 @@ class CLI
       end
     end
 
-    out = File.join(BENCHMARK_DIR, "#{ @timestamp }-elapsed-time.csv")
+    out = File.join(BENCHMARK_DIR, "#{ @timestamp }-elapsed-time-#{ @target_frame || 180 }.csv")
     CSV.open(out, "w") do |csv|
       csv << ["name", "mode", "ruby -v", "checksum", *(1..@count).map {|i| "run #{ i }" }]
       each_mode do |mode|

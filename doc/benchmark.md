@@ -89,7 +89,8 @@ With `--benchmark` option, Optcarrot works in the headless mode (i.e., no GUI), 
 
 Or, you may want to use `bin/optcarrot-bench`.
 
-    $ /path/to/ruby bin/optcarrot-bench
+    $ /path/to/ruby bin/optcarrot-bench     # measure average FPS for frames 171--180
+    $ /path/to/ruby bin/optcarrot-bench3000 # measure average FPS for frames 2991--3000
 
 By default, Optcarrot depends upon [ffi] gem.  The headless mode has *zero* dependency: no gems, no external libraries, even no stdlib are required.  Unfortunately, you need to use [`tools/shim.rb`](../tools/shim.rb) due to some incompatibilities between MRI and other implementations.
 

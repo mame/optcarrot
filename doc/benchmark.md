@@ -17,6 +17,7 @@
 
 ## Ruby implementations
 * master: `ruby 3.0.0dev (2020-12-21T04:25:03Z master 74a7877836) [x86_64-linux]`
+* ruby30: `ruby 3.0.0p0 (2020-12-25 revision 95aff21468) +JIT [x86_64-linux]`
 * ruby27: `ruby 2.7.2p137 (2020-10-01 revision 5445e04352) [x86_64-linux]`
 * ruby26: `ruby 2.6.6p146 (2020-03-31 revision 67876) [x86_64-linux]`
 * ruby25: `ruby 2.5.8p224 (2020-03-31 revision 67882) [x86_64-linux]`
@@ -28,10 +29,10 @@
 * ruby193: `ruby 1.9.3p551 (2014-11-13 revision 48407) [x86_64-linux]`
 * ruby187: `ruby 1.8.7 (2013-06-27 patchlevel 374) [x86_64-linux]`
 
-* mastermjit, ruby27mjit, ruby26mjit: ruby with `--jit`
+* mastermjit, ruby\*mjit: ruby with `--jit`
 
 * truffleruby: `truffleruby 20.1.0, like ruby 2.6.5, GraalVM CE JVM [x86_64-linux]`
-* jruby: `jruby 9.2.13.0 (2.5.7) 2020-08-03 9a89c94bcc OpenJDK 64-Bit Server VM 25.275-b01 on 1.8.0_275-b01 +indy +jit [linux-x86_64]`
+* jruby: `jruby 9.2.14.0 (2.5.7) 2020-12-08 ebe64bafb9 OpenJDK 64-Bit Server VM 25.275-b01 on 1.8.0_275-b01 +indy +jit [linux-x86_64]`
   * `--server -Xcompile.invokedynamic=true` is specified.
 
 * rubinius: `rubinius 3.107 (2.3.1 387c4887 2018-07-15 5.0.0git-929163d) [x86_64-linux-gnu]`
@@ -42,10 +43,10 @@
 * topaz: `topaz (ruby-2.4.0p0) (git rev 9287c22) [x86_64-linux]`
   * Failed to run the optimized mode maybe because the generated core is so large.
 
-* opal: `Opal v1.0.3`
+* opal: `Opal v1.0.5`
   * Failed to run the default mode because of lack of Fiber.
 
-* ruruby: `177a21150686500b2752be7be31b99b796b2539f`
+* ruruby: `9c3084b951b3ff9af48feb5c87881760fe3352e1`
 
 See [`tools/run-benchmark.rb`](../tools/run-benchmark.rb) for the actual commands.
 

@@ -174,6 +174,11 @@ class MasterMJIT < DockerImage
   RUBY = "ruby/ruby --jit -Iruby"
 end
 
+class Ruby30MJIT < DockerImage
+  FROM = "rubylang/ruby:3.0-focal"
+  RUBY = "ruby --jit"
+end
+
 class Ruby27MJIT < DockerImage
   FROM = "ruby:2.7"
   RUBY = "ruby --jit"
@@ -194,6 +199,10 @@ class Master < DockerImage
     "cd ruby && make && make install",
   ]
   RUBY = "ruby/ruby -Iruby"
+end
+
+class Ruby30 < DockerImage
+  FROM = "rubylang/ruby:3.0-focal"
 end
 
 class Ruby27 < DockerImage

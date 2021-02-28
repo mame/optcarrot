@@ -704,7 +704,7 @@ module Optcarrot
         if @active
           return @bits.even? ? @envelope.output * 2 : 0 if @timer >= 0
 
-          sum = @bits.even? ? @timer : 0
+          sum = @bits.even? ? (@timer + @rate) : 0
           begin
             @bits = @shifter[@bits]
             if @bits.even?

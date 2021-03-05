@@ -38,6 +38,10 @@ Style/NumericLiterals:
 Style/RedundantReturn:
     Enabled: false
 
+# `x == :error ? error-case : normal-case` does not look beautiful to me
+Style/NegatedIfElseCondition:
+    Enabled: false
+
 # I like `foo {|x| bar(x) }` and `foo { bar }`
 Layout/SpaceInsideBlockBraces:
     EnforcedStyleForEmptyBraces: space
@@ -106,9 +110,9 @@ Layout/LineLength:
 
 # Code metrics is good, but I think the default is too strict...
 Metrics/CyclomaticComplexity:
-    Max: 30
+    Max: 40
 Metrics/PerceivedComplexity:
-    Max: 30
+    Max: 40
 Metrics/AbcSize:
     Max: 100
 Metrics/BlockNesting:

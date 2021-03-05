@@ -46,9 +46,9 @@ Optcarrot::PPU::TILE_LUT.each {|a| a.each {|a| a.each {|a| a.freeze }.freeze }.f
 Optcarrot::PPU::NMT_TABLE.each {|k, v| k.freeze; v.freeze }.freeze
 Optcarrot::CPU::DISPATCH.each {|a| a.freeze }.freeze
 Optcarrot::ROM::MAPPER_DB.freeze
-# rubocop:enable Lint/ShadowingOuterLocalVariable, Style/Semicolon
+# rubocop:enable Style/Semicolon
 
-# rubocop:disable Lint/ShadowingOuterLocalVariable, Style/MultilineBlockChain
+# rubocop:disable Style/MultilineBlockChain
 argv = ["-b", "--no-print-video-checksum", File.join(__dir__, "../examples/Lan_Master.nes")] + ARGV
 (1..(ENV["OPTCARROT_RACTOR_PARALLEL"] || "1").to_i).map do
   Ractor.new(argv) do |argv|

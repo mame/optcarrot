@@ -104,6 +104,7 @@ else
 end
 if need_custom_identity_hash
   $stderr.puts "[shim] Hash#compare_by_identity"
+  # rubocop:disable Lint/HashCompareByIdentity
   class IdentityHash
     def initialize
       @h = {}
@@ -117,6 +118,7 @@ if need_custom_identity_hash
       @h[key.object_id] = val
     end
   end
+  # rubocop:enable Lint/HashCompareByIdentity
 
   class Hash
     def compare_by_identity
@@ -244,7 +246,9 @@ rescue LocalJumpError
       if blk
         step_org(*args, &blk)
       else
+        # rubocop:disable Lint/ToEnumArguments
         enum_for(:step_org, *args)
+        # rubocop:enable Lint/ToEnumArguments
       end
     end
   end
@@ -342,6 +346,7 @@ unless Process.respond_to?(:clock_gettime) && Process.const_defined?(:CLOCK_MONO
         MFloat.new(@usec - other.usec)
       end
     end
+
     class MFloat
       def initialize(val)
         @val = val
@@ -360,6 +365,7 @@ unless Process.respond_to?(:clock_gettime) && Process.const_defined?(:CLOCK_MONO
         (@val / 1_000_000).to_s + "." + (@val % 1_000_000).to_s.rjust(6, "0")
       end
     end
+
     def Process.clock_gettime(*)
       DummyTime.new
     end

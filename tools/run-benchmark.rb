@@ -160,10 +160,7 @@ end
 ###############################################################################
 
 # https://github.com/rbenv/ruby-build/wiki
-MASTER_APT = %(
-  autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm6
-  libgdbm-dev libdb-dev git ruby
-)
+MASTER_APT = %(autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev git ruby)
 
 class MasterMJIT < DockerImage
   FROM = "ubuntu:20.04"

@@ -67,7 +67,7 @@ module Optcarrot
         end
         puts "fps: #{ @fps }" if @conf.print_fps
       end
-      if @conf.print_video_checksum && @video.class.instance_of?(Video)
+      if @conf.print_video_checksum && @video.instance_of?(Video)
         puts "checksum: #{ @ppu.output_pixels.pack("C*").sum }"
       end
       @video.dispose

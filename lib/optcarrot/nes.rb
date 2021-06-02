@@ -63,7 +63,7 @@ module Optcarrot
           @fps_history.each_with_index {|fps, frame| puts "#{ frame },#{ fps }" }
         end
         if @conf.print_p95fps
-          puts "p95 fps: #{@fps_history.sort[(@fps_history.length * 0.05).floor]}"
+          puts "p95 fps: #{ @fps_history.sort[(@fps_history.length * 0.05).floor] }"
         end
         puts "fps: #{ @fps }" if @conf.print_fps
       end

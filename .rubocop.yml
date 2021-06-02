@@ -230,3 +230,7 @@ Style/RedundantAssignment:
 # We support Ruby 1.8
 Gemspec/RequiredRubyVersion:
     Enabled: false
+
+# Ruby 1.8 does not allow rescue clause in a block
+Style/RedundantBegin:
+    Enabled: false

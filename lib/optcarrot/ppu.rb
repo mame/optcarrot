@@ -104,6 +104,8 @@ module Optcarrot
       @emphasis = 0
       update_output_color
 
+      @run = true
+
       # clock management
       @hclk = HCLOCK_BOOT
       @vclk = 0
@@ -875,13 +877,22 @@ module Optcarrot
     end
 
     def run
-      @fiber ||= Fiber.new { main_loop }
+      @fiber ||= Fiber.new do
+        main_loop
+        :done
+      end
 
       debug_logging(@scanline, @hclk, @hclk_target) if @conf.loglevel >= 3
 
       make_sure_invariants
 
       @hclk_target = (@vclk + @hclk) * RP2C02_CC unless @fiber.resume
+    end
+
+    def dispose
+      @run = false
+      raise 'PPU Fiber should have finished' unless @fiber.resume == :done
+      @fiber = nil
     end
 
     def wait_frame
@@ -937,7 +948,7 @@ module Optcarrot
       boot
       wait_frame
 
-      while true
+      while @run
         # pre-render scanline
 
         341.step(589, 8) do

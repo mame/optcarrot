@@ -102,7 +102,7 @@ module Optcarrot
     # command-line option parser
     class Parser
       def initialize(argv)
-        @argv = argv
+        @argv = argv.dup
         @options = DEFAULT_OPTIONS.dup
         parse_option until @argv.empty?
         error "ROM file is not given" unless @options[:romfile]

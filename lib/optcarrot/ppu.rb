@@ -884,6 +884,11 @@ module Optcarrot
       @hclk_target = (@vclk + @hclk) * RP2C02_CC unless @fiber.resume
     end
 
+    def dispose
+      raise 'PPU Fiber should have finished' unless @fiber.resume(:stop) == :done
+      @fiber = nil
+    end
+
     def wait_frame
       Fiber.yield true
     end
@@ -935,7 +940,7 @@ module Optcarrot
 
       # wait for boot
       boot
-      wait_frame
+      return :done if wait_frame == :stop
 
       while true
         # pre-render scanline
@@ -1251,7 +1256,7 @@ module Optcarrot
 
         # when 684
         vblank_2
-        wait_frame
+        return :done if wait_frame == :stop
       end
     end
     # rubocop:enable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize, Style/SoleNestedConditional

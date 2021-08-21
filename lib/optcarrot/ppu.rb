@@ -891,7 +891,7 @@ module Optcarrot
 
     def dispose
       @run = false
-      raise 'PPU Fiber should have finished' unless @fiber.resume == :done
+      raise 'PPU Fiber should have finished' unless @fiber.nil? || @fiber.resume == :done
       @fiber = nil
     end
 

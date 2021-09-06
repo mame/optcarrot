@@ -1,9 +1,0 @@
-#!/usr/bin/env ruby
-
-# I'm too lazy to type `-Ilib` every time...
-require_relative "../lib/optcarrot"
-
-Ractor.new { nil } if ENV["OPTCARROT_DUMMY_RACTOR"]
-
-argv = ["-b", "--no-print-video-checksum", "--frames", "3000", File.join(__dir__, "../examples/Lan_Master.nes")] + ARGV
-Optcarrot::NES.new(argv).run

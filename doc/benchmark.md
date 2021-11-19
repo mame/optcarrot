@@ -16,8 +16,8 @@
 * The error bars represent the standard deviation.
 
 ## Ruby implementations
-* master: `ruby 3.0.0dev (2020-12-21T04:25:03Z master 74a7877836) [x86_64-linux]`
-* ruby30: `ruby 3.0.0p0 (2020-12-25 revision 95aff21468) +JIT [x86_64-linux]`
+* master: `ruby 3.1.0dev (2021-11-18T17:47:40Z master 75ecbda438) [x86_64-linux]`
+* ruby30: `ruby 3.0.0p0 (2020-12-25 revision 95aff21468) [x86_64-linux]`
 * ruby27: `ruby 2.7.2p137 (2020-10-01 revision 5445e04352) [x86_64-linux]`
 * ruby26: `ruby 2.6.6p146 (2020-03-31 revision 67876) [x86_64-linux]`
 * ruby25: `ruby 2.5.8p224 (2020-03-31 revision 67882) [x86_64-linux]`
@@ -30,6 +30,7 @@
 * ruby187: `ruby 1.8.7 (2013-06-27 patchlevel 374) [x86_64-linux]`
 
 * mastermjit, ruby\*mjit: ruby with `--jit`
+* masteryjit, ruby\*yjit: ruby with `--yjit`
 
 * truffleruby: `truffleruby 20.1.0, like ruby 2.6.5, GraalVM CE JVM [x86_64-linux]`
 * jruby: `jruby 9.2.14.0 (2.5.7) 2020-12-08 ebe64bafb9 OpenJDK 64-Bit Server VM 25.275-b01 on 1.8.0_275-b01 +indy +jit [linux-x86_64]`

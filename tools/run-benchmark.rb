@@ -171,7 +171,7 @@ class MasterMJIT < DockerImage
   RUN = [
     "git clone --depth 1 https://github.com/ruby/ruby.git",
     "cd ruby && autoconf",
-    "cd ruby && ./configure --prefix=`pwd`/local cppflags=-DNDEBUG",
+    "cd ruby && ./configure --prefix=`pwd`/local",
     "cd ruby && make && make install",
   ]
   RUBY = "ruby/ruby --jit -Iruby"
@@ -192,13 +192,25 @@ class Ruby26MJIT < DockerImage
   RUBY = "ruby --jit"
 end
 
+class MasterYJIT < DockerImage
+  FROM = "ubuntu:20.04"
+  APT = MASTER_APT
+  RUN = [
+    "git clone --depth 1 https://github.com/ruby/ruby.git",
+    "cd ruby && autoconf",
+    "cd ruby && ./configure --prefix=`pwd`/local",
+    "cd ruby && make && make install",
+  ]
+  RUBY = "ruby/ruby --yjit -Iruby"
+end
+
 class Master < DockerImage
   FROM = "ubuntu:20.04"
   APT = MASTER_APT
   RUN = [
     "git clone --depth 1 https://github.com/ruby/ruby.git",
     "cd ruby && autoconf",
-    "cd ruby && ./configure --prefix=`pwd`/local cppflags=-DNDEBUG",
+    "cd ruby && ./configure --prefix=`pwd`/local",
     "cd ruby && make && make install",
   ]
   RUBY = "ruby/ruby -Iruby"

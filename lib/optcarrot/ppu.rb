@@ -1422,6 +1422,7 @@ module Optcarrot
 
       # inline method calls
       def ppu_expand_methods(code, mdefs)
+        code = expand_inline_methods(code, :load_extended_sprites, mdefs[:load_extended_sprites])
         code = expand_inline_methods(code, :open_sprite, mdefs[:open_sprite])
 
         # twice is enough

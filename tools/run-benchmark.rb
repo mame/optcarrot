@@ -165,7 +165,7 @@ MASTER_APT = %w(
   libgdbm-dev libdb-dev git ruby
 )
 
-class MasterMJIT < DockerImage
+class MasterRJIT < DockerImage
   FROM = "ubuntu:20.04"
   APT = MASTER_APT
   RUN = [
@@ -174,7 +174,12 @@ class MasterMJIT < DockerImage
     "cd ruby && ./configure --prefix=`pwd`/local",
     "cd ruby && make && make install",
   ]
-  RUBY = "ruby/ruby --jit -Iruby"
+  RUBY = "ruby/ruby --rjit -Iruby"
+end
+
+class Ruby33RJIT < DockerImage
+  FROM = "ruby:3.3-rc"
+  RUBY = "ruby --rjit -Iruby"
 end
 
 class Ruby30MJIT < DockerImage
@@ -193,15 +198,25 @@ class Ruby26MJIT < DockerImage
 end
 
 class MasterYJIT < DockerImage
-  FROM = "ubuntu:20.04"
+  FROM = "rust:latest"
   APT = MASTER_APT
   RUN = [
     "git clone --depth 1 https://github.com/ruby/ruby.git",
-    "cd ruby && autoconf",
+    "cd ruby && ./autogen.sh",
     "cd ruby && ./configure --prefix=`pwd`/local",
     "cd ruby && make && make install",
   ]
   RUBY = "ruby/ruby --yjit -Iruby"
+end
+
+class Ruby33YJIT < DockerImage
+  FROM = "ruby:3.3-rc"
+  RUBY = "ruby --yjit -Iruby"
+end
+
+class Ruby32YJIT < DockerImage
+  FROM = "ruby:3.2"
+  RUBY = "ruby --yjit -Iruby"
 end
 
 class Master < DockerImage
@@ -214,6 +229,14 @@ class Master < DockerImage
     "cd ruby && make && make install",
   ]
   RUBY = "ruby/ruby -Iruby"
+end
+
+class Ruby33 < DockerImage
+  FROM = "ruby:3.3-rc"
+end
+
+class Ruby32 < DockerImage
+  FROM = "ruby:3.2"
 end
 
 class Ruby30 < DockerImage

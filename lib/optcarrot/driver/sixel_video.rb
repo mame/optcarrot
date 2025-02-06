@@ -7,7 +7,7 @@ module Optcarrot
       super
       @buff = "".b
       @line = "".b
-      @seq_setup = "\e[H\ePq"
+      @seq_setup = "\e[H\eP7q"
       print "\e[2J"
 
       @palette, colors = Driver.quantize_colors(@palette_rgb)

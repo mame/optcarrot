@@ -333,6 +333,15 @@ class RuRuby < DockerImage
   CMD = "git -C ruruby/ rev-parse HEAD && ruruby/target/release/ruruby bin/optcarrot --benchmark $OPTIONS"
 end
 
+class Monoruby < DockerImage
+  FROM = "rustlang/rust:nightly-buster"
+  RUN = [
+    "git clone --depth 1 https://github.com/sisshiki1969/monoruby.git",
+    "cd monoruby && cargo install --path monoruby",
+  ]
+  CMD = "git -C monoruby/ rev-parse HEAD && monoruby bin/optcarrot --benchmark $OPTIONS"
+end
+
 ###############################################################################
 
 # A simple command-line interface

@@ -471,7 +471,6 @@ module Optcarrot
           @palette_ram[addr ^ 0x10] = data
           @output_color[addr ^ 0x10] = final
         end
-        @output_bg_color = @palette_ram[0] & 0x3f
       else
         addr &= 0x3fff
         if addr >= 0x2000

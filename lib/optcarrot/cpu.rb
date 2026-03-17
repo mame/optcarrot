@@ -1,8 +1,11 @@
+# typed: true
 require_relative "opt"
 
 module Optcarrot
   # CPU implementation
   class CPU
+    extend T::Sig
+
     NMI_VECTOR   = 0xfffa
     RESET_VECTOR = 0xfffc
     IRQ_VECTOR   = 0xfffe
@@ -13,6 +16,7 @@ module Optcarrot
 
     CLK_1, CLK_2, CLK_3, CLK_4, CLK_5, CLK_6, CLK_7, CLK_8 = (1..8).map {|i| i * RP2A03_CC }
 
+    sig { returns(String) }
     def inspect
       "#<#{ self.class }>"
     end
@@ -20,46 +24,65 @@ module Optcarrot
     ###########################################################################
     # initialization
 
+    sig { params(conf: Config).void }
     def initialize(conf)
-      @conf = conf
+      @conf = T.let(conf, Config)
 
       # load the generated core
       if @conf.load_cpu
-        eval(File.read(@conf.load_cpu))
+        eval(File.read(T.must(@conf.load_cpu)))
       elsif @conf.opt_cpu
         eval(OptimizedCodeBuilder.new(@conf.loglevel, @conf.opt_cpu).build, nil, "(generated CPU core)")
       end
 
       # main memory
-      @fetch = [nil] * 0x10000
-      @store = [nil] * 0x10000
-      @peeks = {}
-      @pokes = {}
-      @ram = [0] * 0x800
+      @fetch = T.let(T.cast(Array.new(0x10000), T::Array[Fetchable]), T::Array[Fetchable])
+      @store = T.let(T.cast(Array.new(0x10000), T::Array[Storable]), T::Array[Storable])
+      @peeks = T.let({}, T::Hash[Fetchable, Fetchable])
+      @pokes = T.let({}, T::Hash[T.nilable(Storable), Storable])
+      @ram = T.let([0] * 0x800, T::Array[Integer])
 
       # clock management
-      @clk = 0                 # the current clock
-      @clk_frame = 0           # the next frame clock
-      @clk_target = 0          # the goal clock for the current CPU#run
-      @clk_nmi = FOREVER_CLOCK # the next NMI clock (FOREVER_CLOCK means "not scheduled")
-      @clk_irq = FOREVER_CLOCK # the next IRQ clock
-      @clk_total = 0           # the total elapsed clocks
+      @clk = T.let(0, Integer)                 # the current clock
+      @clk_frame = T.let(0, Integer)           # the next frame clock
+      @clk_target = T.let(0, Integer)          # the goal clock for the current CPU#run
+      @clk_nmi = T.let(FOREVER_CLOCK, Integer) # the next NMI clock (FOREVER_CLOCK means "not scheduled")
+      @clk_irq = T.let(FOREVER_CLOCK, Integer) # the next IRQ clock
+      @clk_total = T.let(0, Integer)           # the total elapsed clocks
 
       # interrupt
-      @irq_flags = 0
-      @jammed = false
+      @irq_flags = T.let(0, Integer)
+      @jammed = T.let(false, T::Boolean)
 
-      @poke_nop = CPU.method(:poke_nop)
+      @poke_nop = T.let(CPU.method(:poke_nop), Storable)
+
+      # registers
+      @_a = T.let(0, Integer)
+      @_x = T.let(0, Integer)
+      @_y = T.let(0, Integer)
+      @_sp = T.let(0xfd, Integer)
+      @_pc = T.let(0xfffc, Integer)
+
+      # P register
+      @_p_nz = T.let(1, Integer)
+      @_p_c = T.let(0, Integer)
+      @_p_v = T.let(0, Integer)
+      @_p_i = T.let(0x04, Integer)
+      @_p_d = T.let(0, Integer)
 
       reset
 
       # temporary store (valid only during each operation)
-      @addr = @data = 0
+      @addr = T.let(0, Integer)
+      @data = T.let(0, Integer)
 
-      @opcode = nil
-      @ppu_sync = false
+      @opcode = T.let(nil, T.nilable(Integer))
+      @ppu_sync = T.let(false, T::Boolean)
+      @apu = T.let(nil, T.nilable(APU))
+      @ppu = T.let(nil, T.nilable(PPU))
     end
 
+    sig { void }
     def reset
       # registers
       @_a = @_x = @_y = 0
@@ -87,23 +110,28 @@ module Optcarrot
       add_mappings(0xfffd, method(:peek_jam_2), nil)
     end
 
+    sig { params(addr: Integer).returns(Integer) }
     def peek_ram(addr)
-      @ram[addr % 0x0800]
+      T.must(@ram[addr % 0x0800])
     end
 
+    sig { params(addr: Integer, data: Integer).void }
     def poke_ram(addr, data)
       @ram[addr % 0x0800] = data
     end
 
+    sig { params(addr: Integer).returns(Integer) }
     def peek_nop(addr)
       addr >> 8
     end
 
+    sig { params(_addr: Integer).returns(Integer) }
     def peek_jam_1(_addr)
       @_pc = (@_pc - 1) & 0xffff
       0xfc
     end
 
+    sig { params(_addr: Integer).returns(Integer) }
     def peek_jam_2(_addr)
       0xff
     end
@@ -111,64 +139,86 @@ module Optcarrot
     ###########################################################################
     # mapped memory API
 
+    sig { params(addr: T.any(Integer, T::Range[Integer], T::Enumerator[Integer]), peek: Fetchable, poke: T.nilable(Storable)).void }
     def add_mappings(addr, peek, poke)
       # filter the logically equivalent objects
       peek = @peeks[peek] ||= peek
-      poke = @pokes[poke] ||= poke
+      poke = @pokes[poke] ||= (poke || @poke_nop)
 
       (addr.is_a?(Integer) ? [addr] : addr).each do |a|
         @fetch[a] = peek
-        @store[a] = poke || @poke_nop
+        @store[a] = poke
       end
     end
 
+    sig { params(_addr: Integer, _data: Integer).void }
     def self.poke_nop(_addr, _data)
     end
 
+    sig { params(addr: Integer).returns(Integer) }
     def fetch(addr)
-      @fetch[addr][addr]
+      T.must(@fetch[addr])[addr]
     end
 
+    sig { params(addr: Integer, value: Integer).void }
     def store(addr, value)
-      @store[addr][addr, value]
+      T.must(@store[addr])[addr, value]
     end
 
+    sig { params(addr: Integer).returns(Integer) }
     def peek16(addr)
-      @fetch[addr][addr] + (@fetch[addr + 1][addr + 1] << 8)
+      T.must(@fetch[addr])[addr] + (T.must(@fetch[addr + 1])[addr + 1] << 8)
     end
 
     ###########################################################################
     # other APIs
 
+    sig { returns(T::Array[Integer]) }
     attr_reader :ram
-    attr_writer :apu, :ppu, :ppu_sync
 
+    sig { params(apu: APU).void }
+    attr_writer :apu
+
+    sig { params(ppu: PPU).void }
+    attr_writer :ppu
+
+    sig { params(ppu_sync: T::Boolean).void }
+    attr_writer :ppu_sync
+
+    sig { returns(Integer) }
     def current_clock
       @clk
     end
 
+    sig { returns(Integer) }
     def next_frame_clock
       @clk_frame
     end
 
+    sig { params(clk: Integer).returns(Integer) }
     def next_frame_clock=(clk)
       @clk_frame = clk
       @clk_target = clk if clk < @clk_target
+      clk
     end
 
+    sig { params(clk: Integer).void }
     def steal_clocks(clk)
       @clk += clk
     end
 
+    sig { returns(T::Boolean) }
     def odd_clock?
       (@clk_total + @clk) % CLK_2 != 0
     end
 
+    sig { returns(Integer) }
     def update
-      @apu.clock_dma(@clk)
+      T.must(@apu).clock_dma(@clk)
       @clk
     end
 
+    sig { params(addr: Integer).returns(Integer) }
     def dmc_dma(addr)
       # This is inaccurate; it must steal *up to* 4 clocks depending upon
       # whether CPU writes in this clock, but this always steals 4 clocks.
@@ -178,18 +228,21 @@ module Optcarrot
       dma_buffer
     end
 
+    sig { params(addr: Integer, sp_ram: T::Array[Integer]).void }
     def sprite_dma(addr, sp_ram)
-      256.times {|i| sp_ram[i] = @ram[addr + i] }
-      64.times {|i| sp_ram[i * 4 + 2] &= 0xe3 }
+      256.times {|i| sp_ram[i] = T.must(@ram[addr + i]) }
+      64.times {|i| sp_ram[i * 4 + 2] = T.must(sp_ram[i * 4 + 2]) & 0xe3 }
     end
 
+    sig { void }
     def boot
       @clk = CLK_7
       @_pc = peek16(RESET_VECTOR)
     end
 
+    sig { void }
     def vsync
-      @ppu.sync(@clk) if @ppu_sync
+      T.must(@ppu).sync(@clk) if @ppu_sync
 
       @clk -= @clk_frame
       @clk_total += @clk_frame
@@ -202,6 +255,7 @@ module Optcarrot
     ###########################################################################
     # interrupts
 
+    sig { params(line: Integer).returns(Integer) }
     def clear_irq(line)
       old_irq_flags = @irq_flags & (IRQ_FRAME | IRQ_DMC)
       @irq_flags &= line ^ (IRQ_EXT | IRQ_FRAME | IRQ_DMC)
@@ -209,21 +263,25 @@ module Optcarrot
       old_irq_flags
     end
 
+    sig { params(clk: Integer).returns(Integer) }
     def next_interrupt_clock(clk)
       clk += CLK_1 + CLK_1 / 2 # interrupt edge
       @clk_target = clk if @clk_target > clk
       clk
     end
 
+    sig { params(line: Integer, clk: Integer).void }
     def do_irq(line, clk)
       @irq_flags |= line
       @clk_irq = next_interrupt_clock(clk) if @clk_irq == FOREVER_CLOCK && @_p_i == 0
     end
 
+    sig { params(clk: Integer).void }
     def do_nmi(clk)
       @clk_nmi = next_interrupt_clock(clk) if @clk_nmi == FOREVER_CLOCK
     end
 
+    sig { params(vector: Integer).void }
     def do_isr(vector)
       return if @jammed
       push16(@_pc)
@@ -234,6 +292,7 @@ module Optcarrot
       @_pc = peek16(addr)
     end
 
+    sig { returns(Integer) }
     def fetch_irq_isr_vector
       fetch(0x3000) if @clk >= @clk_frame
       if @clk_nmi != FOREVER_CLOCK
@@ -251,6 +310,7 @@ module Optcarrot
 
     ### P regeister ###
 
+    sig { returns(Integer) }
     def flags_pack
       # NVssDIZC
       ((@_p_nz | @_p_nz >> 1) & 0x80) | # N: Negative
@@ -262,6 +322,7 @@ module Optcarrot
         0x20
     end
 
+    sig { params(f: Integer).void }
     def flags_unpack(f)
       @_p_nz = (~f & 2) | ((f & 0x80) << 1)
       @_p_c = f & 0x01
@@ -271,6 +332,7 @@ module Optcarrot
     end
 
     ### branch helper ###
+    sig { params(cond: T::Boolean).void }
     def branch(cond)
       if cond
         tmp = @_pc + 1
@@ -284,31 +346,37 @@ module Optcarrot
     end
 
     ### storers ###
+    sig { void }
     def store_mem
       store(@addr, @data)
       @clk += CLK_1
     end
 
+    sig { void }
     def store_zpg
       @ram[@addr] = @data
     end
 
     ### stack management ###
+    sig { params(data: Integer).void }
     def push8(data)
       @ram[0x0100 + @_sp] = data
       @_sp = (@_sp - 1) & 0xff
     end
 
+    sig { params(data: Integer).void }
     def push16(data)
       push8(data >> 8)
       push8(data & 0xff)
     end
 
+    sig { returns(Integer) }
     def pull8
       @_sp = (@_sp + 1) & 0xff
-      @ram[0x0100 + @_sp]
+      T.must(@ram[0x0100 + @_sp])
     end
 
+    sig { returns(Integer) }
     def pull16
       pull8 + 256 * pull8
     end
@@ -317,6 +385,7 @@ module Optcarrot
     # addressing modes
 
     # immediate addressing (read only)
+    sig { params(_read: T::Boolean, _write: T::Boolean).void }
     def imm(_read, _write)
       @data = fetch(@_pc)
       @_pc += 1
@@ -324,36 +393,41 @@ module Optcarrot
     end
 
     # zero-page addressing
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def zpg(read, write)
       @addr = fetch(@_pc)
       @_pc += 1
       @clk += CLK_3
       if read
-        @data = @ram[@addr]
+        @data = T.must(@ram[@addr])
         @clk += CLK_2 if write
       end
     end
 
     # zero-page indexed addressing
+    sig { params(indexed: Integer, read: T::Boolean, write: T::Boolean).void }
     def zpg_reg(indexed, read, write)
       @addr = (indexed + fetch(@_pc)) & 0xff
       @_pc += 1
       @clk += CLK_4
       if read
-        @data = @ram[@addr]
+        @data = T.must(@ram[@addr])
         @clk += CLK_2 if write
       end
     end
 
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def zpg_x(read, write)
       zpg_reg(@_x, read, write)
     end
 
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def zpg_y(read, write)
       zpg_reg(@_y, read, write)
     end
 
     # absolute addressing
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def abs(read, write)
       @addr = peek16(@_pc)
       @_pc += 2
@@ -362,6 +436,7 @@ module Optcarrot
     end
 
     # absolute indexed addressing
+    sig { params(indexed: Integer, read: T::Boolean, write: T::Boolean).void }
     def abs_reg(indexed, read, write)
       addr = @_pc + 1
       i = indexed + fetch(@_pc)
@@ -382,36 +457,40 @@ module Optcarrot
       @_pc += 2
     end
 
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def abs_x(read, write)
       abs_reg(@_x, read, write)
     end
 
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def abs_y(read, write)
       abs_reg(@_y, read, write)
     end
 
     # indexed indirect addressing
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def ind_x(read, write)
       addr = fetch(@_pc) + @_x
       @_pc += 1
       @clk += CLK_5
-      @addr = @ram[addr & 0xff] | @ram[(addr + 1) & 0xff] << 8
+      @addr = T.must(@ram[addr & 0xff]) | T.must(@ram[(addr + 1) & 0xff]) << 8
       read_write(read, write)
     end
 
     # indirect indexed addressing
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def ind_y(read, write)
       addr = fetch(@_pc)
       @_pc += 1
-      indexed = @ram[addr] + @_y
+      indexed = T.must(@ram[addr]) + @_y
       @clk += CLK_4
       if write
         @clk += CLK_1
-        @addr = (@ram[(addr + 1) & 0xff] << 8) + indexed
+        @addr = (T.must(@ram[(addr + 1) & 0xff]) << 8) + indexed
         addr = @addr - (indexed & 0x100) # for inlining fetch
         fetch(addr)
       else
-        @addr = ((@ram[(addr + 1) & 0xff] << 8) + indexed) & 0xffff
+        @addr = ((T.must(@ram[(addr + 1) & 0xff]) << 8) + indexed) & 0xffff
         if indexed & 0x100 != 0
           addr = (@addr - 0x100) & 0xffff # for inlining fetch
           fetch(addr)
@@ -421,6 +500,7 @@ module Optcarrot
       read_write(read, write)
     end
 
+    sig { params(read: T::Boolean, write: T::Boolean).void }
     def read_write(read, write)
       if read
         @data = fetch(@addr)
@@ -436,58 +516,70 @@ module Optcarrot
     # instructions
 
     # load instructions
+    sig { void }
     def _lda
       @_p_nz = @_a = @data
     end
 
+    sig { void }
     def _ldx
       @_p_nz = @_x = @data
     end
 
+    sig { void }
     def _ldy
       @_p_nz = @_y = @data
     end
 
     # store instructions
+    sig { void }
     def _sta
       @data = @_a
     end
 
+    sig { void }
     def _stx
       @data = @_x
     end
 
+    sig { void }
     def _sty
       @data = @_y
     end
 
     # transfer instructions
+    sig { void }
     def _tax
       @clk += CLK_2
       @_p_nz = @_x = @_a
     end
 
+    sig { void }
     def _tay
       @clk += CLK_2
       @_p_nz = @_y = @_a
     end
 
+    sig { void }
     def _txa
       @clk += CLK_2
       @_p_nz = @_a = @_x
     end
 
+    sig { void }
     def _tya
       @clk += CLK_2
       @_p_nz = @_a = @_y
     end
 
     # flow control instructions
+    sig { void }
     def _jmp_a
       @_pc = peek16(@_pc)
       @clk += CLK_3
     end
 
+    sig { void }
     def _jmp_i
       pos = peek16(@_pc)
       low = fetch(pos)
@@ -497,6 +589,7 @@ module Optcarrot
       @clk += CLK_5
     end
 
+    sig { void }
     def _jsr
       data = @_pc + 1
       push16(data)
@@ -504,11 +597,13 @@ module Optcarrot
       @clk += CLK_6
     end
 
+    sig { void }
     def _rts
       @_pc = (pull16 + 1) & 0xffff
       @clk += CLK_6
     end
 
+    sig { void }
     def _rti
       @clk += CLK_6
       packed = pull8
@@ -517,39 +612,48 @@ module Optcarrot
       @clk_irq = @irq_flags == 0 || @_p_i != 0 ? FOREVER_CLOCK : @clk_target = 0
     end
 
+    sig { void }
     def _bne
       branch(@_p_nz & 0xff != 0)
     end
 
+    sig { void }
     def _beq
       branch(@_p_nz & 0xff == 0)
     end
 
+    sig { void }
     def _bmi
       branch(@_p_nz & 0x180 != 0)
     end
 
+    sig { void }
     def _bpl
       branch(@_p_nz & 0x180 == 0)
     end
 
+    sig { void }
     def _bcs
       branch(@_p_c != 0)
     end
 
+    sig { void }
     def _bcc
       branch(@_p_c == 0)
     end
 
+    sig { void }
     def _bvs
       branch(@_p_v != 0)
     end
 
+    sig { void }
     def _bvc
       branch(@_p_v == 0)
     end
 
     # math operations
+    sig { void }
     def _adc
       tmp = @_a + @data + @_p_c
       @_p_v = ~(@_a ^ @data) & (@_a ^ tmp) & 0x80
@@ -557,6 +661,7 @@ module Optcarrot
       @_p_c = tmp[8]
     end
 
+    sig { void }
     def _sbc
       data = @data ^ 0xff
       tmp = @_a + data + @_p_c
@@ -566,35 +671,42 @@ module Optcarrot
     end
 
     # logical operations
+    sig { void }
     def _and
       @_p_nz = @_a &= @data
     end
 
+    sig { void }
     def _ora
       @_p_nz = @_a |= @data
     end
 
+    sig { void }
     def _eor
       @_p_nz = @_a ^= @data
     end
 
+    sig { void }
     def _bit
       @_p_nz = ((@data & @_a) != 0 ? 1 : 0) | ((@data & 0x80) << 1)
       @_p_v = @data & 0x40
     end
 
+    sig { void }
     def _cmp
       data = @_a - @data
       @_p_nz = data & 0xff
       @_p_c = 1 - data[8]
     end
 
+    sig { void }
     def _cpx
       data = @_x - @data
       @_p_nz = data & 0xff
       @_p_c = 1 - data[8]
     end
 
+    sig { void }
     def _cpy
       data = @_y - @data
       @_p_nz = data & 0xff
@@ -602,22 +714,26 @@ module Optcarrot
     end
 
     # shift operations
+    sig { void }
     def _asl
       @_p_c = @data >> 7
       @data = @_p_nz = @data << 1 & 0xff
     end
 
+    sig { void }
     def _lsr
       @_p_c = @data & 1
       @data = @_p_nz = @data >> 1
     end
 
+    sig { void }
     def _rol
       @_p_nz = (@data << 1 & 0xff) | @_p_c
       @_p_c = @data >> 7
       @data = @_p_nz
     end
 
+    sig { void }
     def _ror
       @_p_nz = (@data >> 1) | (@_p_c << 7)
       @_p_c = @data & 1
@@ -625,60 +741,72 @@ module Optcarrot
     end
 
     # increment and decrement operations
+    sig { void }
     def _dec
       @data = @_p_nz = (@data - 1) & 0xff
     end
 
+    sig { void }
     def _inc
       @data = @_p_nz = (@data + 1) & 0xff
     end
 
+    sig { void }
     def _dex
       @clk += CLK_2
       @data = @_p_nz = @_x = (@_x - 1) & 0xff
     end
 
+    sig { void }
     def _dey
       @clk += CLK_2
       @data = @_p_nz = @_y = (@_y - 1) & 0xff
     end
 
+    sig { void }
     def _inx
       @clk += CLK_2
       @data = @_p_nz = @_x = (@_x + 1) & 0xff
     end
 
+    sig { void }
     def _iny
       @clk += CLK_2
       @data = @_p_nz = @_y = (@_y + 1) & 0xff
     end
 
     # flags instructions
+    sig { void }
     def _clc
       @clk += CLK_2
       @_p_c = 0
     end
 
+    sig { void }
     def _sec
       @clk += CLK_2
       @_p_c = 1
     end
 
+    sig { void }
     def _cld
       @clk += CLK_2
       @_p_d = 0
     end
 
+    sig { void }
     def _sed
       @clk += CLK_2
       @_p_d = 8
     end
 
+    sig { void }
     def _clv
       @clk += CLK_2
       @_p_v = 0
     end
 
+    sig { void }
     def _sei
       @clk += CLK_2
       if @_p_i == 0
@@ -688,6 +816,7 @@ module Optcarrot
       end
     end
 
+    sig { void }
     def _cli
       @clk += CLK_2
       if @_p_i != 0
@@ -700,22 +829,26 @@ module Optcarrot
     end
 
     # stack operations
+    sig { void }
     def _pha
       @clk += CLK_3
       push8(@_a)
     end
 
+    sig { void }
     def _php
       @clk += CLK_3
       data = flags_pack | 0x10
       push8(data)
     end
 
+    sig { void }
     def _pla
       @clk += CLK_4
       @_p_nz = @_a = pull8
     end
 
+    sig { void }
     def _plp
       @clk += CLK_4
       i = @_p_i
@@ -731,27 +864,32 @@ module Optcarrot
       end
     end
 
+    sig { void }
     def _tsx
       @clk += CLK_2
       @_p_nz = @_x = @_sp
     end
 
+    sig { void }
     def _txs
       @clk += CLK_2
       @_sp = @_x
     end
 
     # undocumented instructions, rarely used
+    sig { void }
     def _anc
       @_p_nz = @_a &= @data
       @_p_c = @_p_nz >> 7
     end
 
+    sig { void }
     def _ane
       @_a = (@_a | 0xee) & @_x & @data
       @_p_nz = @_a
     end
 
+    sig { void }
     def _arr
       @_a = ((@data & @_a) >> 1) | (@_p_c << 7)
       @_p_nz = @_a
@@ -759,34 +897,41 @@ module Optcarrot
       @_p_v = @_a[6] ^ @_a[5]
     end
 
+    sig { void }
     def _asr
       @_p_c = @data & @_a & 0x1
       @_p_nz = @_a = (@data & @_a) >> 1
     end
 
+    sig { void }
     def _dcp
       @data = (@data - 1) & 0xff
       _cmp
     end
 
+    sig { void }
     def _isb
       @data = (@data + 1) & 0xff
       _sbc
     end
 
+    sig { void }
     def _las
       @_sp &= @data
       @_p_nz = @_a = @_x = @_sp
     end
 
+    sig { void }
     def _lax
       @_p_nz = @_a = @_x = @data
     end
 
+    sig { void }
     def _lxa
       @_p_nz = @_a = @_x = @data
     end
 
+    sig { void }
     def _rla
       c = @_p_c
       @_p_c = @data >> 7
@@ -794,6 +939,7 @@ module Optcarrot
       @_p_nz = @_a &= @data
     end
 
+    sig { void }
     def _rra
       c = @_p_c << 7
       @_p_c = @data & 1
@@ -801,41 +947,49 @@ module Optcarrot
       _adc
     end
 
+    sig { void }
     def _sax
       @data = @_a & @_x
     end
 
+    sig { void }
     def _sbx
       @data = (@_a & @_x) - @data
       @_p_c = (@data & 0xffff) <= 0xff ? 1 : 0
       @_p_nz = @_x = @data & 0xff
     end
 
+    sig { void }
     def _sha
       @data = @_a & @_x & ((@addr >> 8) + 1)
     end
 
+    sig { void }
     def _shs
       @_sp = @_a & @_x
       @data = @_sp & ((@addr >> 8) + 1)
     end
 
+    sig { void }
     def _shx
       @data = @_x & ((@addr >> 8) + 1)
       @addr = (@data << 8) | (@addr & 0xff)
     end
 
+    sig { void }
     def _shy
       @data = @_y & ((@addr >> 8) + 1)
       @addr = (@data << 8) | (@addr & 0xff)
     end
 
+    sig { void }
     def _slo
       @_p_c = @data >> 7
       @data = @data << 1 & 0xff
       @_p_nz = @_a |= @data
     end
 
+    sig { void }
     def _sre
       @_p_c = @data & 1
       @data >>= 1
@@ -843,10 +997,12 @@ module Optcarrot
     end
 
     # nops
+    sig { void }
     def _nop
     end
 
     # interrupts
+    sig { void }
     def _brk
       data = @_pc + 1
       push16(data)
@@ -859,6 +1015,7 @@ module Optcarrot
       @_pc = peek16(addr)
     end
 
+    sig { void }
     def _jam
       @_pc = (@_pc - 1) & 0xffff
       @clk += CLK_2
@@ -874,23 +1031,27 @@ module Optcarrot
     ###########################################################################
     # default core
 
+    sig { params(instr: Symbol, mode: Symbol).void }
     def r_op(instr, mode)
       send(mode, true, false)
       send(instr)
     end
 
+    sig { params(instr: Symbol, mode: Symbol, store: Symbol).void }
     def w_op(instr, mode, store)
       send(mode, false, true)
       send(instr)
       send(store)
     end
 
+    sig { params(instr: Symbol, mode: Symbol, store: Symbol).void }
     def rw_op(instr, mode, store)
       send(mode, true, true)
       send(instr)
       send(store)
     end
 
+    sig { params(instr: Symbol).void }
     def a_op(instr)
       @clk += CLK_2
       @data = @_a
@@ -898,13 +1059,15 @@ module Optcarrot
       @_a = @data
     end
 
+    sig { params(_instr: Symbol, ops: Integer, ticks: Integer).void }
     def no_op(_instr, ops, ticks)
       @_pc += ops
       @clk += ticks * RP2A03_CC
     end
 
+    sig { void }
     def do_clock
-      clock = @apu.do_clock
+      clock = T.must(@apu).do_clock
 
       clock = @clk_frame if clock > @clk_frame
 
@@ -923,6 +1086,7 @@ module Optcarrot
       @clk_target = clock
     end
 
+    sig { void }
     def run
       do_clock
       begin
@@ -937,9 +1101,9 @@ module Optcarrot
 
           @_pc += 1
 
-          send(*DISPATCH[@opcode])
+          T.unsafe(self).send(*DISPATCH[@opcode])
 
-          @ppu.sync(@clk) if @ppu_sync
+          T.must(@ppu).sync(@clk) if @ppu_sync
         end while @clk < @clk_target
         do_clock
       end while @clk < @clk_frame
@@ -952,13 +1116,14 @@ module Optcarrot
       uno: [:ind_x, :zpg, :imm, :abs, :ind_y, :zpg_y, :abs_y, :abs_y],
     }
 
-    DISPATCH = []
+    DISPATCH = T.let([], T::Array[T::Array[T.untyped]])
 
+    sig { params(opcodes: T::Array[Integer], args: T.untyped).void }
     def self.op(opcodes, args)
       opcodes.each do |opcode|
         if args.is_a?(Array) && [:r_op, :w_op, :rw_op].include?(args[0])
           kind, op, mode = args
-          mode = ADDRESSING_MODES[mode][opcode >> 2 & 7]
+          mode = T.unsafe(ADDRESSING_MODES)[mode][opcode >> 2 & 7]
           send_args = [kind, op, mode]
           send_args << (mode.to_s.start_with?("zpg") ? :store_zpg : :store_mem) if kind != :r_op
           DISPATCH[opcode] = send_args
@@ -1110,9 +1275,9 @@ module Optcarrot
 
       # generate a main code
       def build_loop(mdefs)
-        dispatch = gen(
+        dispatch = T.unsafe(self).gen(
           "case @opcode",
-          *DISPATCH.map.with_index do |args, opcode|
+          *T.unsafe(DISPATCH).map.with_index do |args, opcode|
             if args.size > 1
               mhd, instr, = args
               code = expand_inline_methods("#{ mhd }(#{ args.drop(1).join(", ") })", mhd, mdefs[mhd])
@@ -1153,7 +1318,7 @@ module Optcarrot
 
       # inline constants
       def expand_constants(handlers)
-        handlers = handlers.gsub(/CLK_(\d+)/) { eval($&) }
+        handlers = handlers.gsub(/CLK_(\d+)/) { eval(T.must($&)) }
         handlers = handlers.gsub(/FOREVER_CLOCK/) { "0xffffffff" }
         handlers
       end

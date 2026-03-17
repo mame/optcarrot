@@ -1,13 +1,18 @@
+# typed: true
 module Optcarrot
   # Pad pair implementation (NES has two built-in game pad.)
   class Pads
+    extend T::Sig
+
+    sig { returns(String) }
     def inspect
-      "#<#{ self.class }>"
+      "#<#{self.class}>"
     end
 
     ###########################################################################
     # initialization
 
+    sig { params(conf: Config, cpu: CPU, apu: APU).void }
     def initialize(conf, cpu, apu)
       @conf = conf
       @cpu = cpu
@@ -15,6 +20,7 @@ module Optcarrot
       @pads = [Pad.new, Pad.new]
     end
 
+    sig { void }
     def reset
       @cpu.add_mappings(0x4016, method(:peek_401x), method(:poke_4016))
       @cpu.add_mappings(0x4017, method(:peek_401x), @apu.method(:poke_4017)) # delegate 4017H to APU
@@ -22,11 +28,13 @@ module Optcarrot
       @pads[1].reset
     end
 
+    sig { params(addr: Integer).returns(Integer) }
     def peek_401x(addr)
       @cpu.update
-      @pads[addr - 0x4016].peek | 0x40
+      T.must(@pads[addr - 0x4016]).peek | 0x40
     end
 
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_4016(_addr, data)
       @pads[0].poke(data)
       @pads[1].poke(data)
@@ -35,18 +43,22 @@ module Optcarrot
     ###########################################################################
     # APIs
 
+    sig { params(pad: Integer, btn: Integer).void }
     def keydown(pad, btn)
-      @pads[pad].buttons |= 1 << btn
+      T.must(@pads[pad]).buttons |= 1 << btn
     end
 
+    sig { params(pad: Integer, btn: Integer).void }
     def keyup(pad, btn)
-      @pads[pad].buttons &= ~(1 << btn)
+      T.must(@pads[pad]).buttons &= ~(1 << btn)
     end
   end
 
   ###########################################################################
   # each pad
   class Pad
+    extend T::Sig
+
     A      = 0
     B      = 1
     SELECT = 2
@@ -56,27 +68,34 @@ module Optcarrot
     LEFT   = 6
     RIGHT  = 7
 
+    sig { void }
     def initialize
-      reset
+      @strobe = T.let(false, T::Boolean)
+      @buttons = T.let(0, Integer)
+      @stream = T.let(0, Integer)
     end
 
+    sig { void }
     def reset
       @strobe = false
       @buttons = @stream = 0
     end
 
+    sig { params(data: Integer).void }
     def poke(data)
       prev = @strobe
       @strobe = data[0] == 1
       @stream = ((poll_state << 1) ^ -512) if prev && !@strobe
     end
 
+    sig { returns(Integer) }
     def peek
       return poll_state & 1 if @strobe
       @stream >>= 1
       return @stream[0]
     end
 
+    sig { returns(Integer) }
     def poll_state
       state = @buttons
 
@@ -87,6 +106,7 @@ module Optcarrot
       state
     end
 
+    sig { returns(Integer) }
     attr_accessor :buttons
   end
 end

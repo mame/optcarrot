@@ -1,9 +1,15 @@
+# typed: true
 module Optcarrot
   # dirty methods manipulating and generating methods...
   module CodeOptimizationHelper
+    include Kernel
+
+    extend T::Sig
+
+    sig { params(loglevel: Integer, enabled_opts: T.nilable(T::Array[Symbol])).void }
     def initialize(loglevel, enabled_opts)
-      @loglevel = loglevel
-      options = self.class::OPTIONS
+      @loglevel = T.let(loglevel, Integer)
+      options = T.let(T.unsafe(self.class).const_get(:OPTIONS), T::Array[Symbol])
       opts = {}
       enabled_opts ||= [:all]
       default =
@@ -99,13 +105,13 @@ module Optcarrot
     def expand_inline_methods(code, meth, mdef)
       code.gsub(/\b#{ meth }\b(?:\(((?:@?\w+, )*@?\w+)\))?/) do
         args = $1
-        b = "(#{ mdef.body.chomp.gsub(/ *#.*/, "").gsub("\n", "; ") })"
+        result = T.let("(#{ mdef.body.chomp.gsub(/ *#.*/, "").gsub("\n", "; ") })", T.untyped)
         if args
           mdef.params.zip(args.split(", ")) do |param, arg|
-            b = replace_var(b, param, arg)
+            result = replace_var(result, param, arg)
           end
         end
-        b
+        result
       end
     end
 

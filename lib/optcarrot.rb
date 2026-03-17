@@ -1,8 +1,12 @@
+# typed: true
+require "sorbet-runtime"
+
 # Optcarrot namespace
 module Optcarrot
   VERSION = "0.9.0"
 end
 
+require_relative "optcarrot/fetchable"
 require_relative "optcarrot/nes"
 require_relative "optcarrot/rom"
 require_relative "optcarrot/pad"

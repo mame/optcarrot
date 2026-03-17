@@ -1,8 +1,11 @@
+# typed: true
 require_relative "opt"
 
 module Optcarrot
   # PPU implementation (video output)
   class PPU
+    extend T::Sig
+
     # clock/timing constants (stolen from Nestopia)
     RP2C02_CC         = 4
     RP2C02_HACTIVE    = RP2C02_CC * 256
@@ -51,6 +54,7 @@ module Optcarrot
       # It might generate cache-friendly memory layout...
     end
 
+    sig { returns(String) }
     def inspect
       "#<#{ self.class }>"
     end
@@ -58,27 +62,110 @@ module Optcarrot
     ###########################################################################
     # initialization
 
+    sig { params(conf: Config, cpu: CPU, palette: T::Array[Integer]).void }
     def initialize(conf, cpu, palette)
-      @conf = conf
-      @cpu = cpu
-      @palette = palette
+      @conf = T.let(conf, Config)
+      @cpu = T.let(cpu, CPU)
+      @palette = T.let(palette, T::Array[Integer])
 
       if @conf.load_ppu
-        eval(File.read(@conf.load_ppu))
+        eval(File.read(T.must(@conf.load_ppu)))
       elsif @conf.opt_ppu
         eval(OptimizedCodeBuilder.new(@conf.loglevel, @conf.opt_ppu).build, nil, "(generated PPU core)")
       end
 
-      @nmt_mem = [[0xff] * 0x400, [0xff] * 0x400]
-      @nmt_ref = [0, 1, 0, 1].map {|i| @nmt_mem[i] }
+      @nmt_mem = T.let([[0xff] * 0x400, [0xff] * 0x400], T::Array[T::Array[Integer]])
+      @nmt_ref = T.let([0, 1, 0, 1].map {|i| T.must(@nmt_mem[i]) }, T::Array[T::Array[Integer]])
 
-      @output_pixels = []
-      @output_color = [@palette[0]] * 0x20 # palette size is 0x20
+      @output_pixels = T.let([], T::Array[Integer])
+      @output_color = T.let([T.must(@palette[0])] * 0x20, T::Array[Integer])
+
+      @palette_ram = T.let([], T::Array[Integer])
+      @coloring = T.let(0, Integer)
+      @emphasis = T.let(0, Integer)
+
+      @run = T.let(true, T::Boolean)
+
+      @hclk = T.let(0, Integer)
+      @vclk = T.let(0, Integer)
+      @hclk_target = T.let(0, Integer)
+
+      @io_latch = T.let(0, Integer)
+      @io_buffer = T.let(0, Integer)
+
+      @regs_oam = T.let(0, Integer)
+
+      @vram_addr_inc = T.let(1, Integer)
+      @need_nmi = T.let(false, T::Boolean)
+      @pattern_end = T.let(0, Integer)
+      @any_show = T.let(false, T::Boolean)
+      @sp_overflow = T.let(false, T::Boolean)
+      @sp_zero_hit = T.let(false, T::Boolean)
+      @vblanking = T.let(false, T::Boolean)
+      @vblank = T.let(false, T::Boolean)
+
+      @io_addr = T.let(0, Integer)
+      @io_pattern = T.let(0, Integer)
+
+      @a12_monitor = T.let(nil, T.untyped)
+      @a12_state = T.let(nil, T.nilable(T::Boolean))
+
+      @odd_frame = T.let(false, T::Boolean)
+      @scanline = T.let(SCANLINE_VBLANK, Integer)
+
+      @scroll_toggle = T.let(false, T::Boolean)
+      @scroll_latch = T.let(0, Integer)
+      @scroll_xfine = T.let(0, Integer)
+      @scroll_addr_0_4 = T.let(0, Integer)
+      @scroll_addr_5_14 = T.let(0, Integer)
+      @name_io_addr = T.let(0, Integer)
+
+      @bg_enabled = T.let(false, T::Boolean)
+      @bg_show = T.let(false, T::Boolean)
+      @bg_show_edge = T.let(false, T::Boolean)
+      @bg_pixels = T.let([0] * 16, T::Array[Integer])
+      @bg_pattern_base = T.let(0, Integer)
+      @bg_pattern_base_15 = T.let(0, Integer)
+      @bg_pattern = T.let(0, Integer)
+      @bg_pattern_lut = T.let(TILE_LUT[0], T::Array[T.untyped])
+      @bg_pattern_lut_fetched = T.let(TILE_LUT[0], T::Array[T.untyped])
+
+      @sp_enabled = T.let(false, T::Boolean)
+      @sp_active = T.let(false, T::Boolean)
+      @sp_show = T.let(false, T::Boolean)
+      @sp_show_edge = T.let(false, T::Boolean)
+
+      @sp_base = T.let(0, Integer)
+      @sp_height = T.let(8, Integer)
+
+      @sp_phase = T.let(0, T.nilable(Integer))
+      @sp_ram = T.let([0xff] * 0x100, T::Array[Integer])
+      @sp_index = T.let(0, Integer)
+      @sp_addr = T.let(0, Integer)
+      @sp_latch = T.let(0, Integer)
+
+      @sp_limit = T.let(0, Integer)
+      @sp_buffer = T.let([], T::Array[Integer])
+      @sp_buffered = T.let(0, Integer)
+      @sp_visible = T.let(false, T::Boolean)
+      @sp_map = T.let([nil] * 264, T::Array[T.nilable([T::Boolean, T::Boolean, Integer])])
+      @sp_map_buffer = T.let((0...264).map { [false, false, 0] }, T::Array[[T::Boolean, T::Boolean, Integer]])
+      @sp_zero_in_line = T.let(false, T::Boolean)
+
+      @chr_mem = T.let([], T::Array[Integer])
+      @chr_mem_writable = T.let(false, T::Boolean)
+
+      @fiber = T.let(nil, T.nilable(Fiber))
+
+      @name_lut = T.let([], T::Array[Integer])
+      @attr_lut = T.let([], T::Array[T::Array[T.untyped]])
+      @lut_update = T.let({}, T::Hash[T::Array[Integer], T.untyped])
 
       reset(mapping: false)
       setup_lut
     end
 
+    sig { params(opt: T::Hash[Symbol, T::Boolean]).void }
     def reset(opt = {})
       if opt.fetch(:mapping, true)
         # setup mapped memory
@@ -188,31 +275,33 @@ module Optcarrot
       @sp_zero_in_line = false
     end
 
+    sig { void }
     def update_output_color
       0x20.times do |i|
-        @output_color[i] = @palette[@palette_ram[i] & @coloring | @emphasis]
+        @output_color[i] = T.must(@palette[T.must(@palette_ram[i]) & @coloring | @emphasis])
       end
     end
 
+    sig { void }
     def setup_lut
       @lut_update = {}.compare_by_identity
 
       @name_lut = (0..0xffff).map do |i|
-        nmt_bank = @nmt_ref[i >> 10 & 3]
+        nmt_bank = T.must(@nmt_ref[i >> 10 & 3])
         nmt_idx = i & 0x03ff
         fixed = (i >> 12 & 7) | (i[15] << 12)
         (((@lut_update[nmt_bank] ||= [])[nmt_idx] ||= [nil, nil])[0] ||= []) << [i, fixed]
-        nmt_bank[nmt_idx] << 4 | fixed
+        T.must(nmt_bank[nmt_idx]) << 4 | fixed
       end
 
       entries = {}
       @attr_lut = (0..0x7fff).map do |i|
         io_addr = 0x23c0 | (i & 0x0c00) | (i >> 4 & 0x0038) | (i >> 2 & 0x0007)
-        nmt_bank = @nmt_ref[io_addr >> 10 & 3]
+        nmt_bank = T.must(@nmt_ref[io_addr >> 10 & 3])
         nmt_idx = io_addr & 0x03ff
         attr_shift = (i & 2) | (i >> 4 & 4)
         key = [io_addr, attr_shift]
-        entries[key] ||= [io_addr, TILE_LUT[nmt_bank[nmt_idx] >> attr_shift & 3], attr_shift]
+        entries[key] ||= [io_addr, TILE_LUT[T.must(nmt_bank[nmt_idx]) >> attr_shift & 3], attr_shift]
         (((@lut_update[nmt_bank] ||= [])[nmt_idx] ||= [nil, nil])[1] ||= []) << entries[key]
         entries[key]
       end.freeze
@@ -222,8 +311,10 @@ module Optcarrot
     ###########################################################################
     # other APIs
 
+    sig { returns(T::Array[T.untyped]) }
     attr_reader :output_pixels
 
+    sig { params(mem: T::Array[Integer], writable: T::Boolean).void }
     def set_chr_mem(mem, writable)
       @chr_mem = mem
       @chr_mem_writable = writable
@@ -236,35 +327,41 @@ module Optcarrot
       first:       [0, 0, 0, 0],
       second:      [1, 1, 1, 1],
     }
+
+    sig { params(mode: Symbol).void }
     def nametables=(mode)
       update(RP2C02_CC)
       idxs = NMT_TABLE[mode]
       return if (0..3).all? {|i| @nmt_ref[i].equal?(@nmt_mem[idxs[i]]) }
-      @nmt_ref[0] = @nmt_mem[idxs[0]]
-      @nmt_ref[1] = @nmt_mem[idxs[1]]
-      @nmt_ref[2] = @nmt_mem[idxs[2]]
-      @nmt_ref[3] = @nmt_mem[idxs[3]]
+      @nmt_ref[0] = T.must(@nmt_mem[idxs[0]])
+      @nmt_ref[1] = T.must(@nmt_mem[idxs[1]])
+      @nmt_ref[2] = T.must(@nmt_mem[idxs[2]])
+      @nmt_ref[3] = T.must(@nmt_mem[idxs[3]])
       setup_lut
     end
 
+    sig { params(data_setup: Integer).void }
     def update(data_setup)
       sync(data_setup + @cpu.update)
     end
 
+    sig { void }
     def setup_frame
       @output_pixels.clear
       @odd_frame = !@odd_frame
       @vclk, @hclk_target, @cpu.next_frame_clock = @hclk == HCLOCK_DUMMY ? DUMMY_FRAME : BOOT_FRAME
     end
 
+    sig { void }
     def vsync
       if @hclk_target != FOREVER_CLOCK
         @hclk_target = FOREVER_CLOCK
         run
       end
-      @output_pixels << @palette[15] while @output_pixels.size < 256 * 240 # fill black
+      @output_pixels << T.must(@palette[15]) while @output_pixels.size < 256 * 240 # fill black
     end
 
+    sig { params(monitor: T.untyped).void }
     def monitor_a12_rising_edge(monitor)
       @a12_monitor = monitor
     end
@@ -272,6 +369,7 @@ module Optcarrot
     ###########################################################################
     # helpers
 
+    sig { void }
     def update_vram_addr
       if @vram_addr_inc == 32
         if active?
@@ -297,6 +395,7 @@ module Optcarrot
       update_scroll_address_line
     end
 
+    sig { void }
     def update_scroll_address_line
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000
       if @a12_monitor
@@ -306,23 +405,27 @@ module Optcarrot
       end
     end
 
+    sig { returns(T::Boolean) }
     def active?
       @scanline != SCANLINE_VBLANK && @any_show
     end
 
+    sig { params(elapsed: Integer).void }
     def sync(elapsed)
       return unless @hclk_target < elapsed
       @hclk_target = elapsed / RP2C02_CC - @vclk
       run
     end
 
+    sig { void }
     def make_sure_invariants
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000
       @bg_pattern_lut_fetched = TILE_LUT[
-        @nmt_ref[@io_addr >> 10 & 3][@io_addr & 0x03ff] >> ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
+        T.must(T.must(@nmt_ref[@io_addr >> 10 & 3])[@io_addr & 0x03ff]) >> ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
       ]
     end
 
+    sig { params(data: Integer).returns(Integer) }
     def io_latch_mask(data)
       if active?
         0xff
@@ -337,6 +440,7 @@ module Optcarrot
     # mapped memory handlers
 
     # PPUCTRL
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_2000(_addr, data)
       update(RP2C02_CC)
       need_nmi_old = @need_nmi
@@ -352,13 +456,14 @@ module Optcarrot
       @pattern_end = @sp_base != 0 || @sp_height == 16 ? 0x1ff0 : 0x0ff0
       @bg_pattern_base_15 = @bg_pattern_base[12] << 15
 
-      if @need_nmi && @vblank && !need_nmi_old
+      if T.unsafe(@need_nmi) && T.unsafe(@vblank) && !need_nmi_old
         clock = @cpu.current_clock + RP2C02_CC
         @cpu.do_nmi(clock) if clock < RP2C02_HVINT
       end
     end
 
     # PPUMASK
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_2001(_addr, data)
       update(RP2C02_CC)
       bg_show_old, bg_show_edge_old = @bg_show, @bg_show_edge
@@ -391,6 +496,7 @@ module Optcarrot
     end
 
     # PPUSTATUS
+    sig { params(_addr: Integer).returns(Integer) }
     def peek_2002(_addr)
       update(RP2C02_CC)
       v = @io_latch & 0x1f
@@ -404,12 +510,14 @@ module Optcarrot
     end
 
     # OAMADDR
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_2003(_addr, data)
       update(RP2C02_CC)
       @regs_oam = @io_latch = data
     end
 
     # OAMDATA (write)
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_2004(_addr, data)
       update(RP2C02_CC)
       @io_latch = @sp_ram[@regs_oam] = io_latch_mask(data)
@@ -417,9 +525,10 @@ module Optcarrot
     end
 
     # OAMDATA (read)
+    sig { params(_addr: Integer).returns(Integer) }
     def peek_2004(_addr)
       if !@any_show || @cpu.current_clock - (@cpu.next_frame_clock - (341 * 241) * RP2C02_CC) >= (341 * 240) * RP2C02_CC
-        @io_latch = @sp_ram[@regs_oam]
+        @io_latch = T.must(@sp_ram[@regs_oam])
       else
         update(RP2C02_CC)
         @io_latch = @sp_latch
@@ -427,6 +536,7 @@ module Optcarrot
     end
 
     # PPUSCROLL
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_2005(_addr, data)
       update(RP2C02_CC)
       @io_latch = data
@@ -442,6 +552,7 @@ module Optcarrot
     end
 
     # PPUADDR
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_2006(_addr, data)
       update(RP2C02_CC)
       @io_latch = data
@@ -457,6 +568,7 @@ module Optcarrot
     end
 
     # PPUDATA (write)
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_2007(_addr, data)
       update(RP2C02_CC * 4)
       addr = @scroll_addr_0_4 | @scroll_addr_5_14
@@ -464,7 +576,7 @@ module Optcarrot
       @io_latch = data
       if addr & 0x3f00 == 0x3f00
         addr &= 0x1f
-        final = @palette[data & @coloring | @emphasis]
+        final = T.must(@palette[data & @coloring | @emphasis])
         @palette_ram[addr] = data
         @output_color[addr] = final
         if addr & 3 == 0
@@ -474,12 +586,12 @@ module Optcarrot
       else
         addr &= 0x3fff
         if addr >= 0x2000
-          nmt_bank = @nmt_ref[addr >> 10 & 0x3]
+          nmt_bank = T.must(@nmt_ref[addr >> 10 & 0x3])
           nmt_idx = addr & 0x03ff
           if nmt_bank[nmt_idx] != data
             nmt_bank[nmt_idx] = data
 
-            name_lut_update, attr_lut_update = @lut_update[nmt_bank][nmt_idx]
+            name_lut_update, attr_lut_update = T.must(@lut_update[nmt_bank])[nmt_idx]
             name_lut_update.each {|i, b| @name_lut[i] = data << 4 | b } if name_lut_update
             attr_lut_update.each {|a| a[1] = TILE_LUT[data >> a[2] & 3] } if attr_lut_update
           end
@@ -490,29 +602,34 @@ module Optcarrot
     end
 
     # PPUDATA (read)
+    sig { params(_addr: Integer).returns(Integer) }
     def peek_2007(_addr)
       update(RP2C02_CC)
       addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x3fff
       update_vram_addr
-      @io_latch = (addr & 0x3f00) != 0x3f00 ? @io_buffer : @palette_ram[addr & 0x1f] & @coloring
-      @io_buffer = addr >= 0x2000 ? @nmt_ref[addr >> 10 & 0x3][addr & 0x3ff] : @chr_mem[addr]
+      @io_latch = (addr & 0x3f00) != 0x3f00 ? @io_buffer : T.must(@palette_ram[addr & 0x1f]) & @coloring
+      @io_buffer = addr >= 0x2000 ? T.must(T.must(@nmt_ref[addr >> 10 & 0x3])[addr & 0x3ff]) : T.must(@chr_mem[addr])
       @io_latch
     end
 
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_2xxx(_addr, data)
       @io_latch = data
     end
 
+    sig { params(_addr: Integer).returns(Integer) }
     def peek_2xxx(_addr)
       @io_latch
     end
 
+    sig { params(_addr: Integer).returns(Integer) }
     def peek_3000(_addr)
       update(RP2C02_CC)
       @io_latch
     end
 
     # OAMDMA
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_4014(_addr, data) # DMA
       @cpu.steal_clocks(CPU::CLK_1) if @cpu.odd_clock?
       update(RP2C02_CC)
@@ -521,7 +638,7 @@ module Optcarrot
       if @regs_oam == 0 && data < 0x2000 && (!@any_show || @cpu.current_clock <= RP2C02_HVINT - CPU::CLK_1 * 512)
         @cpu.steal_clocks(CPU::CLK_1 * 512)
         @cpu.sprite_dma(data & 0x7ff, @sp_ram)
-        @io_latch = @sp_ram[0xff]
+        @io_latch = T.must(@sp_ram[0xff])
       else
         begin
           @io_latch = @cpu.fetch(data)
@@ -536,6 +653,7 @@ module Optcarrot
       end
     end
 
+    sig { params(_addr: Integer).returns(Integer) }
     def peek_4014(_addr)
       0x40
     end
@@ -546,32 +664,38 @@ module Optcarrot
     # NOTE: These methods will be adhocly-inlined.  Keep compatibility with
     # OptimizedCodeBuilder (e.g., do not change the parameter names blindly).
 
+    sig { params(exp: Integer).void }
     def open_pattern(exp)
       return unless @any_show
       @io_addr = exp
       update_address_line
     end
 
+    sig { params(buffer_idx: Integer).returns(Integer) }
     def open_sprite(buffer_idx)
-      flip_v = @sp_buffer[buffer_idx + 2][7] # OAM byte2 bit7: "Flip vertically" flag
-      tmp = (@scanline - @sp_buffer[buffer_idx]) ^ (flip_v * 0xf)
-      byte1 = @sp_buffer[buffer_idx + 1]
+      flip_v = T.must(@sp_buffer[buffer_idx + 2])[7] # OAM byte2 bit7: "Flip vertically" flag
+      tmp = (@scanline - T.must(@sp_buffer[buffer_idx])) ^ (flip_v * 0xf)
+      byte1 = T.must(@sp_buffer[buffer_idx + 1])
       addr = @sp_height == 16 ? ((byte1 & 0x01) << 12) | ((byte1 & 0xfe) << 4) | (tmp[3] * 0x10) : @sp_base | byte1 << 4
       addr | (tmp & 7)
     end
 
+    sig { params(pat0: Integer, pat1: Integer, buffer_idx: Integer).void }
     def load_sprite(pat0, pat1, buffer_idx)
-      byte2 = @sp_buffer[buffer_idx + 2]
+      byte2 = T.must(@sp_buffer[buffer_idx + 2])
       pos = SP_PIXEL_POSITIONS[byte2[6]] # OAM byte2 bit6: "Flip horizontally" flag
       pat = (pat0 >> 1 & 0x55) | (pat1 & 0xaa) | ((pat0 & 0x55) | (pat1 << 1 & 0xaa)) << 8
-      x_base = @sp_buffer[buffer_idx + 3]
+      x_base = T.must(@sp_buffer[buffer_idx + 3])
       palette_base = 0x10 + ((byte2 & 3) << 2) # OAM byte2 bit0-1: Palette
-      @sp_visible ||= @sp_map.clear
+      unless @sp_visible
+        @sp_map.clear
+        @sp_visible = true
+      end
       8.times do |dx|
         x = x_base + dx
-        clr = (pat >> (pos[dx] * 2)) & 3
+        clr = (pat >> (T.must(pos)[dx] * 2)) & 3
         next if @sp_map[x] || clr == 0
-        @sp_map[x] = sprite = @sp_map_buffer[x]
+        @sp_map[x] = sprite = T.must(@sp_map_buffer[x])
         # sprite[0]: behind flag, sprite[1]: zero hit flag, sprite[2]: color
         sprite[0] = byte2[5] == 1 # OAM byte2 bit5: "Behind background" flag
         sprite[1] = buffer_idx == 0 && @sp_zero_in_line
@@ -580,6 +704,7 @@ module Optcarrot
       @sp_active = @sp_enabled
     end
 
+    sig { void }
     def update_address_line
       if @a12_monitor
         a12_state = @io_addr[12] == 1
@@ -591,23 +716,27 @@ module Optcarrot
     ###########################################################################
     # actions for PPU#run
 
+    sig { void }
     def open_name
       return unless @any_show
       @io_addr = @name_io_addr
       update_address_line
     end
 
+    sig { void }
     def fetch_name
       return unless @any_show
-      @io_pattern = @name_lut[@scroll_addr_0_4 + @scroll_addr_5_14 + @bg_pattern_base_15]
+      @io_pattern = T.must(@name_lut[@scroll_addr_0_4 + @scroll_addr_5_14 + @bg_pattern_base_15])
     end
 
+    sig { void }
     def open_attr
       return unless @any_show
       @io_addr, @bg_pattern_lut_fetched, = @attr_lut[@scroll_addr_0_4 + @scroll_addr_5_14]
       update_address_line
     end
 
+    sig { void }
     def fetch_attr
       return unless @any_show
       @bg_pattern_lut = @bg_pattern_lut_fetched
@@ -616,16 +745,19 @@ module Optcarrot
       #     ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
     end
 
+    sig { void }
     def fetch_bg_pattern_0
       return unless @any_show
-      @bg_pattern = @chr_mem[@io_addr & 0x1fff]
+      @bg_pattern = T.must(@chr_mem[@io_addr & 0x1fff])
     end
 
+    sig { void }
     def fetch_bg_pattern_1
       return unless @any_show
-      @bg_pattern |= @chr_mem[@io_addr & 0x1fff] * 0x100
+      @bg_pattern |= T.must(@chr_mem[@io_addr & 0x1fff]) * 0x100
     end
 
+    sig { void }
     def scroll_clock_x
       return unless @any_show
       if @scroll_addr_0_4 < 0x001f
@@ -638,6 +770,7 @@ module Optcarrot
       end
     end
 
+    sig { void }
     def scroll_reset_x
       return unless @any_show
       @scroll_addr_0_4 = @scroll_latch & 0x001f
@@ -645,6 +778,7 @@ module Optcarrot
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000 # make cache consistent
     end
 
+    sig { void }
     def scroll_clock_y
       return unless @any_show
       if @scroll_addr_5_14 & 0x7000 != 0x7000
@@ -666,22 +800,26 @@ module Optcarrot
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000 # make cache consistent
     end
 
+    sig { void }
     def preload_tiles
       return unless @any_show
       @bg_pixels[@scroll_xfine, 8] = @bg_pattern_lut[@bg_pattern]
     end
 
+    sig { void }
     def load_tiles
       return unless @any_show
       @bg_pixels.rotate!(8)
       @bg_pixels[@scroll_xfine, 8] = @bg_pattern_lut[@bg_pattern]
     end
 
+    sig { void }
     def evaluate_sprites_even
       return unless @any_show
-      @sp_latch = @sp_ram[@sp_addr]
+      @sp_latch = T.must(@sp_ram[@sp_addr])
     end
 
+    sig { void }
     def evaluate_sprites_odd
       return unless @any_show
 
@@ -709,6 +847,7 @@ module Optcarrot
       end
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_1
       @sp_index += 1
       if @sp_latch <= @scanline && @scanline < @sp_latch + @sp_height
@@ -725,18 +864,21 @@ module Optcarrot
       end
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_2
       @sp_addr += 1
       @sp_phase = 3
       @sp_buffer[@sp_buffered + 1] = @sp_latch
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_3
       @sp_addr += 1
       @sp_phase = 4
       @sp_buffer[@sp_buffered + 2] = @sp_latch
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_4
       @sp_buffer[@sp_buffered + 3] = @sp_latch
       @sp_buffered += 4
@@ -754,6 +896,7 @@ module Optcarrot
       end
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_5
       if @sp_latch <= @scanline && @scanline < @sp_latch + @sp_height
         @sp_phase = 6
@@ -768,16 +911,19 @@ module Optcarrot
       end
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_6
       @sp_phase = 7
       @sp_addr = (@sp_addr + 1) & 0xff
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_7
       @sp_phase = 8
       @sp_addr = (@sp_addr + 1) & 0xff
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_8
       @sp_phase = 9
       @sp_addr = (@sp_addr + 1) & 0xff
@@ -785,27 +931,32 @@ module Optcarrot
       @sp_addr &= 0xfc
     end
 
+    sig { void }
     def evaluate_sprites_odd_phase_9
       @sp_addr = (@sp_addr + 4) & 0xff
     end
 
+    sig { void }
     def load_extended_sprites
       return unless @any_show
       if 32 < @sp_buffered
         buffer_idx = 32
         begin
           addr = open_sprite(buffer_idx)
-          pat0 = @chr_mem[addr]
-          pat1 = @chr_mem[addr | 8]
+          pat0 = T.must(@chr_mem[addr])
+          pat1 = T.must(@chr_mem[addr | 8])
           load_sprite(pat0, pat1, buffer_idx) if pat0 != 0 || pat1 != 0
           buffer_idx += 4
         end while buffer_idx != @sp_buffered
       end
     end
 
+    sig { void }
     def render_pixel
+      # Hot path: use T.unsafe to avoid T.must overhead on array accesses
+      bg_pixels = T.unsafe(@bg_pixels)
       if @any_show
-        pixel = @bg_enabled ? @bg_pixels[@hclk % 8] : 0
+        pixel = @bg_enabled ? bg_pixels[@hclk % 8] : 0
         if @sp_active && (sprite = @sp_map[@hclk])
           if pixel % 4 == 0
             pixel = sprite[2]
@@ -816,26 +967,30 @@ module Optcarrot
         end
       else
         pixel = @scroll_addr_5_14 & 0x3f00 == 0x3f00 ? @scroll_addr_0_4 : 0
-        @bg_pixels[@hclk % 8] = 0
+        bg_pixels[@hclk % 8] = 0
       end
-      @output_pixels << @output_color[pixel]
+      @output_pixels << T.must(@output_color[pixel])
     end
 
     # just a placeholder; used for batch_render_pixels optimization
+    sig { void }
     def batch_render_eight_pixels
     end
 
+    sig { void }
     def boot
       @vblank = true
       @hclk = HCLOCK_DUMMY
       @hclk_target = FOREVER_CLOCK
     end
 
+    sig { void }
     def vblank_0
       @vblanking = true
       @hclk = HCLOCK_VBLANK_1
     end
 
+    sig { void }
     def vblank_1
       @vblank ||= @vblanking
       @vblanking = false
@@ -844,6 +999,7 @@ module Optcarrot
       @hclk = HCLOCK_VBLANK_2
     end
 
+    sig { void }
     def vblank_2
       @vblank ||= @vblanking
       @vblanking = false
@@ -852,6 +1008,7 @@ module Optcarrot
       @cpu.do_nmi(@cpu.next_frame_clock) if @need_nmi && @vblank
     end
 
+    sig { void }
     def update_enabled_flags
       return unless @any_show
       @bg_enabled = @bg_show
@@ -859,6 +1016,7 @@ module Optcarrot
       @sp_active = @sp_enabled && @sp_visible
     end
 
+    sig { void }
     def update_enabled_flags_edge
       @bg_enabled = @bg_show_edge
       @sp_enabled = @sp_show_edge
@@ -868,6 +1026,7 @@ module Optcarrot
     ###########################################################################
     # default core
 
+    sig { params(scanline: Integer, hclk: T.any(Integer, String), hclk_target: T.any(Integer, String)).void }
     def debug_logging(scanline, hclk, hclk_target)
       hclk = "forever" if hclk == FOREVER_CLOCK
       hclk_target = "forever" if hclk_target == FOREVER_CLOCK
@@ -875,6 +1034,7 @@ module Optcarrot
       @conf.debug("ppu: scanline #{ scanline }, hclk #{ hclk }->#{ hclk_target }")
     end
 
+    sig { void }
     def run
       @fiber ||= Fiber.new do
         main_loop
@@ -885,28 +1045,33 @@ module Optcarrot
 
       make_sure_invariants
 
-      @hclk_target = (@vclk + @hclk) * RP2C02_CC unless @fiber.resume
+      @hclk_target = (@vclk + @hclk) * RP2C02_CC unless T.must(@fiber).resume
     end
 
+    sig { void }
     def dispose
       @run = false
       raise 'PPU Fiber should have finished' unless @fiber.nil? || @fiber.resume == :done
       @fiber = nil
     end
 
+    sig { void }
     def wait_frame
       Fiber.yield true
     end
 
+    sig { void }
     def wait_zero_clocks
       Fiber.yield if @hclk_target <= @hclk
     end
 
+    sig { void }
     def wait_one_clock
       @hclk += 1
       Fiber.yield if @hclk_target <= @hclk
     end
 
+    sig { void }
     def wait_two_clocks
       @hclk += 2
       Fiber.yield if @hclk_target <= @hclk
@@ -940,6 +1105,7 @@ module Optcarrot
     # Comments like "when NNN" are markers for the purpose.
     #
     # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize, Style/SoleNestedConditional
+    sig { void }
     def main_loop
       # when 685
 
@@ -1011,7 +1177,7 @@ module Optcarrot
           # when 320
           load_extended_sprites
           open_name
-          @sp_latch = @sp_ram[0] if @any_show
+          @sp_latch = T.must(@sp_ram[0]) if @any_show
           @sp_buffered = 0
           @sp_zero_in_line = false
           @sp_index = 0
@@ -1116,7 +1282,7 @@ module Optcarrot
           0.step(248, 8) do
             # when 0, 8, ..., 248
             if @any_show
-              if @hclk == 64
+              if T.unsafe(@hclk) == 64
                 @sp_addr = @regs_oam & 0xf8 # SP_OFFSET_TO_0_1
                 @sp_phase = nil
                 @sp_latch = 0xff
@@ -1149,7 +1315,7 @@ module Optcarrot
             if @any_show
               fetch_attr
               evaluate_sprites_odd if @hclk >= 64
-              scroll_clock_y if @hclk == 251
+              scroll_clock_y if T.unsafe(@hclk) == 251
               scroll_clock_x
             end
             render_pixel
@@ -1193,7 +1359,7 @@ module Optcarrot
 
           256.step(312, 8) do
             # rubocop:disable Style/IdenticalConditionalBranches
-            if @hclk == 256
+            if T.unsafe(@hclk) == 256
               # when 256
               open_name
               @sp_latch = 0xff if @any_show
@@ -1221,14 +1387,14 @@ module Optcarrot
               buffer_idx = (@hclk - 260) / 2
               open_pattern(buffer_idx >= @sp_buffered ? @pattern_end : open_sprite(buffer_idx))
               # rubocop:disable Style/NestedModifier, Style/IfUnlessModifierOfIfUnless:
-              @regs_oam = 0 if @scanline == 238 if @hclk == 316
+              @regs_oam = 0 if @scanline == 238 if T.unsafe(@hclk) == 316
               # rubocop:enable Style/NestedModifier, Style/IfUnlessModifierOfIfUnless:
             end
             wait_one_clock
 
             # when 261, 269, ..., 317
             if @any_show
-              @io_pattern = @chr_mem[@io_addr & 0x1fff] if (@hclk - 261) / 2 < @sp_buffered
+              @io_pattern = T.must(@chr_mem[@io_addr & 0x1fff]) if (@hclk - 261) / 2 < @sp_buffered
             end
             wait_one_clock
 
@@ -1241,7 +1407,7 @@ module Optcarrot
               buffer_idx = (@hclk - 263) / 2
               if buffer_idx < @sp_buffered
                 pat0 = @io_pattern
-                pat1 = @chr_mem[@io_addr & 0x1fff]
+                pat1 = T.must(@chr_mem[@io_addr & 0x1fff])
                 load_sprite(pat0, pat1, buffer_idx) if pat0 != 0 || pat1 != 0
               end
             end
@@ -1310,7 +1476,7 @@ module Optcarrot
 
         code = localize_instance_variables(code) if @ivar_localization
 
-        code = gen(
+        code = T.unsafe(self).gen(
           "def self.run",
           *(@loglevel >= 3 ? ["  debug_logging(@scanline, @hclk, @hclk_target)"] : []),
           indent(2, code),
@@ -1363,7 +1529,7 @@ module Optcarrot
       def add_fastpath(handlers)
         handlers.each do |hclk, handler|
           next unless hclk % 8 == 0 && hclk < 256
-          fastpath = gen(*(0..7).map {|i| handlers[hclk + i] })
+          fastpath = T.unsafe(self).gen(*(0..7).map {|i| handlers[hclk + i] })
           fastpath = yield fastpath, hclk
           handlers[hclk] = branch("@hclk + 8 <= @hclk_target", fastpath, handler)
         end
@@ -1377,7 +1543,7 @@ module Optcarrot
           "  @output_pixels << @output_color[@scroll_addr_5_14 & 0x3f00 == 0x3f00 ? @scroll_addr_0_4 : 0]",
           "end",
         ))
-        expand_methods(fastpath, batch_render_eight_pixels: gen(
+        expand_methods(fastpath, batch_render_eight_pixels: T.unsafe(self).gen(
           "# batch-version of render_pixel",
           "if @any_show",
           "  if @sp_active",
@@ -1442,7 +1608,7 @@ module Optcarrot
           (clauses[handler] ||= []) << hclk
         end
 
-        gen(
+        T.unsafe(self).gen(
           "while @hclk_target > @hclk",
           "  case @hclk",
           *clauses.invert.sort.map do |hclks, handler|

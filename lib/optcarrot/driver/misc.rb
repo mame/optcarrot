@@ -1,41 +1,43 @@
+# typed: true
 module Optcarrot
   # some helper methods for drivers
   module Driver
-    module_function
+    extend T::Sig
 
-    def quantize_colors(colors, limit = 256)
-      # median-cut
-      @cubes = [colors.uniq]
+    sig { params(colors: T::Array[T::Array[Integer]], limit: Integer).returns([T::Array[Integer], T::Array[T::Array[Integer]]]) }
+    module_function def quantize_colors(colors, limit = 256)
+      cubes = [colors.uniq]
       (limit - 1).times do
-        cube = @cubes.pop
-        axis = (0..2).max_by do |a|
-          min, max = cube.map {|color| color[a] }.minmax
-          max - min
-        end
-        cube = cube.sort_by {|color| color[axis] }
-        @cubes << cube[0, cube.size / 2] << cube[(cube.size / 2)..-1]
-        @cubes.sort_by! {|a| a.size }
+        cube = T.must(cubes.pop)
+        axis = T.must((0..2).max_by do |a|
+          min, max = cube.map {|color| T.must(color[a]) }.minmax
+          T.must(max) - T.must(min)
+        end)
+        cube = cube.sort_by {|color| T.must(color[axis]) }
+        cubes << T.must(cube[0, cube.size / 2]) << T.must(cube[(cube.size / 2)..-1])
+        cubes.sort_by! {|a| a.size }
       end
-      raise if @cubes.size != limit
       idx = 0
-      mapping = {}
-      unified_colors = @cubes.map do |cube|
+      mapping = T.let({}, T::Hash[T::Array[Integer], Integer])
+      unified_colors = cubes.map do |cube|
         cube.each {|color| mapping[color] = idx }
         idx += 1
-        cube.transpose.map {|ary| ary.inject(&:+) / ary.size }
+        cube.transpose.map {|ary| T.must(ary.inject(:+)) / ary.size }
       end
-      palette = colors.map {|color| mapping[color] }
+      palette = colors.map {|color| T.must(mapping[color]) }
       return palette, unified_colors
     end
 
-    def cutoff_overscan(colors)
+    sig { params(colors: T::Array[T.untyped]).void }
+    module_function def cutoff_overscan(colors)
       colors[0, 2048] = EMPTY_ARRAY
       colors[-2048, 2048] = EMPTY_ARRAY
     end
-    EMPTY_ARRAY = []
+    EMPTY_ARRAY = T.let([], T::Array[T.untyped])
 
     SIZE = 1
-    def show_fps(colors, fps, palette)
+    sig { params(colors: T::Array[T.untyped], fps: Integer, palette: T::Array[T.untyped], blk: T.nilable(T.proc.params(c: T.untyped).returns(T.untyped))).void }
+    module_function def show_fps(colors, fps, palette, &blk)
       digits = fps > 100 ? 3 : 2
       w = (3 + digits) * 4
 
@@ -44,13 +46,16 @@ module Optcarrot
           c = colors[idx = x + y * 256]
 
           # darken the right-bottom corner for drawing FPS
-          if block_given?
-            c = yield c
+          if blk
+            c = blk.call(c)
           else
-            r = ((c >> 16) & 0xff) / 4
-            g = ((c >>  8) & 0xff) / 4
-            b = ((c >>  0) & 0xff) / 4
-            c = (c & 0xff000000) | (r << 16) | (g << 8) | b
+            r = T.unsafe(c) >> 16 & 0xff
+            g = T.unsafe(c) >>  8 & 0xff
+            b = T.unsafe(c) >>  0 & 0xff
+            r /= 4
+            g /= 4
+            b /= 4
+            c = (T.unsafe(c) & 0xff000000) | (r << 16) | (g << 8) | b
           end
 
           colors[idx] = c
@@ -68,7 +73,8 @@ module Optcarrot
 
       # draw FPS
       (3 + digits).times do |i| # show "xxFPS"
-        bits = FONT[i < digits ? fps / 10**(digits - i - 1) % 10 : i - digits + 10]
+        idx = i < digits ? fps / T.unsafe(10**(digits - i - 1)) % 10 : i - digits + 10
+        bits = T.must(FONT[idx])
         5.times do |y|
           3.times do |x|
             SIZE.times do |dy|
@@ -84,7 +90,7 @@ module Optcarrot
     end
 
     # tiny font data for fps
-    FONT = [
+    FONT = T.let([
       0b111_101_101_101_111, # '0'
       0b111_010_010_011_010, # '1'
       0b111_001_111_100_111, # '2'
@@ -98,12 +104,13 @@ module Optcarrot
       0b001_001_111_001_111, # 'F'
       0b001_011_101_101_011, # 'P'
       0b011_100_010_001_110, # 'S'
-    ]
+    ], T::Array[Integer])
 
     # icon data
-    def icon_data
+    sig { returns([Integer, Integer, T.untyped]) }
+    module_function def icon_data
       width, height = 16, 16
-      pixels = FFI::MemoryPointer.new(:uint8, width * height * 4)
+      pixels = T.unsafe(FFI::MemoryPointer).new(:uint8, width * height * 4)
 
       palette = [
         0x00000000, 0xff0026ff, 0xff002cda, 0xff004000, 0xff0050ff, 0xff006000, 0xff007aff, 0xff00a000, 0xff00a4ff,
@@ -112,7 +119,7 @@ module Optcarrot
       dat = "38*2309(3:9&,8210982(32,=&8*1:=2,9=1#5$(2&3'?%(-@715+)A3'?'A-.<0$$++B1:$?B6<0$++)$43#%)'A@<:%B314@.<1"
       i = 66
       "54'4-6>')+((;/7#0#,2,*//..'$%-11*(00##".scan(/../) do
-        dat = dat.gsub(i.chr, $&)
+        dat = dat.gsub(i.chr, T.must($&))
         i -= 1
       end
       dat = dat.bytes.map {|clr| palette[clr - 35] }

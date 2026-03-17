@@ -1,8 +1,23 @@
+# typed: true
 require_relative "misc"
 
 module Optcarrot
   # Video output driver for Sixel (this is a joke feature)
   class SixelVideo < Video
+    extend T::Sig
+
+    sig { params(conf: Config).void }
+    def initialize(conf)
+      @buff = T.let("".b, String)
+      @line = T.let("".b, String)
+      @seq_setup = T.let("", String)
+      @seq_clr = T.let([], T::Array[String])
+      @seq_len = T.let([], T::Array[String])
+      @seq_end = T.let("", String)
+      super
+    end
+
+    sig { void }
     def init
       super
       @buff = "".b
@@ -15,19 +30,20 @@ module Optcarrot
       colors.each_with_index do |rgb, c|
         @seq_setup << "#" << [c, 2, *rgb.map {|clr| clr * 100 / 255 }].join(";")
       end
-      @seq_clr = (0..255).map {|c| "##{ c }" }
-      @seq_len = (0..256).map {|i| "!#{ i }" }
+      @seq_clr = (0..255).map {|c| "##{c}" }
+      @seq_len = (0..256).map {|i| "!#{i}" }
       @seq_len[1] = ""
       @seq_end = "\e\\"
     end
 
+    sig { params(screen: T.untyped).returns(T.untyped) }
     def tick(screen)
       @buff.replace(@seq_setup)
       40.times do |y|
         offset = y * 0x600
         six_lines = screen[offset, 0x600]
         six_lines.uniq.each do |c|
-          prev_clr = nil
+          prev_clr = T.let(nil, T.untyped)
           len = 1
           256.times do |i|
             clr =
@@ -43,14 +59,14 @@ module Optcarrot
               case len
               when 1 then @line << prev_clr
               when 2 then @line << prev_clr << prev_clr
-              else        @line << @seq_len[len] << prev_clr
+              else        @line << T.must(@seq_len[len]) << prev_clr
               end
               len = 1
             end
             prev_clr = clr
           end
           if prev_clr != 63 || len != 256
-            @buff << @seq_clr[c] << @line << @seq_len[len] << prev_clr << 36 # $
+            @buff << T.must(@seq_clr[c]) << @line << T.must(@seq_len[len]) << prev_clr << 36 # $
             @line.clear
           end
         end

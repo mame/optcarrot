@@ -1,10 +1,11 @@
+# typed: true
 module Optcarrot
   # NES palette generators
   module Palette
-    module_function
+    extend T::Sig
 
-    # I don't know where this palette definition came from, but many emulators are using this palette
-    def defacto_palette
+    sig { returns(T::Array[T::Array[Integer]]) }
+    module_function def defacto_palette
       [
         [1.00, 1.00, 1.00], # default
         [1.00, 0.80, 0.81], # emphasize R
@@ -15,7 +16,9 @@ module Optcarrot
         [0.68, 0.79, 0.79], # emphasize GB
         [0.70, 0.70, 0.70], # emphasize RGB
       ].flat_map do |rf, gf, bf|
-        # RGB default palette (I don't know where this palette came from)
+        rf = T.must(rf)
+        gf = T.must(gf)
+        bf = T.must(bf)
         [
           0x666666, 0x002a88, 0x1412a7, 0x3b00a4, 0x5c007e, 0x6e0040, 0x6c0600, 0x561d00,
           0x333500, 0x0b4800, 0x005200, 0x004f08, 0x00404d, 0x000000, 0x000000, 0x000000,
@@ -34,11 +37,13 @@ module Optcarrot
       end
     end
 
-    # Nestopia generates a palette systematically (cool!), but it is not compatible with nes-tests-rom
-    def nestopia_palette
+    sig { returns(T::Array[T::Array[Integer]]) }
+    module_function def nestopia_palette
       (0..511).map do |n|
         tint, level, color = n >> 6 & 7, n >> 4 & 3, n & 0x0f
-        level0, level1 = [[-0.12, 0.40], [0.00, 0.68], [0.31, 1.00], [0.72, 1.00]][level]
+        level0, level1 = T.must([[-0.12, 0.40], [0.00, 0.68], [0.31, 1.00], [0.72, 1.00]][level])
+        level0 = T.must(level0)
+        level1 = T.must(level1)
         level0 = level1 if color == 0x00
         level1 = level0 if color == 0x0d
         level0 = level1 = 0 if color >= 0x0e
@@ -52,12 +57,14 @@ module Optcarrot
             level1 = (level1 * (1 - 0.79399) + 0.0782838) * 0.5
             y -= level1 * 0.5
             y -= level1 *= 0.6 if [3, 5, 6].include?(tint)
-            iq += Complex.polar(level1, Math::PI / 12 * ([0, 6, 10, 8, 2, 4, 0, 0][tint] * 2 - 7))
+            iq += Complex.polar(level1, Math::PI / 12 * (T.must([0, 6, 10, 8, 2, 4, 0, 0][tint]) * 2 - 7))
           end
         end
         [[105, 0.570], [251, 0.351], [15, 1.015]].map do |angle, gain|
+          angle = T.must(angle)
+          gain = T.must(gain)
           clr = y + (Complex.polar(gain * 2, (angle - 33) * Math::PI / 180) * iq.conjugate).real
-          [0, (clr * 255).round, 255].sort[1]
+          T.must([0, (clr * 255).round, 255].sort[1])
         end
       end
     end

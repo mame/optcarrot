@@ -1,9 +1,20 @@
+# typed: true
 require "io/console"
 require "io/wait"
 
 module Optcarrot
   # Input driver for terminal (this is a joke feature)
   class TermInput < Input
+    extend T::Sig
+
+    sig { params(conf: Config, video: Video).void }
+    def initialize(conf, video)
+      @escape = T.let(false, T::Boolean)
+      @ticks = T.let({ start: 0, select: 0, a: 0, b: 0, right: 0, left: 0, down: 0, up: 0 }, T::Hash[Symbol, Integer])
+      super
+    end
+
+    sig { void }
     def init
       $stdin.raw!
       $stdin.getc if $stdin.ready?
@@ -11,15 +22,18 @@ module Optcarrot
       @ticks = { start: 0, select: 0, a: 0, b: 0, right: 0, left: 0, down: 0, up: 0 }
     end
 
+    sig { void }
     def dispose
       $stdin.cooked!
     end
 
+    sig { params(pads: Pads, code: Symbol, frame: Integer).void }
     def keydown(pads, code, frame)
       event(pads, :keydown, code, 0)
       @ticks[code] = frame
     end
 
+    sig { params(frame: Integer, pads: Pads).void }
     def tick(frame, pads)
       while $stdin.ready?
         ch = $stdin.getbyte

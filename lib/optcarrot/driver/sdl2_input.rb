@@ -1,3 +1,4 @@
+# typed: true
 require_relative "sdl2"
 
 module Optcarrot
@@ -90,7 +91,7 @@ module Optcarrot
         when 0x300, 0x301 # SDL_KEYDOWN, SDL_KEYUP
           next if @event.get_uint8(@keyboard_repeat_offset) != 0
           key = @key_mapping[@event.get_int(@keyboard_sym_offset)]
-          event(pads, @event.read_int == 0x300 ? :keydown : :keyup, *key) if key
+          T.unsafe(self).event(pads, @event.read_int == 0x300 ? :keydown : :keyup, *key) if key
 
         when 0x600 # SDL_JOYAXISMOTION
           which = @event.get_uint32(@joy_which_offset)

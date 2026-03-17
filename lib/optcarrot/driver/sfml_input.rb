@@ -1,3 +1,4 @@
+# typed: true
 require_relative "sfml"
 
 module Optcarrot
@@ -43,21 +44,24 @@ module Optcarrot
     }
 
     def tick(_frame, pads)
-      SFML.sfRenderWindow_setKeyRepeatEnabled(@video.window, 0)
+      video = T.cast(@video, SFMLVideo)
+      SFML.sfRenderWindow_setKeyRepeatEnabled(video.window, 0)
 
-      while SFML.sfRenderWindow_pollEvent(@video.window, @event) != 0
+      while SFML.sfRenderWindow_pollEvent(video.window, @event) != 0
         case @event.read_int
         when 0 # EvtClosed
-          SFML.sfRenderWindow_close(@video.window)
+          SFML.sfRenderWindow_close(video.window)
           exit # tmp
         when 1 # EvtResized
           w = @event.get_int(@sizeevent_width_offset)
           h = @event.get_int(@sizeevent_height_offset)
           @video.on_resize(w, h)
         when 5 # EvtKeyPressed
-          event(pads, :keydown, *@key_mapping[@event.get_int(@keyevent_code_offset)])
+          key = @key_mapping[@event.get_int(@keyevent_code_offset)]
+          T.unsafe(self).event(pads, :keydown, *key) if key
         when 6 # EvtKeyReleased
-          event(pads, :keyup, *@key_mapping[@event.get_int(@keyevent_code_offset)])
+          key = @key_mapping[@event.get_int(@keyevent_code_offset)]
+          T.unsafe(self).event(pads, :keyup, *key) if key
         when 14 # sfEvtJoystickButtonPressed
           # XXX
         when 15 # sfEvtJoystickButtonReleased

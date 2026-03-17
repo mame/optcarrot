@@ -1,3 +1,4 @@
+# typed: true
 require_relative "sdl2"
 
 module Optcarrot

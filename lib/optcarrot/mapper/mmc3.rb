@@ -1,8 +1,28 @@
+# typed: true
 module Optcarrot
   # MMC3 mapper: http://wiki.nesdev.com/w/index.php/MMC3
   class MMC3 < ROM
+    extend T::Sig
+
     MAPPER_DB[0x04] = self
 
+    sig { params(conf: Config, cpu: CPU, ppu: PPU, basename: String, buf: T::Array[Integer]).void }
+    def initialize(conf, cpu, ppu, basename, buf)
+      @persistant = T.let(true, T::Boolean)
+      @prg_bank_swap = T.let(false, T::Boolean)
+      @chr_bank_mapping = T.let([nil] * 8, T::Array[T.nilable(Integer)])
+      @chr_bank_swap = T.let(false, T::Boolean)
+      @reg_select = T.let(0, Integer)
+      @clock = T.let(0, Integer)
+      @hold = T.let(0, Integer)
+      @count = T.let(0, Integer)
+      @latch = T.let(0, Integer)
+      @reload = T.let(false, T::Boolean)
+      @enabled = T.let(false, T::Boolean)
+      super
+    end
+
+    sig { params(rev: Symbol).void }
     def init(rev = :B) # rev = :A or :B or :C
       @persistant = rev != :A
 
@@ -14,6 +34,7 @@ module Optcarrot
       @chr_bank_swap = false
     end
 
+    sig { void }
     def reset
       @wrk_readable = true
       @wrk_writable = false
@@ -46,17 +67,14 @@ module Optcarrot
       @enabled = false
     end
 
-    # prg_bank_swap = F T
-    # 0x8000..0x9fff: 0 2
-    # 0xa000..0xbfff: 1 1
-    # 0xc000..0xdfff: 2 0
-    # 0xe000..0xffff: 3 3
+    sig { params(addr: Integer, bank: Integer).void }
     def update_prg(addr, bank)
       bank %= @prg_banks.size
       addr ^= 0x4000 if @prg_bank_swap && addr[13] == 0
-      @prg_ref[addr, 0x2000] = @prg_banks[bank]
+      @prg_ref[addr, 0x2000] = T.must(@prg_banks[bank])
     end
 
+    sig { params(addr: Integer, bank: Integer).void }
     def update_chr(addr, bank)
       return if @chr_ram
       idx = addr / 0x400
@@ -64,10 +82,11 @@ module Optcarrot
       return if @chr_bank_mapping[idx] == bank
       addr ^= 0x1000 if @chr_bank_swap
       @ppu.update(0)
-      @chr_ref[addr, 0x400] = @chr_banks[bank]
+      @chr_ref[addr, 0x400] = T.must(@chr_banks[bank])
       @chr_bank_mapping[idx] = bank
     end
 
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_8000(_addr, data)
       @reg_select = data & 7
       prg_bank_swap = data[6] == 1
@@ -75,7 +94,10 @@ module Optcarrot
 
       if prg_bank_swap != @prg_bank_swap
         @prg_bank_swap = prg_bank_swap
-        @prg_ref[0x8000, 0x2000], @prg_ref[0xc000, 0x2000] = @prg_ref[0xc000, 0x2000], @prg_ref[0x8000, 0x2000]
+        low = T.must(@prg_ref[0x8000, 0x2000])
+        high = T.must(@prg_ref[0xc000, 0x2000])
+        @prg_ref[0x8000, 0x2000] = high
+        @prg_ref[0xc000, 0x2000] = low
       end
 
       if chr_bank_swap != @chr_bank_swap
@@ -88,6 +110,7 @@ module Optcarrot
       end
     end
 
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_8001(_addr, data)
       if @reg_select < 6
         if @reg_select < 2
@@ -101,40 +124,48 @@ module Optcarrot
       end
     end
 
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_a000(_addr, data)
       @ppu.nametables = data[0] == 1 ? :horizontal : :vertical
     end
 
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_a001(_addr, data)
       @wrk_readable = data[7] == 1
       @wrk_writable = data[6] == 0 && @wrk_readable
     end
 
+    sig { params(_addr: Integer, data: Integer).void }
     def poke_c000(_addr, data)
       @ppu.update(0)
       @latch = data
     end
 
+    sig { params(_addr: Integer, _data: Integer).void }
     def poke_c001(_addr, _data)
       @ppu.update(0)
       @reload = true
     end
 
+    sig { params(_addr: Integer, _data: Integer).void }
     def poke_e000(_addr, _data)
       @ppu.update(0)
       @enabled = false
       @cpu.clear_irq(CPU::IRQ_EXT)
     end
 
+    sig { params(_addr: Integer, _data: Integer).void }
     def poke_e001(_addr, _data)
       @ppu.update(0)
       @enabled = true
     end
 
+    sig { void }
     def vsync
       @clock = @clock > @cpu.next_frame_clock ? @clock - @cpu.next_frame_clock : 0
     end
 
+    sig { params(cycle: Integer).void }
     def a12_signaled(cycle)
       clk, @clock = @clock, cycle + @hold
       return if cycle < clk

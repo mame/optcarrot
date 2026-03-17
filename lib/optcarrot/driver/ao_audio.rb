@@ -1,3 +1,4 @@
+# typed: true
 require "ffi"
 
 module Optcarrot
@@ -27,8 +28,8 @@ module Optcarrot
       close: [[:pointer], :int],
       shutdown: [[], :void],
     }.each do |name, params|
-      opt = params.last.is_a?(Hash) ? params.pop : {}
-      attach_function(name, :"ao_#{ name }", *params, **opt)
+      opt = params.last.is_a?(Hash) ? T.cast(params.pop, Hash) : {}
+      T.unsafe(self).attach_function(name, :"ao_#{ name }", *params, **opt)
     end
   end
 

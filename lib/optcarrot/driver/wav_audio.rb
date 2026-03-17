@@ -1,10 +1,21 @@
+# typed: true
 module Optcarrot
   # Audio output driver saving a WAV file
   class WAVAudio < Audio
+    extend T::Sig
+
+    sig { params(conf: Config).void }
+    def initialize(conf)
+      @buff = T.let([], T::Array[Integer])
+      super
+    end
+
+    sig { void }
     def init
       @buff = []
     end
 
+    sig { void }
     def dispose
       buff = @buff.pack(@pack_format)
       wav = [
@@ -14,6 +25,7 @@ module Optcarrot
       File.binwrite("audio.wav", wav)
     end
 
+    sig { params(output: T.untyped).void }
     def tick(output)
       @buff.concat output
     end

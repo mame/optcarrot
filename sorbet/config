@@ -1,0 +1,6 @@
+--dir
+.
+--ignore=/tmp/
+--ignore=/vendor/bundle
+--ignore=/tools/
+--ignore=/bin/

@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 module Optcarrot
   # A manager class for drivers (user frontend)
   module Driver
@@ -29,6 +31,8 @@ module Optcarrot
 
     module_function
 
+    # @rbs conf: Config
+    # @rbs return: [Video, Audio, Input]
     def load(conf)
       video = load_each(conf, :video, conf.video).new(conf)
       audio = load_each(conf, :audio, conf.audio).new(conf)
@@ -36,6 +40,10 @@ module Optcarrot
       return video, audio, input
     end
 
+    # @rbs conf: Config
+    # @rbs type: Symbol
+    # @rbs name: Symbol?
+    # @rbs return: untyped
     def load_each(conf, type, name)
       if name
         klass = DRIVER_DB[type][name]
@@ -64,6 +72,8 @@ module Optcarrot
     TV_WIDTH = 292
     HEIGHT = 224
 
+    # @rbs conf: Config
+    # @rbs return: void
     def initialize(conf)
       @conf = conf
       @palette_rgb = @conf.nestopia_palette ? Palette.nestopia_palette : Palette.defacto_palette
@@ -71,24 +81,33 @@ module Optcarrot
       init
     end
 
-    attr_reader :palette
+    attr_reader :palette #: Array[Integer]
 
+    # @rbs return: void
     def init
-      @times = []
+      @times = [] #: Array[Float]
     end
 
+    # @rbs return: void
     def dispose
     end
 
+    # @rbs _output: untyped
+    # @rbs return: (Integer | Float)
     def tick(_output)
       @times << Process.clock_gettime(Process::CLOCK_MONOTONIC)
       @times.shift if @times.size > 10
       @times.size < 2 ? 0 : ((@times.last - @times.first) / (@times.size - 1)) ** -1
     end
 
+    # @rbs _scale: Integer?
+    # @rbs return: void
     def change_window_size(_scale)
     end
 
+    # @rbs _width: Integer
+    # @rbs _height: Integer
+    # @rbs return: void
     def on_resize(_width, _height)
     end
   end
@@ -98,6 +117,8 @@ module Optcarrot
     PACK_FORMAT = { 8 => "c*", 16 => "v*" }
     BUFFER_IN_FRAME = 3 # keep audio buffer during this number of frames
 
+    # @rbs conf: Config
+    # @rbs return: void
     def initialize(conf)
       @conf = conf
       @rate = conf.audio_sample_rate
@@ -108,37 +129,55 @@ module Optcarrot
       init
     end
 
+    # @rbs return: [Integer, Integer]
     def spec
       return @rate, @bits
     end
 
+    # @rbs return: void
     def init
     end
 
+    # @rbs return: void
     def dispose
     end
 
+    # @rbs _output: untyped
+    # @rbs return: void
     def tick(_output)
     end
   end
 
   # A base class of input driver
   class Input
+    # @rbs conf: Config
+    # @rbs video: Video
+    # @rbs return: void
     def initialize(conf, video)
       @conf = conf
       @video = video
       init
     end
 
+    # @rbs return: void
     def init
     end
 
+    # @rbs return: void
     def dispose
     end
 
+    # @rbs _frame: Integer
+    # @rbs _pads: Pads
+    # @rbs return: void
     def tick(_frame, _pads)
     end
 
+    # @rbs pads: Pads
+    # @rbs type: Symbol
+    # @rbs code: Symbol
+    # @rbs player: Integer?
+    # @rbs return: void
     def event(pads, type, code, player)
       case code
       when :start  then pads.send(type, player, Pad::START)

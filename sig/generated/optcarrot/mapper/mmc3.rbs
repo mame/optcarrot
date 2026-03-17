@@ -1,0 +1,72 @@
+# Generated from lib/optcarrot/mapper/mmc3.rb with RBS::Inline
+
+module Optcarrot
+  # MMC3 mapper: http://wiki.nesdev.com/w/index.php/MMC3
+  class MMC3 < ROM
+    # @rbs rev: Symbol
+    # @rbs return: void
+    def init: (?Symbol rev) -> void
+
+    # @rbs override
+    # @rbs return: void
+    def reset: ...
+
+    # @rbs addr: Integer
+    # @rbs bank: Integer
+    # @rbs return: void
+    def update_prg: (Integer addr, Integer bank) -> void
+
+    # @rbs addr: Integer
+    # @rbs bank: Integer
+    # @rbs return: void
+    def update_chr: (Integer addr, Integer bank) -> void
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_8000: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_8001: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_a000: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_a001: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_c000: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs _data: Integer
+    # @rbs return: void
+    def poke_c001: (untyped _addr, untyped _data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs _data: Integer
+    # @rbs return: void
+    def poke_e000: (untyped _addr, untyped _data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs _data: Integer
+    # @rbs return: void
+    def poke_e001: (untyped _addr, untyped _data) -> void
+
+    # @rbs override
+    # @rbs return: void
+    def vsync: ...
+
+    # @rbs cycle: Integer
+    # @rbs return: void
+    def a12_signaled: (Integer cycle) -> void
+  end
+end

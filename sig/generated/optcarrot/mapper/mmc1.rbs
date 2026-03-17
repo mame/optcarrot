@@ -1,0 +1,41 @@
+# Generated from lib/optcarrot/mapper/mmc1.rb with RBS::Inline
+
+module Optcarrot
+  # MMC1 mapper: http://wiki.nesdev.com/w/index.php/MMC1
+  class MMC1 < ROM
+    NMT_MODE: ::Array[::Symbol]
+
+    PRG_MODE: ::Array[::Symbol]
+
+    CHR_MODE: ::Array[::Symbol]
+
+    # @rbs override
+    # @rbs return: void
+    def init: ...
+
+    # @rbs override
+    # @rbs return: void
+    def reset: ...
+
+    # @rbs addr: Integer
+    # @rbs val: Integer
+    # @rbs return: void
+    def poke_prg: (Integer addr, Integer val) -> void
+
+    # @rbs nmt_mode: Symbol
+    # @rbs return: void
+    def update_nmt: (Symbol nmt_mode) -> void
+
+    # @rbs prg_mode: Symbol?
+    # @rbs prg_bank: Integer
+    # @rbs chr_bank_0: Integer
+    # @rbs return: void
+    def update_prg: (Symbol? prg_mode, Integer prg_bank, Integer chr_bank_0) -> void
+
+    # @rbs chr_mode: Symbol?
+    # @rbs chr_bank_0: Integer
+    # @rbs chr_bank_1: Integer
+    # @rbs return: void
+    def update_chr: (Symbol? chr_mode, Integer chr_bank_0, Integer chr_bank_1) -> void
+  end
+end

@@ -1,10 +1,16 @@
+# rbs_inline: enabled
+
 module Optcarrot
   # Audio output driver saving a WAV file
   class WAVAudio < Audio
+    # @rbs return: void
+    # @rbs override
     def init
-      @buff = []
+      @buff = [] #: Array[Integer]
     end
 
+    # @rbs return: void
+    # @rbs override
     def dispose
       buff = @buff.pack(@pack_format)
       wav = [
@@ -14,6 +20,9 @@ module Optcarrot
       File.binwrite("audio.wav", wav)
     end
 
+    # @rbs output: Array[Integer]
+    # @rbs return: void
+    # @rbs override
     def tick(output)
       @buff.concat output
     end

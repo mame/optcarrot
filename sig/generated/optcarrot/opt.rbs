@@ -1,0 +1,90 @@
+# Generated from lib/optcarrot/opt.rb with RBS::Inline
+
+module Optcarrot
+  # dirty methods manipulating and generating methods...
+  module CodeOptimizationHelper
+    @loglevel: Integer
+
+    # @rbs loglevel: Integer
+    # @rbs enabled_opts: Array[Symbol]?
+    # @rbs return: void
+    def initialize: (Integer loglevel, Array[Symbol]? enabled_opts) -> void
+
+    # @rbs opt: Symbol
+    # @rbs depended_opt: Symbol
+    # @rbs return: void
+    def depends: (Symbol opt, Symbol depended_opt) -> void
+
+    # @rbs *codes: String
+    # @rbs return: String
+    def gen: (*String codes) -> String
+
+    # change indent
+    # @rbs i: Integer
+    # @rbs code: String
+    # @rbs return: String
+    def indent: (Integer i, String code) -> String
+
+    # generate a branch
+    # @rbs cond: String
+    # @rbs code1: String
+    # @rbs code2: String
+    # @rbs return: String
+    def branch: (String cond, String code1, String code2) -> String
+
+    class MethodDef < Struct[untyped]
+      attr_accessor params(): untyped
+
+      attr_accessor body(): untyped
+
+      def self.new: (?untyped params, ?untyped body) -> instance
+                  | (?params: untyped, ?body: untyped) -> instance
+    end
+
+    METHOD_DEFINITIONS_RE: ::Regexp
+
+    # extract all method definitions
+    # @rbs file: String
+    # @rbs return: Hash[Symbol, MethodDef]
+    def parse_method_definitions: (String file) -> Hash[Symbol, MethodDef]
+
+    # inline method calls with no arguments
+    # @rbs code: String
+    # @rbs mdefs: Hash[Symbol, MethodDef]
+    # @rbs meths: Array[Symbol]
+    # @rbs return: String
+    def expand_methods: (String code, Hash[Symbol, MethodDef] mdefs, ?Array[Symbol] meths) -> String
+
+    # @rbs code: String
+    # @rbs meth: Symbol
+    # @rbs mdef: MethodDef
+    # @rbs return: String
+    def expand_inline_methods: (String code, Symbol meth, MethodDef mdef) -> String
+
+    # @rbs code: String
+    # @rbs var: String
+    # @rbs bool: untyped
+    # @rbs return: String
+    def replace_var: (String code, String var, untyped bool) -> String
+
+    # @rbs code: String
+    # @rbs var: String
+    # @rbs bool: String
+    # @rbs return: String
+    def replace_cond_var: (String code, String var, String bool) -> String
+
+    TRIVIAL_BRANCH_RE: ::Regexp
+
+    # remove "if true" or "if false"
+    # @rbs code: String
+    # @rbs return: String
+    def remove_trivial_branches: (String code) -> String
+
+    # replace instance variables with temporal local variables
+    # CAUTION: the instance variable must not be accessed out of CPU#run
+    # @rbs code: String
+    # @rbs ivars: Array[String]
+    # @rbs return: String
+    def localize_instance_variables: (String code, ?Array[String] ivars) -> String
+  end
+end

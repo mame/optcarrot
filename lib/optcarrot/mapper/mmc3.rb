@@ -1,8 +1,12 @@
+# rbs_inline: enabled
+
 module Optcarrot
   # MMC3 mapper: http://wiki.nesdev.com/w/index.php/MMC3
   class MMC3 < ROM
     MAPPER_DB[0x04] = self
 
+    # @rbs rev: Symbol
+    # @rbs return: void
     def init(rev = :B) # rev = :A or :B or :C
       @persistant = rev != :A
 
@@ -14,6 +18,8 @@ module Optcarrot
       @chr_bank_swap = false
     end
 
+    # @rbs override
+    # @rbs return: void
     def reset
       @wrk_readable = true
       @wrk_writable = false
@@ -51,12 +57,19 @@ module Optcarrot
     # 0xa000..0xbfff: 1 1
     # 0xc000..0xdfff: 2 0
     # 0xe000..0xffff: 3 3
+
+    # @rbs addr: Integer
+    # @rbs bank: Integer
+    # @rbs return: void
     def update_prg(addr, bank)
       bank %= @prg_banks.size
       addr ^= 0x4000 if @prg_bank_swap && addr[13] == 0
       @prg_ref[addr, 0x2000] = @prg_banks[bank]
     end
 
+    # @rbs addr: Integer
+    # @rbs bank: Integer
+    # @rbs return: void
     def update_chr(addr, bank)
       return if @chr_ram
       idx = addr / 0x400
@@ -68,6 +81,9 @@ module Optcarrot
       @chr_bank_mapping[idx] = bank
     end
 
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_8000(_addr, data)
       @reg_select = data & 7
       prg_bank_swap = data[6] == 1
@@ -88,6 +104,9 @@ module Optcarrot
       end
     end
 
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_8001(_addr, data)
       if @reg_select < 6
         if @reg_select < 2
@@ -101,40 +120,62 @@ module Optcarrot
       end
     end
 
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_a000(_addr, data)
       @ppu.nametables = data[0] == 1 ? :horizontal : :vertical
     end
 
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_a001(_addr, data)
       @wrk_readable = data[7] == 1
       @wrk_writable = data[6] == 0 && @wrk_readable
     end
 
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_c000(_addr, data)
       @ppu.update(0)
       @latch = data
     end
 
+    # @rbs _addr: Integer
+    # @rbs _data: Integer
+    # @rbs return: void
     def poke_c001(_addr, _data)
       @ppu.update(0)
       @reload = true
     end
 
+    # @rbs _addr: Integer
+    # @rbs _data: Integer
+    # @rbs return: void
     def poke_e000(_addr, _data)
       @ppu.update(0)
       @enabled = false
       @cpu.clear_irq(CPU::IRQ_EXT)
     end
 
+    # @rbs _addr: Integer
+    # @rbs _data: Integer
+    # @rbs return: void
     def poke_e001(_addr, _data)
       @ppu.update(0)
       @enabled = true
     end
 
+    # @rbs override
+    # @rbs return: void
     def vsync
       @clock = @clock > @cpu.next_frame_clock ? @clock - @cpu.next_frame_clock : 0
     end
 
+    # @rbs cycle: Integer
+    # @rbs return: void
     def a12_signaled(cycle)
       clk, @clock = @clock, cycle + @hold
       return if cycle < clk

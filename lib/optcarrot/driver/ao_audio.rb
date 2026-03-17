@@ -1,8 +1,11 @@
+# rbs_inline: enabled
+
 require "ffi"
 
 module Optcarrot
   # A minimal binding for libao
-  module Ao
+  # @rbs skip -- types are hand-written in stubs.rbs (attach_function methods are invisible to rbs-inline)
+  module Ao # steep:ignore:start
     extend FFI::Library
     ffi_lib "ao"
 
@@ -30,10 +33,12 @@ module Optcarrot
       opt = params.last.is_a?(Hash) ? params.pop : {}
       attach_function(name, :"ao_#{ name }", *params, **opt)
     end
-  end
+  end # steep:ignore:end
 
   # Audio output driver for libao
   class AoAudio < Audio
+    # @rbs override
+    # @rbs return: void
     def init
       format = Ao::SampleFormat.new
       format[:bits] = @bits
@@ -50,11 +55,16 @@ module Optcarrot
       @buff = "".b
     end
 
+    # @rbs override
+    # @rbs return: void
     def dispose
       Ao.close(@dev)
       Ao.shutdown
     end
 
+    # @rbs override
+    # @rbs output: Array[Integer]
+    # @rbs return: void
     def tick(output)
       buff = output.pack(@pack_format)
       Ao.play(@dev, buff, buff.bytesize)

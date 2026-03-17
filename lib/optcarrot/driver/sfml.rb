@@ -1,7 +1,10 @@
+# rbs_inline: enabled
+
 require "ffi"
 
 module Optcarrot
   # A minimal binding for SFML (CSFML)
+  # @rbs skip -- types are hand-written in stubs.rbs (attach_function methods are invisible to rbs-inline)
   module SFML
     extend FFI::Library
     ffi_lib \
@@ -93,6 +96,8 @@ module Optcarrot
 
     # rubocop:disable Naming/MethodName
     # typedef sfSoundStreamGetDataCallback
+    # @rbs blk: untyped
+    # @rbs return: untyped
     def self.SoundStreamGetDataCallback(blk)
       FFI::Function.new(:int, [SoundStreamChunk.by_ref, :pointer], blk, blocking: true)
     end

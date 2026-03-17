@@ -1,0 +1,24 @@
+# Generated from lib/optcarrot/driver/sdl2_video.rb with RBS::Inline
+
+module Optcarrot
+  # Video output driver for SDL2
+  class SDL2Video < Video
+    # @rbs override
+    # @rbs return: void
+    def init: ...
+
+    # @rbs override
+    # @rbs scale: Integer?
+    # @rbs return: void
+    def change_window_size: ...
+
+    # @rbs override
+    # @rbs return: void
+    def dispose: ...
+
+    # @rbs override
+    # @rbs colors: Array[Integer]
+    # @rbs return: Integer
+    def tick: ...
+  end
+end

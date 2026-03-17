@@ -1,0 +1,576 @@
+# Generated from lib/optcarrot/ppu.rb with RBS::Inline
+
+module Optcarrot
+  # PPU implementation (video output)
+  class PPU
+    # clock/timing constants (stolen from Nestopia)
+    RP2C02_CC: ::Integer
+
+    RP2C02_HACTIVE: Integer
+
+    RP2C02_HBLANK: Integer
+
+    RP2C02_HSYNC: Integer
+
+    RP2C02_VACTIVE: ::Integer
+
+    RP2C02_VSLEEP: ::Integer
+
+    RP2C02_VINT: ::Integer
+
+    RP2C02_VDUMMY: ::Integer
+
+    RP2C02_VBLANK: Integer
+
+    RP2C02_VSYNC: Integer
+
+    RP2C02_HVSYNCBOOT: Integer
+
+    RP2C02_HVINT: Integer
+
+    RP2C02_HVSYNC_0: Integer
+
+    RP2C02_HVSYNC_1: Integer
+
+    # special scanlines
+    SCANLINE_HDUMMY: ::Integer
+
+    SCANLINE_VBLANK: ::Integer
+
+    # special horizontal clocks
+    HCLOCK_DUMMY: ::Integer
+
+    HCLOCK_VBLANK_0: ::Integer
+
+    HCLOCK_VBLANK_1: ::Integer
+
+    HCLOCK_VBLANK_2: ::Integer
+
+    HCLOCK_BOOT: ::Integer
+
+    DUMMY_FRAME: ::Array[untyped]
+
+    BOOT_FRAME: ::Array[untyped]
+
+    # constants related to OAM (sprite)
+    SP_PIXEL_POSITIONS: ::Hash[::Integer, ::Array[::Integer]]
+
+    # A look-up table mapping: (two pattern bytes * attr) -> eight pixels
+    #   TILE_LUT[attr][high_byte * 0x100 + low_byte] = [pixels] * 8
+    TILE_LUT: Array[Array[Array[Integer]]]
+
+    @conf: Config
+
+    @sp_overflow: bool
+
+    @sp_zero_hit: bool
+
+    @vblanking: bool
+
+    @vblank: bool
+
+    @io_addr: Integer
+
+    @io_pattern: Integer
+
+    @a12_monitor: untyped
+
+    @a12_state: bool?
+
+    @odd_frame: bool
+
+    @scanline: Integer
+
+    @scroll_toggle: bool
+
+    @scroll_latch: Integer
+
+    @scroll_xfine: Integer
+
+    @scroll_addr_0_4: Integer
+
+    @scroll_addr_5_14: Integer
+
+    @name_io_addr: Integer
+
+    @bg_enabled: bool
+
+    @cpu: CPU
+
+    @palette: Array[Integer]
+
+    @nmt_mem: Array[Array[Integer]]
+
+    @nmt_ref: Array[Array[Integer]]
+
+    @output_pixels: Array[Integer]
+
+    @output_color: Array[Integer]
+
+    @run: bool
+
+    @hclk: Integer
+
+    @vclk: Integer
+
+    @hclk_target: Integer
+
+    @io_latch: Integer
+
+    @io_buffer: Integer
+
+    @regs_oam: Integer
+
+    @vram_addr_inc: Integer
+
+    @need_nmi: bool
+
+    @pattern_end: Integer
+
+    @any_show: bool
+
+    @bg_show: bool
+
+    @sp_latch: Integer
+
+    @sp_limit: Integer
+
+    @sp_buffer: Array[Integer]
+
+    @sp_buffered: Integer
+
+    @sp_visible: bool
+
+    @sp_map: Array[[ bool, bool, Integer ]?]
+
+    @sp_map_buffer: Array[[ bool, bool, Integer ]]
+
+    @sp_zero_in_line: bool
+
+    @chr_mem: Array[Integer]
+
+    @chr_mem_writable: bool
+
+    @palette_ram: Array[Integer]
+
+    @coloring: Integer
+
+    @emphasis: Integer
+
+    @fiber: Fiber?
+
+    @lut_update: Hash[Array[Integer], untyped]
+
+    @name_lut: Array[Integer]
+
+    @attr_lut: Array[untyped]
+
+    @bg_show_edge: bool
+
+    @bg_pixels: Array[Integer]
+
+    @bg_pattern_base: Integer
+
+    @bg_pattern_base_15: Integer
+
+    @bg_pattern: Integer
+
+    @bg_pattern_lut: untyped
+
+    @bg_pattern_lut_fetched: untyped
+
+    @sp_enabled: bool
+
+    @sp_active: bool
+
+    @sp_show: bool
+
+    @sp_show_edge: bool
+
+    @sp_base: Integer
+
+    @sp_height: Integer
+
+    @sp_phase: Integer?
+
+    @sp_ram: Array[Integer]
+
+    @sp_index: Integer
+
+    @sp_addr: Integer
+
+    # @rbs return: String
+    def inspect: () -> String
+
+    # @rbs conf: Config
+    # @rbs cpu: CPU
+    # @rbs palette: Array[Integer]
+    # @rbs return: void
+    def initialize: (Config conf, CPU cpu, Array[Integer] palette) -> void
+
+    # @rbs opt: Hash[Symbol, bool]
+    # @rbs return: void
+    def reset: (?Hash[Symbol, bool] opt) -> void
+
+    # @rbs return: void
+    def update_output_color: () -> void
+
+    # @rbs return: void
+    def setup_lut: () -> void
+
+    attr_reader output_pixels: Array[Integer]
+
+    # @rbs mem: Array[Integer]
+    # @rbs writable: bool
+    # @rbs return: void
+    def set_chr_mem: (Array[Integer] mem, bool writable) -> void
+
+    NMT_TABLE: ::Hash[::Symbol, ::Array[::Integer]]
+
+    # @rbs mode: Symbol
+    # @rbs return: void
+    def nametables=: (Symbol mode) -> void
+
+    # @rbs data_setup: Integer
+    # @rbs return: void
+    def update: (Integer data_setup) -> void
+
+    # @rbs return: void
+    def setup_frame: () -> void
+
+    # @rbs return: void
+    def vsync: () -> void
+
+    # @rbs monitor: untyped
+    # @rbs return: void
+    def monitor_a12_rising_edge: (untyped monitor) -> void
+
+    # @rbs return: void
+    def update_vram_addr: () -> void
+
+    # @rbs return: void
+    def update_scroll_address_line: () -> void
+
+    # @rbs return: bool
+    def active?: () -> bool
+
+    # @rbs elapsed: Integer
+    # @rbs return: void
+    def sync: (Integer elapsed) -> void
+
+    # @rbs return: void
+    def make_sure_invariants: () -> void
+
+    # @rbs data: Integer
+    # @rbs return: Integer
+    def io_latch_mask: (Integer data) -> Integer
+
+    # PPUCTRL
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_2000: (untyped _addr, Integer data) -> void
+
+    # PPUMASK
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_2001: (untyped _addr, Integer data) -> void
+
+    # PPUSTATUS
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_2002: (untyped _addr) -> Integer
+
+    # OAMADDR
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_2003: (untyped _addr, Integer data) -> void
+
+    # OAMDATA (write)
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_2004: (untyped _addr, Integer data) -> void
+
+    # OAMDATA (read)
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_2004: (untyped _addr) -> Integer
+
+    # PPUSCROLL
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_2005: (untyped _addr, Integer data) -> void
+
+    # PPUADDR
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_2006: (untyped _addr, Integer data) -> void
+
+    # PPUDATA (write)
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_2007: (untyped _addr, Integer data) -> void
+
+    # PPUDATA (read)
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_2007: (untyped _addr) -> Integer
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_2xxx: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_2xxx: (untyped _addr) -> Integer
+
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_3000: (untyped _addr) -> Integer
+
+    # OAMDMA
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_4014: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_4014: (untyped _addr) -> Integer
+
+    # @rbs exp: Integer
+    # @rbs return: void
+    def open_pattern: (Integer exp) -> void
+
+    # @rbs buffer_idx: Integer
+    # @rbs return: Integer
+    def open_sprite: (Integer buffer_idx) -> Integer
+
+    # @rbs pat0: Integer
+    # @rbs pat1: Integer
+    # @rbs buffer_idx: Integer
+    # @rbs return: void
+    def load_sprite: (Integer pat0, Integer pat1, Integer buffer_idx) -> void
+
+    # @rbs return: void
+    def update_address_line: () -> void
+
+    # @rbs return: void
+    def open_name: () -> void
+
+    # @rbs return: void
+    def fetch_name: () -> void
+
+    # @rbs return: void
+    def open_attr: () -> void
+
+    # @rbs return: void
+    def fetch_attr: () -> void
+
+    # @rbs return: void
+    def fetch_bg_pattern_0: () -> void
+
+    # @rbs return: void
+    def fetch_bg_pattern_1: () -> void
+
+    # @rbs return: void
+    def scroll_clock_x: () -> void
+
+    # @rbs return: void
+    def scroll_reset_x: () -> void
+
+    # @rbs return: void
+    def scroll_clock_y: () -> void
+
+    # @rbs return: void
+    def preload_tiles: () -> void
+
+    # @rbs return: void
+    def load_tiles: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_even: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_1: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_2: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_3: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_4: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_5: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_6: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_7: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_8: () -> void
+
+    # @rbs return: void
+    def evaluate_sprites_odd_phase_9: () -> void
+
+    # @rbs return: void
+    def load_extended_sprites: () -> void
+
+    # @rbs return: void
+    def render_pixel: () -> void
+
+    # just a placeholder; used for batch_render_pixels optimization
+    # @rbs return: void
+    def batch_render_eight_pixels: () -> void
+
+    # @rbs return: void
+    def boot: () -> void
+
+    # @rbs return: void
+    def vblank_0: () -> void
+
+    # @rbs return: void
+    def vblank_1: () -> void
+
+    # @rbs return: void
+    def vblank_2: () -> void
+
+    # @rbs return: void
+    def update_enabled_flags: () -> void
+
+    # @rbs return: void
+    def update_enabled_flags_edge: () -> void
+
+    # @rbs scanline: Integer
+    # @rbs hclk: Integer
+    # @rbs hclk_target: Integer
+    # @rbs return: void
+    def debug_logging: (Integer scanline, Integer hclk, Integer hclk_target) -> void
+
+    # @rbs return: void
+    def run: () -> void
+
+    # @rbs return: void
+    def dispose: () -> void
+
+    # @rbs return: void
+    def wait_frame: () -> void
+
+    # @rbs return: void
+    def wait_zero_clocks: () -> void
+
+    # @rbs return: void
+    def wait_one_clock: () -> void
+
+    # @rbs return: void
+    def wait_two_clocks: () -> void
+
+    # ## main-loop structure
+    #
+    #  # wait for boot
+    #  clk_685
+    #
+    #  loop do
+    #    # pre-render scanline
+    #    clk_341, clk_342, ..., clk_659
+    #    while true
+    #      # visible scanline (not shown)
+    #      clk_320, clk_321, ..., clk_337
+    #
+    #      # increment scanline
+    #      clk_338
+    #      break if @scanline == 240
+    #
+    #      # visible scanline (shown)
+    #      clk_0, clk_1, ..., clk_319
+    #    end
+    #
+    #    # post-render sacnline (vblank)
+    #    do_681,682,684
+    #  end
+    #
+    #  This method definition also serves as a template for OptimizedCodeBuilder.
+    #  Comments like "when NNN" are markers for the purpose.
+    #
+    #  rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize, Style/SoleNestedConditional
+    #  @rbs return: void
+    def main_loop: () -> void
+
+    # ##########################################################################
+    #  optimized core generator
+    class OptimizedCodeBuilder
+      include CodeOptimizationHelper
+
+      OPTIONS: ::Array[::Symbol]
+
+      # @rbs return: String
+      def build: () -> String
+
+      COMMANDS: ::Hash[::Symbol, ::String]
+
+      # extracts the actions for each clock from CPU#main_loop
+      # @rbs main_loop: String
+      # @rbs return: Hash[Integer, String]
+      def parse_clock_handlers: (String main_loop) -> Hash[Integer, String]
+
+      # split clock handlers that contains a branch depending on clock
+      # @rbs handlers: Hash[Integer, String]
+      # @rbs return: Hash[Integer, String]
+      def specialize_clock_handlers: (Hash[Integer, String] handlers) -> Hash[Integer, String]
+
+      # pass a fastpath
+      # @rbs handlers: Hash[Integer, String]
+      # @rbs return: Hash[Integer, String]
+      def add_fastpath: (Hash[Integer, String] handlers) -> Hash[Integer, String]
+
+      # replace eight `render_pixel` calls with one optimized batch version
+      # @rbs fastpath: String
+      # @rbs hclk: Integer
+      # @rbs return: String
+      def batch_render_pixels: (String fastpath, Integer hclk) -> String
+
+      # remove all newlines (this will reduce `trace` instructions)
+      # @rbs code: String
+      # @rbs return: String
+      def oneline: (String code) -> String
+
+      # inline method calls
+      # @rbs code: String
+      # @rbs mdefs: Hash[Symbol, untyped]
+      # @rbs return: String
+      def ppu_expand_methods: (String code, Hash[Symbol, untyped] mdefs) -> String
+
+      # create two version of the same code by evaluating easy branches
+      # CAUTION: the condition must be invariant during PPU#run
+      # @rbs code: String
+      # @rbs cond: String
+      # @rbs return: Array[String]
+      def split_mode: (String code, String cond) -> Array[String]
+
+      # generate a main code
+      # @rbs handlers: Hash[Integer, String]
+      # @rbs return: String
+      def build_loop: (Hash[Integer, String] handlers) -> String
+
+      # deconstruct a loop, unify handlers, and re-generate a new loop
+      # @rbs code: String
+      # @rbs return: String
+      def rebuild_loop: (String code) -> String
+    end
+  end
+end

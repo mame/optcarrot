@@ -1,0 +1,15 @@
+# Generated from lib/optcarrot/mapper/uxrom.rb with RBS::Inline
+
+module Optcarrot
+  # UxROM mapper: http://wiki.nesdev.com/w/index.php/UxROM
+  class UxROM < ROM
+    # @rbs override
+    # @rbs return: void
+    def reset: ...
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_8000: (untyped _addr, Integer data) -> void
+  end
+end

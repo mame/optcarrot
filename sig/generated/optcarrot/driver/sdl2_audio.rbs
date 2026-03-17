@@ -1,0 +1,28 @@
+# Generated from lib/optcarrot/driver/sdl2_audio.rb with RBS::Inline
+
+module Optcarrot
+  # Audio output driver for SDL2
+  class SDL2Audio < Audio
+    FORMAT: ::Hash[untyped, untyped]
+
+    # @rbs override
+    # @rbs return: void
+    def init: ...
+
+    # @rbs override
+    # @rbs return: void
+    def dispose: ...
+
+    # @rbs override
+    # @rbs output: Array[Integer]
+    # @rbs return: void
+    def tick: ...
+
+    # for SDL 2.0.3 or below in that SDL_QueueAudio is not available
+    # @rbs _userdata: untyped
+    # @rbs stream: untyped
+    # @rbs stream_len: Integer
+    # @rbs return: void
+    def callback: (untyped _userdata, untyped stream, Integer stream_len) -> void
+  end
+end

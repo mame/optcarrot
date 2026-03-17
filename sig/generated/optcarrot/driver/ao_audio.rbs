@@ -1,0 +1,19 @@
+# Generated from lib/optcarrot/driver/ao_audio.rb with RBS::Inline
+
+module Optcarrot
+  # Audio output driver for libao
+  class AoAudio < Audio
+    # @rbs override
+    # @rbs return: void
+    def init: ...
+
+    # @rbs override
+    # @rbs return: void
+    def dispose: ...
+
+    # @rbs override
+    # @rbs output: Array[Integer]
+    # @rbs return: void
+    def tick: ...
+  end
+end

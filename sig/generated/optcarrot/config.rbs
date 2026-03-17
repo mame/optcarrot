@@ -1,0 +1,87 @@
+# Generated from lib/optcarrot/config.rb with RBS::Inline
+
+module Optcarrot
+  # config manager and logger
+  class Config
+    OPTIONS: ::Hash[::Symbol, untyped]
+
+    DEFAULT_OPTIONS: ::Hash[untyped, untyped]
+
+    attr_reader romfile: String?
+
+    # @rbs opt: untyped
+    # @rbs return: void
+    def initialize: (untyped opt) -> void
+
+    # @rbs msg: String
+    # @rbs return: void
+    def debug: (String msg) -> void
+
+    # @rbs msg: String
+    # @rbs return: void
+    def info: (String msg) -> void
+
+    # @rbs msg: String
+    # @rbs return: void
+    def warn: (String msg) -> void
+
+    # @rbs msg: String
+    # @rbs return: void
+    def error: (String msg) -> void
+
+    # @rbs msg: String
+    # @rbs return: void
+    def fatal: (String msg) -> void
+
+    # command-line option parser
+    class Parser
+      @argv: untyped
+
+      @options: Hash[Symbol, untyped]
+
+      # @rbs argv: Array[String]
+      # @rbs return: void
+      def initialize: (Array[String] argv) -> void
+
+      attr_reader options: Hash[Symbol, untyped]
+
+      class Invalid < RuntimeError
+      end
+
+      # @rbs msg: String
+      # @rbs return: void
+      def error: (String msg) -> void
+
+      # @rbs arg: untyped
+      # @rbs return: untyped
+      def find_option: (untyped arg) -> untyped
+
+      # @rbs return: void
+      def parse_option: () -> void
+
+      # @rbs operand: untyped
+      # @rbs arg: untyped
+      # @rbs opt: Hash[Symbol, untyped]
+      # @rbs return: untyped
+      def parse_operand: (untyped operand, untyped arg, Hash[Symbol, untyped] opt) -> untyped
+
+      # @rbs return: void
+      def help: () -> void
+
+      # @rbs return: void
+      def version: () -> void
+
+      # @rbs return: void
+      def list_drivers: () -> void
+
+      # @rbs return: void
+      def list_opts: () -> void
+
+      # @rbs return: void
+      def dump_ppu: () -> void
+
+      # @rbs return: void
+      def dump_cpu: () -> void
+    end
+  end
+end

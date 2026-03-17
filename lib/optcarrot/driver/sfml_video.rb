@@ -1,9 +1,13 @@
+# rbs_inline: enabled
+
 require_relative "sfml"
 require_relative "misc"
 
 module Optcarrot
   # Video output driver for SFML
   class SFMLVideo < Video
+    # @rbs override
+    # @rbs return: void
     def init
       vm = SFML::VideoMode.new
       vm[:width] = TV_WIDTH
@@ -36,6 +40,9 @@ module Optcarrot
       end
     end
 
+    # @rbs override
+    # @rbs scale: Integer?
+    # @rbs return: void
     def change_window_size(scale)
       if scale
         @vec2u[:x] = TV_WIDTH * scale
@@ -44,6 +51,9 @@ module Optcarrot
       end
     end
 
+    # @rbs w: Integer
+    # @rbs h: Integer
+    # @rbs return: void
     def on_resize(w, h)
       @vec2f[:x] = WIDTH / 2
       @vec2f[:y] = HEIGHT / 2
@@ -62,8 +72,12 @@ module Optcarrot
       SFML.sfRenderWindow_setView(@window, @view)
     end
 
+    # @rbs @window: untyped
     attr_reader :window
 
+    # @rbs override
+    # @rbs colors: Array[Integer]
+    # @rbs return: Integer
     def tick(colors)
       if SFML.sfClock_getElapsedTime(@clock) >= 1_000_000
         @fps = @frame

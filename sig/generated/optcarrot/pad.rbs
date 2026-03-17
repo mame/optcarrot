@@ -1,0 +1,75 @@
+# Generated from lib/optcarrot/pad.rb with RBS::Inline
+
+module Optcarrot
+  # Pad pair implementation (NES has two built-in game pad.)
+  class Pads
+    # @rbs return: String
+    def inspect: () -> String
+
+    # @rbs conf: Optcarrot::Config
+    # @rbs cpu: Optcarrot::CPU
+    # @rbs apu: Optcarrot::APU
+    # @rbs return: void
+    def initialize: (Optcarrot::Config conf, Optcarrot::CPU cpu, Optcarrot::APU apu) -> void
+
+    # @rbs return: void
+    def reset: () -> void
+
+    # @rbs addr: Integer
+    # @rbs return: Integer
+    def peek_401x: (Integer addr) -> Integer
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_4016: (untyped _addr, Integer data) -> void
+
+    # @rbs pad: Integer
+    # @rbs btn: Integer
+    # @rbs return: Integer
+    def keydown: (Integer pad, Integer btn) -> Integer
+
+    # @rbs pad: Integer
+    # @rbs btn: Integer
+    # @rbs return: Integer
+    def keyup: (Integer pad, Integer btn) -> Integer
+  end
+
+  # ##########################################################################
+  #  each pad
+  class Pad
+    A: ::Integer
+
+    B: ::Integer
+
+    SELECT: ::Integer
+
+    START: ::Integer
+
+    UP: ::Integer
+
+    DOWN: ::Integer
+
+    LEFT: ::Integer
+
+    RIGHT: ::Integer
+
+    # @rbs return: void
+    def initialize: () -> void
+
+    # @rbs return: void
+    def reset: () -> void
+
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke: (Integer data) -> void
+
+    # @rbs return: Integer
+    def peek: () -> Integer
+
+    # @rbs return: Integer
+    def poll_state: () -> Integer
+
+    attr_accessor buttons: Integer
+  end
+end

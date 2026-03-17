@@ -1,8 +1,12 @@
+# rbs_inline: enabled
+
 require_relative "sfml"
 
 module Optcarrot
   # Input driver for SFML
   class SFMLInput < Input
+    # @rbs override
+    # @rbs return: void
     def init
       raise "SFMLInput must be used with SFMLVideo" unless @video.is_a?(SFMLVideo)
 
@@ -13,6 +17,8 @@ module Optcarrot
       @key_mapping = DEFAULT_KEY_MAPPING
     end
 
+    # @rbs override
+    # @rbs return: void
     def dispose
     end
 
@@ -42,22 +48,29 @@ module Optcarrot
       16 => [:quit, nil],        # `q'
     }
 
+    # @rbs override
+    # @rbs _frame: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
     def tick(_frame, pads)
-      SFML.sfRenderWindow_setKeyRepeatEnabled(@video.window, 0)
+      video = @video #: SFMLVideo
+      SFML.sfRenderWindow_setKeyRepeatEnabled(video.window, 0)
 
-      while SFML.sfRenderWindow_pollEvent(@video.window, @event) != 0
+      while SFML.sfRenderWindow_pollEvent(video.window, @event) != 0
         case @event.read_int
         when 0 # EvtClosed
-          SFML.sfRenderWindow_close(@video.window)
+          SFML.sfRenderWindow_close(video.window)
           exit # tmp
         when 1 # EvtResized
           w = @event.get_int(@sizeevent_width_offset)
           h = @event.get_int(@sizeevent_height_offset)
-          @video.on_resize(w, h)
+          video.on_resize(w, h)
         when 5 # EvtKeyPressed
-          event(pads, :keydown, *@key_mapping[@event.get_int(@keyevent_code_offset)])
+          key = @key_mapping[@event.get_int(@keyevent_code_offset)]
+          event(pads, :keydown, key[0], key[1]) if key
         when 6 # EvtKeyReleased
-          event(pads, :keyup, *@key_mapping[@event.get_int(@keyevent_code_offset)])
+          key = @key_mapping[@event.get_int(@keyevent_code_offset)]
+          event(pads, :keyup, key[0], key[1]) if key
         when 14 # sfEvtJoystickButtonPressed
           # XXX
         when 15 # sfEvtJoystickButtonReleased

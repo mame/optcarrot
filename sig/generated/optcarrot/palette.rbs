@@ -1,0 +1,14 @@
+# Generated from lib/optcarrot/palette.rb with RBS::Inline
+
+module Optcarrot
+  # NES palette generators
+  module Palette
+    # I don't know where this palette definition came from, but many emulators are using this palette
+    # @rbs return: Array[Array[Integer]]
+    def self?.defacto_palette: () -> Array[Array[Integer]]
+
+    # Nestopia generates a palette systematically (cool!), but it is not compatible with nes-tests-rom
+    # @rbs return: Array[Array[Integer]]
+    def self?.nestopia_palette: () -> Array[Array[Integer]]
+  end
+end

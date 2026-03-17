@@ -1,8 +1,12 @@
+# rbs_inline: enabled
+
 require_relative "sdl2"
 
 module Optcarrot
   # Input driver for SDL2
   class SDL2Input < Input
+    # @rbs override
+    # @rbs return: void
     def init
       SDL2.InitSubSystem(SDL2::INIT_JOYSTICK)
       @event = FFI::MemoryPointer.new(:uint32, 16)
@@ -14,7 +18,7 @@ module Optcarrot
       @joyaxis_value_offset = SDL2::JoyAxisEvent.offset_of(:value)
       @joybutton_button_offset = SDL2::JoyButtonEvent.offset_of(:button)
 
-      @joysticks = {}
+      @joysticks = {} #: Hash[Integer, untyped]
       SDL2.NumJoysticks.times do |i|
         p SDL2.JoystickNameForIndex(i)
         js = SDL2.JoystickOpen(i)
@@ -26,6 +30,8 @@ module Optcarrot
       @key_mapping = DEFAULT_KEY_MAPPING
     end
 
+    # @rbs override
+    # @rbs return: void
     def dispose
       @joysticks.each_value do |js|
         SDL2.JoystickClose(js)
@@ -60,11 +66,18 @@ module Optcarrot
       0x71 => [:quit, nil],        # `q'
     }
 
+    # @rbs axis: bool
+    # @rbs value: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
     def joystick_move(axis, value, pads)
       event(pads, value >  0x7000 ? :keydown : :keyup, axis ? :right : :down, 0)
       event(pads, value < -0x7000 ? :keydown : :keyup, axis ? :left : :up, 0)
     end
 
+    # @rbs button: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
     def joystick_buttondown(button, pads)
       case button
       when 0 then pads.keydown(0, Pad::A)
@@ -74,6 +87,9 @@ module Optcarrot
       end
     end
 
+    # @rbs button: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
     def joystick_buttonup(button, pads)
       case button
       when 0 then pads.keyup(0, Pad::A)
@@ -83,6 +99,10 @@ module Optcarrot
       end
     end
 
+    # @rbs override
+    # @rbs _frame: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
     def tick(_frame, pads)
       while SDL2.PollEvent(@event) != 0
         case @event.read_int
@@ -90,7 +110,7 @@ module Optcarrot
         when 0x300, 0x301 # SDL_KEYDOWN, SDL_KEYUP
           next if @event.get_uint8(@keyboard_repeat_offset) != 0
           key = @key_mapping[@event.get_int(@keyboard_sym_offset)]
-          event(pads, @event.read_int == 0x300 ? :keydown : :keyup, *key) if key
+          event(pads, @event.read_int == 0x300 ? :keydown : :keyup, key[0], key[1]) if key
 
         when 0x600 # SDL_JOYAXISMOTION
           which = @event.get_uint32(@joy_which_offset)

@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 # Optcarrot namespace
 module Optcarrot
   VERSION = "0.9.0"

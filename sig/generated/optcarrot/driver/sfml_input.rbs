@@ -1,0 +1,22 @@
+# Generated from lib/optcarrot/driver/sfml_input.rb with RBS::Inline
+
+module Optcarrot
+  # Input driver for SFML
+  class SFMLInput < Input
+    # @rbs override
+    # @rbs return: void
+    def init: ...
+
+    # @rbs override
+    # @rbs return: void
+    def dispose: ...
+
+    DEFAULT_KEY_MAPPING: ::Hash[::Integer, untyped]
+
+    # @rbs override
+    # @rbs _frame: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
+    def tick: ...
+  end
+end

@@ -1,0 +1,550 @@
+# Generated from lib/optcarrot/cpu.rb with RBS::Inline
+
+module Optcarrot
+  # CPU implementation
+  class CPU
+    NMI_VECTOR: ::Integer
+
+    RESET_VECTOR: ::Integer
+
+    IRQ_VECTOR: ::Integer
+
+    IRQ_EXT: ::Integer
+
+    IRQ_FRAME: ::Integer
+
+    IRQ_DMC: ::Integer
+
+    # @rbs return: String
+    def inspect: () -> String
+
+    # @rbs conf: Config
+    # @rbs return: void
+    def initialize: (Config conf) -> void
+
+    # @rbs return: void
+    def reset: () -> void
+
+    # @rbs addr: Integer
+    # @rbs return: Integer
+    def peek_ram: (Integer addr) -> Integer
+
+    # @rbs addr: Integer
+    # @rbs data: Integer
+    # @rbs return: Integer
+    def poke_ram: (Integer addr, Integer data) -> Integer
+
+    # @rbs addr: Integer
+    # @rbs return: Integer
+    def peek_nop: (Integer addr) -> Integer
+
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_jam_1: (untyped _addr) -> Integer
+
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_jam_2: (untyped _addr) -> Integer
+
+    # @rbs addr: Integer | Range[Integer] | Enumerator[Integer, void]
+    # @rbs peek: _Fetchable
+    # @rbs poke: _Storable?
+    # @rbs return: void
+    def add_mappings: (Integer | Range[Integer] | Enumerator[Integer, void] addr, _Fetchable peek, _Storable? poke) -> void
+
+    # @rbs _addr: Integer
+    # @rbs _data: Integer
+    # @rbs return: void
+    def self.poke_nop: (untyped _addr, untyped _data) -> void
+
+    # @rbs addr: Integer
+    # @rbs return: Integer
+    def fetch: (Integer addr) -> Integer
+
+    # @rbs addr: Integer
+    # @rbs value: Integer
+    # @rbs return: void
+    def store: (Integer addr, Integer value) -> void
+
+    # @rbs addr: Integer
+    # @rbs return: Integer
+    def peek16: (Integer addr) -> Integer
+
+    attr_reader ram: Array[Integer]
+
+    attr_writer apu: APU
+
+    attr_writer ppu: PPU
+
+    attr_writer ppu_sync: bool
+
+    # @rbs return: Integer
+    def current_clock: () -> Integer
+
+    # @rbs return: Integer
+    def next_frame_clock: () -> Integer
+
+    # @rbs clk: Integer
+    # @rbs return: void
+    def next_frame_clock=: (Integer clk) -> void
+
+    # @rbs clk: Integer
+    # @rbs return: void
+    def steal_clocks: (Integer clk) -> void
+
+    # @rbs return: bool
+    def odd_clock?: () -> bool
+
+    # @rbs return: Integer
+    def update: () -> Integer
+
+    # @rbs addr: Integer
+    # @rbs return: Integer
+    def dmc_dma: (Integer addr) -> Integer
+
+    # @rbs addr: Integer
+    # @rbs sp_ram: Array[Integer]
+    # @rbs return: void
+    def sprite_dma: (Integer addr, Array[Integer] sp_ram) -> void
+
+    # @rbs return: void
+    def boot: () -> void
+
+    # @rbs return: void
+    def vsync: () -> void
+
+    # @rbs line: Integer
+    # @rbs return: Integer
+    def clear_irq: (Integer line) -> Integer
+
+    # @rbs clk: Integer
+    # @rbs return: Integer
+    def next_interrupt_clock: (Integer clk) -> Integer
+
+    # @rbs line: Integer
+    # @rbs clk: Integer
+    # @rbs return: void
+    def do_irq: (Integer line, Integer clk) -> void
+
+    # @rbs clk: Integer
+    # @rbs return: void
+    def do_nmi: (Integer clk) -> void
+
+    # @rbs vector: Integer
+    # @rbs return: void
+    def do_isr: (Integer vector) -> void
+
+    # @rbs return: Integer
+    def fetch_irq_isr_vector: () -> Integer
+
+    # @rbs return: Integer
+    def flags_pack: () -> Integer
+
+    # @rbs f: Integer
+    # @rbs return: void
+    def flags_unpack: (Integer f) -> void
+
+    # ## branch helper ###
+    #  @rbs cond: bool
+    #  @rbs return: void
+    def branch: (bool cond) -> void
+
+    # ## storers ###
+    #  @rbs return: void
+    def store_mem: () -> void
+
+    # @rbs return: void
+    def store_zpg: () -> void
+
+    # ## stack management ###
+    #  @rbs data: Integer
+    #  @rbs return: void
+    def push8: (Integer data) -> void
+
+    # @rbs data: Integer
+    # @rbs return: void
+    def push16: (Integer data) -> void
+
+    # @rbs return: Integer
+    def pull8: () -> Integer
+
+    # @rbs return: Integer
+    def pull16: () -> Integer
+
+    # immediate addressing (read only)
+    # @rbs _read: bool
+    # @rbs _write: bool
+    # @rbs return: void
+    def imm: (untyped _read, untyped _write) -> void
+
+    # zero-page addressing
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def zpg: (bool read, bool write) -> void
+
+    # zero-page indexed addressing
+    # @rbs indexed: Integer
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def zpg_reg: (Integer indexed, bool read, bool write) -> void
+
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def zpg_x: (bool read, bool write) -> void
+
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def zpg_y: (bool read, bool write) -> void
+
+    # absolute addressing
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def abs: (bool read, bool write) -> void
+
+    # absolute indexed addressing
+    # @rbs indexed: Integer
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def abs_reg: (Integer indexed, bool read, bool write) -> void
+
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def abs_x: (bool read, bool write) -> void
+
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def abs_y: (bool read, bool write) -> void
+
+    # indexed indirect addressing
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def ind_x: (bool read, bool write) -> void
+
+    # indirect indexed addressing
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def ind_y: (bool read, bool write) -> void
+
+    # @rbs read: bool
+    # @rbs write: bool
+    # @rbs return: void
+    def read_write: (bool read, bool write) -> void
+
+    # load instructions
+    # @rbs return: void
+    def _lda: () -> void
+
+    # @rbs return: void
+    def _ldx: () -> void
+
+    # @rbs return: void
+    def _ldy: () -> void
+
+    # store instructions
+    # @rbs return: void
+    def _sta: () -> void
+
+    # @rbs return: void
+    def _stx: () -> void
+
+    # @rbs return: void
+    def _sty: () -> void
+
+    # transfer instructions
+    # @rbs return: void
+    def _tax: () -> void
+
+    # @rbs return: void
+    def _tay: () -> void
+
+    # @rbs return: void
+    def _txa: () -> void
+
+    # @rbs return: void
+    def _tya: () -> void
+
+    # flow control instructions
+    # @rbs return: void
+    def _jmp_a: () -> void
+
+    # @rbs return: void
+    def _jmp_i: () -> void
+
+    # @rbs return: void
+    def _jsr: () -> void
+
+    # @rbs return: void
+    def _rts: () -> void
+
+    # @rbs return: void
+    def _rti: () -> void
+
+    # @rbs return: void
+    def _bne: () -> void
+
+    # @rbs return: void
+    def _beq: () -> void
+
+    # @rbs return: void
+    def _bmi: () -> void
+
+    # @rbs return: void
+    def _bpl: () -> void
+
+    # @rbs return: void
+    def _bcs: () -> void
+
+    # @rbs return: void
+    def _bcc: () -> void
+
+    # @rbs return: void
+    def _bvs: () -> void
+
+    # @rbs return: void
+    def _bvc: () -> void
+
+    # math operations
+    # @rbs return: void
+    def _adc: () -> void
+
+    # @rbs return: void
+    def _sbc: () -> void
+
+    # logical operations
+    # @rbs return: void
+    def _and: () -> void
+
+    # @rbs return: void
+    def _ora: () -> void
+
+    # @rbs return: void
+    def _eor: () -> void
+
+    # @rbs return: void
+    def _bit: () -> void
+
+    # @rbs return: void
+    def _cmp: () -> void
+
+    # @rbs return: void
+    def _cpx: () -> void
+
+    # @rbs return: void
+    def _cpy: () -> void
+
+    # shift operations
+    # @rbs return: void
+    def _asl: () -> void
+
+    # @rbs return: void
+    def _lsr: () -> void
+
+    # @rbs return: void
+    def _rol: () -> void
+
+    # @rbs return: void
+    def _ror: () -> void
+
+    # increment and decrement operations
+    # @rbs return: void
+    def _dec: () -> void
+
+    # @rbs return: void
+    def _inc: () -> void
+
+    # @rbs return: void
+    def _dex: () -> void
+
+    # @rbs return: void
+    def _dey: () -> void
+
+    # @rbs return: void
+    def _inx: () -> void
+
+    # @rbs return: void
+    def _iny: () -> void
+
+    # flags instructions
+    # @rbs return: void
+    def _clc: () -> void
+
+    # @rbs return: void
+    def _sec: () -> void
+
+    # @rbs return: void
+    def _cld: () -> void
+
+    # @rbs return: void
+    def _sed: () -> void
+
+    # @rbs return: void
+    def _clv: () -> void
+
+    # @rbs return: void
+    def _sei: () -> void
+
+    # @rbs return: void
+    def _cli: () -> void
+
+    # stack operations
+    # @rbs return: void
+    def _pha: () -> void
+
+    # @rbs return: void
+    def _php: () -> void
+
+    # @rbs return: void
+    def _pla: () -> void
+
+    # @rbs return: void
+    def _plp: () -> void
+
+    # @rbs return: void
+    def _tsx: () -> void
+
+    # @rbs return: void
+    def _txs: () -> void
+
+    # undocumented instructions, rarely used
+    # @rbs return: void
+    def _anc: () -> void
+
+    # @rbs return: void
+    def _ane: () -> void
+
+    # @rbs return: void
+    def _arr: () -> void
+
+    # @rbs return: void
+    def _asr: () -> void
+
+    # @rbs return: void
+    def _dcp: () -> void
+
+    # @rbs return: void
+    def _isb: () -> void
+
+    # @rbs return: void
+    def _las: () -> void
+
+    # @rbs return: void
+    def _lax: () -> void
+
+    # @rbs return: void
+    def _lxa: () -> void
+
+    # @rbs return: void
+    def _rla: () -> void
+
+    # @rbs return: void
+    def _rra: () -> void
+
+    # @rbs return: void
+    def _sax: () -> void
+
+    # @rbs return: void
+    def _sbx: () -> void
+
+    # @rbs return: void
+    def _sha: () -> void
+
+    # @rbs return: void
+    def _shs: () -> void
+
+    # @rbs return: void
+    def _shx: () -> void
+
+    # @rbs return: void
+    def _shy: () -> void
+
+    # @rbs return: void
+    def _slo: () -> void
+
+    # @rbs return: void
+    def _sre: () -> void
+
+    # nops
+    # @rbs return: void
+    def _nop: () -> void
+
+    # interrupts
+    # @rbs return: void
+    def _brk: () -> void
+
+    # @rbs return: void
+    def _jam: () -> void
+
+    # @rbs instr: Symbol
+    # @rbs mode: Symbol
+    # @rbs return: void
+    def r_op: (Symbol instr, Symbol mode) -> void
+
+    # @rbs instr: Symbol
+    # @rbs mode: Symbol
+    # @rbs store: Symbol
+    # @rbs return: void
+    def w_op: (Symbol instr, Symbol mode, Symbol store) -> void
+
+    # @rbs instr: Symbol
+    # @rbs mode: Symbol
+    # @rbs store: Symbol
+    # @rbs return: void
+    def rw_op: (Symbol instr, Symbol mode, Symbol store) -> void
+
+    # @rbs instr: Symbol
+    # @rbs return: void
+    def a_op: (Symbol instr) -> void
+
+    # @rbs _instr: Symbol
+    # @rbs ops: Integer
+    # @rbs ticks: Integer
+    # @rbs return: void
+    def no_op: (untyped _instr, Integer ops, Integer ticks) -> void
+
+    # @rbs return: void
+    def do_clock: () -> void
+
+    # @rbs return: void
+    def run: () -> void
+
+    ADDRESSING_MODES: ::Hash[::Symbol, untyped]
+
+    DISPATCH: ::Array[untyped]
+
+    # @rbs opcodes: Array[Integer]
+    # @rbs args: untyped
+    # @rbs return: void
+    def self.op: (Array[Integer] opcodes, untyped args) -> void
+
+    # ##########################################################################
+    #  optimized core generator
+    class OptimizedCodeBuilder
+      include CodeOptimizationHelper
+
+      OPTIONS: ::Array[::Symbol]
+
+      LOCALIZE_IVARS: ::Array[::Symbol]
+
+      def build: () -> untyped
+
+      # generate a main code
+      def build_loop: (untyped mdefs) -> untyped
+
+      # inline method calls
+      def cpu_expand_methods: (untyped code, untyped mdefs) -> untyped
+
+      # inline constants
+      def expand_constants: (untyped handlers) -> untyped
+    end
+  end
+end

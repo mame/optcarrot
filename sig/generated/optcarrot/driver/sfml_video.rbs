@@ -1,0 +1,28 @@
+# Generated from lib/optcarrot/driver/sfml_video.rb with RBS::Inline
+
+module Optcarrot
+  # Video output driver for SFML
+  class SFMLVideo < Video
+    # @rbs override
+    # @rbs return: void
+    def init: ...
+
+    # @rbs override
+    # @rbs scale: Integer?
+    # @rbs return: void
+    def change_window_size: ...
+
+    # @rbs w: Integer
+    # @rbs h: Integer
+    # @rbs return: void
+    def on_resize: (Integer w, Integer h) -> void
+
+    # @rbs @window: untyped
+    attr_reader window: untyped
+
+    # @rbs override
+    # @rbs colors: Array[Integer]
+    # @rbs return: Integer
+    def tick: ...
+  end
+end

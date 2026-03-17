@@ -1,0 +1,38 @@
+# Generated from lib/optcarrot/driver/sdl2_input.rb with RBS::Inline
+
+module Optcarrot
+  # Input driver for SDL2
+  class SDL2Input < Input
+    # @rbs override
+    # @rbs return: void
+    def init: ...
+
+    # @rbs override
+    # @rbs return: void
+    def dispose: ...
+
+    DEFAULT_KEY_MAPPING: ::Hash[::Integer, untyped]
+
+    # @rbs axis: bool
+    # @rbs value: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
+    def joystick_move: (bool axis, Integer value, untyped pads) -> void
+
+    # @rbs button: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
+    def joystick_buttondown: (Integer button, untyped pads) -> void
+
+    # @rbs button: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
+    def joystick_buttonup: (Integer button, untyped pads) -> void
+
+    # @rbs override
+    # @rbs _frame: Integer
+    # @rbs pads: untyped
+    # @rbs return: void
+    def tick: ...
+  end
+end

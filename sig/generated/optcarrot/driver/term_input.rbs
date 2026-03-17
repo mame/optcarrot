@@ -1,0 +1,30 @@
+# Generated from lib/optcarrot/driver/term_input.rb with RBS::Inline
+
+module Optcarrot
+  # Input driver for terminal (this is a joke feature)
+  class TermInput < Input
+    @escape: bool
+
+    @ticks: Hash[Symbol, Integer]
+
+    # @rbs return: void
+    # @rbs override
+    def init: ...
+
+    # @rbs return: void
+    # @rbs override
+    def dispose: ...
+
+    # @rbs pads: Optcarrot::Pads
+    # @rbs code: Symbol
+    # @rbs frame: Integer
+    # @rbs return: void
+    def keydown: (Optcarrot::Pads pads, Symbol code, Integer frame) -> void
+
+    # @rbs frame: Integer
+    # @rbs pads: Pads
+    # @rbs return: void
+    # @rbs override
+    def tick: ...
+  end
+end

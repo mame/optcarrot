@@ -1,0 +1,27 @@
+# Generated from lib/optcarrot/driver/gif_video.rb with RBS::Inline
+
+module Optcarrot
+  # Video output driver saving an animation GIF file
+  class GIFVideo < Video
+    @f: File
+
+    @header: String
+
+    # @rbs return: void
+    # @rbs override
+    def init: ...
+
+    # @rbs return: void
+    # @rbs override
+    def dispose: ...
+
+    # @rbs screen: Array[Integer]
+    # @rbs return: (Integer | Float)
+    # @rbs override
+    def tick: ...
+
+    # @rbs data: Array[untyped]
+    # @rbs return: void
+    def compress: (Array[untyped] data) -> void
+  end
+end

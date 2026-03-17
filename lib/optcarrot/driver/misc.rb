@@ -1,8 +1,13 @@
+# rbs_inline: enabled
+
 module Optcarrot
   # some helper methods for drivers
   module Driver
     module_function
 
+    # @rbs colors: Array[Array[Integer]]
+    # @rbs limit: Integer
+    # @rbs return: [Array[Integer], Array[Array[Integer]]]
     def quantize_colors(colors, limit = 256)
       # median-cut
       @cubes = [colors.uniq]
@@ -18,7 +23,7 @@ module Optcarrot
       end
       raise if @cubes.size != limit
       idx = 0
-      mapping = {}
+      mapping = {} #: Hash[Array[Integer], Integer]
       unified_colors = @cubes.map do |cube|
         cube.each {|color| mapping[color] = idx }
         idx += 1
@@ -28,6 +33,8 @@ module Optcarrot
       return palette, unified_colors
     end
 
+    # @rbs colors: Array[untyped]
+    # @rbs return: void
     def cutoff_overscan(colors)
       colors[0, 2048] = EMPTY_ARRAY
       colors[-2048, 2048] = EMPTY_ARRAY
@@ -35,7 +42,12 @@ module Optcarrot
     EMPTY_ARRAY = []
 
     SIZE = 1
-    def show_fps(colors, fps, palette)
+    # @rbs colors: Array[untyped]
+    # @rbs fps: Integer
+    # @rbs palette: Array[untyped]
+    # @rbs &block: ((Integer) -> Integer)?
+    # @rbs return: void
+    def show_fps(colors, fps, palette, &blk)
       digits = fps > 100 ? 3 : 2
       w = (3 + digits) * 4
 
@@ -44,8 +56,8 @@ module Optcarrot
           c = colors[idx = x + y * 256]
 
           # darken the right-bottom corner for drawing FPS
-          if block_given?
-            c = yield c
+          if blk
+            c = blk.call(c)
           else
             r = ((c >> 16) & 0xff) / 4
             g = ((c >>  8) & 0xff) / 4
@@ -68,7 +80,8 @@ module Optcarrot
 
       # draw FPS
       (3 + digits).times do |i| # show "xxFPS"
-        bits = FONT[i < digits ? fps / 10**(digits - i - 1) % 10 : i - digits + 10]
+        power = 10**(digits - i - 1) #: Integer
+        bits = FONT[i < digits ? fps / power % 10 : i - digits + 10]
         5.times do |y|
           3.times do |x|
             SIZE.times do |dy|
@@ -101,6 +114,7 @@ module Optcarrot
     ]
 
     # icon data
+    # @rbs return: [Integer, Integer, untyped]
     def icon_data
       width, height = 16, 16
       pixels = FFI::MemoryPointer.new(:uint8, width * height * 4)
@@ -112,7 +126,8 @@ module Optcarrot
       dat = "38*2309(3:9&,8210982(32,=&8*1:=2,9=1#5$(2&3'?%(-@715+)A3'?'A-.<0$$++B1:$?B6<0$++)$43#%)'A@<:%B314@.<1"
       i = 66
       "54'4-6>')+((;/7#0#,2,*//..'$%-11*(00##".scan(/../) do
-        dat = dat.gsub(i.chr, $&)
+        matched = $& #: String
+        dat = dat.gsub(i.chr, matched)
         i -= 1
       end
       dat = dat.bytes.map {|clr| palette[clr - 35] }

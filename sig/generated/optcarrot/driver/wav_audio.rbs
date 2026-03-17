@@ -1,0 +1,19 @@
+# Generated from lib/optcarrot/driver/wav_audio.rb with RBS::Inline
+
+module Optcarrot
+  # Audio output driver saving a WAV file
+  class WAVAudio < Audio
+    # @rbs return: void
+    # @rbs override
+    def init: ...
+
+    # @rbs return: void
+    # @rbs override
+    def dispose: ...
+
+    # @rbs output: Array[Integer]
+    # @rbs return: void
+    # @rbs override
+    def tick: ...
+  end
+end

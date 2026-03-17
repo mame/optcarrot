@@ -1,0 +1,6 @@
+# Generated from lib/optcarrot.rb with RBS::Inline
+
+# Optcarrot namespace
+module Optcarrot
+  VERSION: ::String
+end

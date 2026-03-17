@@ -1,0 +1,49 @@
+# Generated from lib/optcarrot/driver/png_video.rb with RBS::Inline
+
+module Optcarrot
+  # Video output driver saving a PNG file
+  class PNGVideo < Video
+    @screen: Array[Array[Integer]]?
+
+    # @rbs return: void
+    # @rbs override
+    def init: ...
+
+    # @rbs return: void
+    def dispose: () -> void
+
+    # @rbs screen: Array[Array[Integer]]
+    # @rbs return: (Integer | Float)
+    # @rbs override
+    def tick: ...
+
+    # PNG data generator
+    class PNGEncoder
+      # @rbs screen: Array[Array[Integer]]
+      # @rbs width: Integer
+      # @rbs height: Integer
+      # @rbs return: void
+      def initialize: (Array[Array[Integer]] screen, Integer width, Integer height) -> void
+
+      # @rbs return: String
+      def encode: () -> String
+
+      # @rbs type: String
+      # @rbs data: String
+      # @rbs return: String
+      def chunk: (String type, String data) -> String
+
+      ADLER_MOD: ::Integer
+
+      # @rbs data: Array[untyped]
+      # @rbs return: String
+      def cheat_zlib_deflate: (Array[untyped] data) -> String
+
+      CRC_TABLE: Array[Integer]
+
+      # @rbs data: String
+      # @rbs return: Integer
+      def crc32: (String data) -> Integer
+    end
+  end
+end

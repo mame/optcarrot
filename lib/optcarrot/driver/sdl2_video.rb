@@ -1,9 +1,13 @@
+# rbs_inline: enabled
+
 require_relative "sdl2"
 require_relative "misc"
 
 module Optcarrot
   # Video output driver for SDL2
   class SDL2Video < Video
+    # @rbs override
+    # @rbs return: void
     def init
       SDL2.InitSubSystem(SDL2::INIT_VIDEO)
       @ticks_log = [0] * 11
@@ -37,10 +41,13 @@ module Optcarrot
       end
     end
 
+    # @rbs override
+    # @rbs scale: Integer?
+    # @rbs return: void
     def change_window_size(scale)
       if scale
         SDL2.SetWindowFullscreen(@window, 0)
-        SDL2.SetWindowSize(@window, TV_WIDTH * scale, HEIGHT * scale)
+        SDL2.SetWindowSize(@window, TV_WIDTH * scale, HEIGHT * scale) # steep:ignore
       elsif SDL2.GetWindowFlags(@window) & SDL2::WINDOW_FULLSCREEN_DESKTOP != 0
         SDL2.SetWindowFullscreen(@window, 0)
       else
@@ -48,6 +55,8 @@ module Optcarrot
       end
     end
 
+    # @rbs override
+    # @rbs return: void
     def dispose
       SDL2.FreeSurface(@icon)
       SDL2.DestroyTexture(@texture)
@@ -56,6 +65,9 @@ module Optcarrot
       SDL2.QuitSubSystem(SDL2::INIT_VIDEO)
     end
 
+    # @rbs override
+    # @rbs colors: Array[Integer]
+    # @rbs return: Integer
     def tick(colors)
       prev_ticks = @ticks_log[0]
       wait = prev_ticks + 1000 - SDL2.GetTicks * NES::FPS

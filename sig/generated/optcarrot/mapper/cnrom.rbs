@@ -1,0 +1,15 @@
+# Generated from lib/optcarrot/mapper/cnrom.rb with RBS::Inline
+
+module Optcarrot
+  # CNROM mapper: http://wiki.nesdev.com/w/index.php/CNROM
+  class CNROM < ROM
+    # @rbs override
+    # @rbs return: void
+    def reset: ...
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_8000: (untyped _addr, Integer data) -> void
+  end
+end

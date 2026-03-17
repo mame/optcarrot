@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 require_relative "sdl2"
 
 module Optcarrot
@@ -5,6 +7,8 @@ module Optcarrot
   class SDL2Audio < Audio
     FORMAT = { 8 => SDL2::AUDIO_S8, 16 => SDL2::AUDIO_S16LSB }
 
+    # @rbs override
+    # @rbs return: void
     def init
       SDL2.InitSubSystem(SDL2::INIT_AUDIO)
       @max_buff_size = @rate * @bits / 8 * BUFFER_IN_FRAME / NES::FPS
@@ -29,11 +33,16 @@ module Optcarrot
       SDL2.PauseAudioDevice(@dev, 0)
     end
 
+    # @rbs override
+    # @rbs return: void
     def dispose
       SDL2.CloseAudioDevice(@dev)
       SDL2.QuitSubSystem(SDL2::INIT_AUDIO)
     end
 
+    # @rbs override
+    # @rbs output: Array[Integer]
+    # @rbs return: void
     def tick(output)
       buff = output.pack(@pack_format)
       if defined?(SDL2.QueueAudio)
@@ -45,6 +54,10 @@ module Optcarrot
     end
 
     # for SDL 2.0.3 or below in that SDL_QueueAudio is not available
+    # @rbs _userdata: untyped
+    # @rbs stream: untyped
+    # @rbs stream_len: Integer
+    # @rbs return: void
     def callback(_userdata, stream, stream_len)
       buff_size = @buff.size
       if stream_len > buff_size

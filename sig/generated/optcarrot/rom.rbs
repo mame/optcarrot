@@ -1,0 +1,90 @@
+# Generated from lib/optcarrot/rom.rb with RBS::Inline
+
+module Optcarrot
+  # Cartridge class (with NROM mapper implemented)
+  class ROM
+    MAPPER_DB: Hash[Integer, singleton(ROM)]
+
+    # @rbs filename: String
+    # @rbs return: String
+    def self.zip_extract: (String filename) -> String
+
+    # @rbs conf: Config
+    # @rbs cpu: CPU
+    # @rbs ppu: PPU
+    # @rbs return: ROM
+    def self.load: (Config conf, CPU cpu, PPU ppu) -> ROM
+
+    class InvalidROM < StandardError
+    end
+
+    # @rbs buf: Array[Integer]
+    # @rbs return: [Integer, Integer, Integer]
+    def parse_header: (Array[Integer] buf) -> [ Integer, Integer, Integer ]
+
+    @basename: String
+
+    @mirroring: Symbol
+
+    @battery: bool
+
+    @mapper: Integer
+
+    @prg_banks: Array[Array[Integer]]
+
+    @chr_banks: Array[Array[Integer]]
+
+    @prg_ref: Array[Integer]
+
+    @chr_ref: Array[Integer]
+
+    @chr_ram: bool
+
+    @wrk_readable: bool
+
+    @wrk_writable: bool
+
+    @wrk: Array[Integer]?
+
+    @ppu: PPU
+
+    @cpu: CPU
+
+    @conf: Config
+
+    # @rbs conf: Config
+    # @rbs cpu: CPU
+    # @rbs ppu: PPU
+    # @rbs basename: String
+    # @rbs buf: Array[Integer]
+    # @rbs return: void
+    def initialize: (Config conf, CPU cpu, PPU ppu, String basename, Array[Integer] buf) -> void
+
+    # @rbs return: void
+    def init: () -> void
+
+    # @rbs return: void
+    def reset: () -> void
+
+    # @rbs return: String
+    def inspect: () -> String
+
+    # @rbs addr: Integer
+    # @rbs return: Integer
+    def peek_6000: (Integer addr) -> Integer
+
+    # @rbs addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    def poke_6000: (Integer addr, Integer data) -> void
+
+    # @rbs return: void
+    def vsync: () -> void
+
+    # @rbs return: void
+    def load_battery: () -> void
+
+    # @rbs return: void
+    def save_battery: () -> void
+  end
+end

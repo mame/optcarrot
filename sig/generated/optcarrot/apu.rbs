@@ -1,0 +1,392 @@
+# Generated from lib/optcarrot/apu.rb with RBS::Inline
+
+# rbs_inline: enabled
+module Optcarrot
+  # APU implementation (audio output)
+  class APU
+    CLK_M2_MUL: ::Integer
+
+    CLK_NTSC: Integer
+
+    CLK_NTSC_DIV: ::Integer
+
+    CHANNEL_OUTPUT_MUL: ::Integer
+
+    CHANNEL_OUTPUT_DECAY: Integer
+
+    FRAME_CLOCKS: Array[Integer]
+
+    OSCILLATOR_CLOCKS: Array[Array[Integer]]
+
+    # @rbs return: String
+    def inspect: () -> String
+
+    # @rbs conf: Config
+    # @rbs cpu: CPU
+    # @rbs rate: Integer
+    # @rbs bits: Integer
+    # @rbs return: void
+    def initialize: (Config conf, CPU cpu, Integer rate, Integer bits) -> void
+
+    # @rbs return: void
+    def reset_mapping: () -> void
+
+    # @rbs mapping: bool
+    # @rbs return: void
+    def reset: (?bool mapping) -> void
+
+    attr_reader output: Array[Integer]
+
+    # @rbs return: Integer
+    def do_clock: () -> Integer
+
+    # @rbs clk: Integer
+    # @rbs return: void
+    def clock_dma: (Integer clk) -> void
+
+    # @rbs target: untyped
+    # @rbs return: void
+    def update: (?untyped target) -> void
+
+    # @rbs return: void
+    def update_latency: () -> void
+
+    # @rbs return: bool
+    def update_delta: () -> bool
+
+    # @rbs return: void
+    def vsync: () -> void
+
+    # @rbs two_clocks: bool
+    # @rbs return: void
+    def clock_oscillators: (bool two_clocks) -> void
+
+    # @rbs target: Integer
+    # @rbs return: void
+    def clock_dmc: (Integer target) -> void
+
+    # @rbs return: void
+    def clock_frame_counter: () -> void
+
+    # @rbs target: Integer
+    # @rbs return: void
+    def clock_frame_irq: (Integer target) -> void
+
+    # @rbs return: void
+    def flush_sound: () -> void
+
+    # @rbs target: Integer
+    # @rbs return: void
+    def proceed: (Integer target) -> void
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    # Control
+    def poke_4015: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    # Status
+    def peek_4015: (untyped _addr) -> Integer
+
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
+    # Frame counter (NOTE: this handler is called via Pads)
+    def poke_4017: (untyped _addr, Integer data) -> void
+
+    # @rbs _addr: Integer
+    # @rbs return: Integer
+    def peek_40xx: (untyped _addr) -> Integer
+
+    # A counter for note length
+    class LengthCounter
+      LUT: ::Array[::Integer]
+
+      # @rbs return: void
+      def reset: () -> void
+
+      attr_reader count: Integer
+
+      # @rbs enabled: bool
+      # @rbs return: bool
+      def enable: (bool enabled) -> bool
+
+      # @rbs data: Integer
+      # @rbs frame_counter_delta: bool
+      # @rbs return: void
+      def write: (Integer data, bool frame_counter_delta) -> void
+
+      # @rbs return: bool
+      def clock: () -> bool
+    end
+
+    # Wave envelope
+    class Envelope
+      attr_reader output: Integer
+
+      attr_reader looping: bool
+
+      # @rbs return: void
+      def reset_clock: () -> void
+
+      # @rbs return: void
+      def reset: () -> void
+
+      # @rbs return: void
+      def clock: () -> void
+
+      # @rbs data: Integer
+      # @rbs return: void
+      def write: (Integer data) -> void
+
+      # @rbs return: void
+      def update_output: () -> void
+    end
+
+    # Mixer (with DC Blocking filter)
+    class Mixer
+      VOL: ::Integer
+
+      P_F: ::Integer
+
+      P_0: Integer
+
+      P_1: Integer
+
+      P_2: Integer
+
+      TND_F: ::Integer
+
+      TND_0: Integer
+
+      TND_1: Integer
+
+      TND_2: Integer
+
+      # @rbs pulse_0: Pulse
+      # @rbs pulse_1: Pulse
+      # @rbs triangle: Triangle
+      # @rbs noise: Noise
+      # @rbs dmc: DMC
+      # @rbs return: void
+      def initialize: (Pulse pulse_0, Pulse pulse_1, Triangle triangle, Noise noise, DMC dmc) -> void
+
+      # @rbs return: void
+      def reset: () -> void
+
+      # @rbs return: Integer
+      def sample: () -> Integer
+    end
+
+    # base class for oscillator channels (Pulse, Triangle, and Noise)
+    class Oscillator
+      # @rbs return: String
+      def inspect: () -> String
+
+      # @rbs apu: APU
+      # @rbs return: void
+      def initialize: (APU apu) -> void
+
+      # @rbs return: void
+      def reset: () -> void
+
+      # @rbs return: bool
+      def active?: () -> bool
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_0: (untyped _addr, Integer data) -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_2: (untyped _addr, Integer data) -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_3: (untyped _addr, Integer data) -> void
+
+      # @rbs enabled: bool
+      # @rbs return: void
+      def enable: (bool enabled) -> void
+
+      # @rbs r: Integer
+      # @rbs f: Integer
+      # @rbs return: void
+      def update_settings: (Integer r, Integer f) -> void
+
+      # @rbs return: bool
+      def status: () -> bool
+
+      # @rbs return: void
+      def clock_envelope: () -> void
+    end
+
+    # ## Pulse channel ###
+    class Pulse < Oscillator
+      MIN_FREQ: ::Integer
+
+      MAX_FREQ: ::Integer
+
+      WAVE_FORM: Array[Array[Integer]]
+
+      # @rbs _apu: APU
+      # @rbs return: void
+      def initialize: (untyped _apu) -> void
+
+      # @rbs return: void
+      def reset: () -> void
+
+      # @rbs return: bool
+      def active?: () -> bool
+
+      # @rbs return: void
+      def update_freq: () -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_0: (untyped _addr, Integer data) -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_1: (untyped _addr, Integer data) -> void
+
+      # @rbs _addr: Integer
+      # @rbs _data: Integer
+      # @rbs return: void
+      def poke_3: (untyped _addr, untyped _data) -> void
+
+      # @rbs complement: Integer
+      # @rbs return: void
+      def clock_sweep: (Integer complement) -> void
+
+      # @rbs return: Integer
+      def sample: () -> Integer
+    end
+
+    # ## Triangle channel ###
+    class Triangle < Oscillator
+      MIN_FREQ: Integer
+
+      WAVE_FORM: Array[Integer]
+
+      # @rbs _apu: APU
+      # @rbs return: void
+      def initialize: (untyped _apu) -> void
+
+      # @rbs return: void
+      def reset: () -> void
+
+      # @rbs return: bool
+      def active?: () -> bool
+
+      # @rbs return: void
+      def update_freq: () -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_0: (untyped _addr, Integer data) -> void
+
+      # @rbs _addr: Integer
+      # @rbs _data: Integer
+      # @rbs return: void
+      def poke_3: (untyped _addr, untyped _data) -> void
+
+      # @rbs return: void
+      def clock_linear_counter: () -> void
+
+      # @rbs return: void
+      def clock_length_counter: () -> void
+
+      # @rbs return: Integer
+      def sample: () -> Integer
+    end
+
+    # ## Noise channel ###
+    class Noise < Oscillator
+      LUT: ::Array[::Integer]
+
+      # @rbs _apu: APU
+      # @rbs return: void
+      def initialize: (untyped _apu) -> void
+
+      # @rbs return: void
+      def reset: () -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_2: (untyped _addr, Integer data) -> void
+
+      # @rbs return: void
+      def clock_length_counter: () -> void
+
+      # @rbs return: Integer
+      def sample: () -> Integer
+    end
+
+    # ## DMC channel ###
+    class DMC
+      LUT: Array[Integer]
+
+      # @rbs cpu: CPU
+      # @rbs apu: APU
+      # @rbs return: void
+      def initialize: (CPU cpu, APU apu) -> void
+
+      # @rbs return: void
+      def reset: () -> void
+
+      attr_reader freq: Integer
+
+      # @rbs enabled: bool
+      # @rbs return: void
+      def enable: (bool enabled) -> void
+
+      # @rbs return: Integer
+      def sample: () -> Integer
+
+      # @rbs return: void
+      def do_dma: () -> void
+
+      # @rbs return: void
+      def update: () -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_0: (untyped _addr, Integer data) -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_1: (untyped _addr, Integer data) -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_2: (untyped _addr, Integer data) -> void
+
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
+      def poke_3: (untyped _addr, Integer data) -> void
+
+      # @rbs return: bool
+      def clock_dac: () -> bool
+
+      # @rbs return: void
+      def clock_dma: () -> void
+
+      # @rbs return: bool
+      def status: () -> bool
+    end
+  end
+end

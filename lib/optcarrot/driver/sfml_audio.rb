@@ -1,8 +1,12 @@
+# rbs_inline: enabled
+
 require_relative "sfml"
 
 module Optcarrot
   # Audio output driver for SFML
   class SFMLAudio < Audio
+    # @rbs override
+    # @rbs return: void
     def init
       @max_buff_size = @rate * @bits / 8 * BUFFER_IN_FRAME / NES::FPS
 
@@ -15,16 +19,24 @@ module Optcarrot
       @cur_buff = FFI::MemoryPointer.new(:char, @max_buff_size + 1)
     end
 
+    # @rbs override
+    # @rbs return: void
     def dispose
       SFML.sfSoundStream_stop(@stream)
       SFML.sfSoundStream_destroy(@stream)
     end
 
+    # @rbs override
+    # @rbs output: Array[Integer]
+    # @rbs return: void
     def tick(output)
       @buff << output.pack("v*".freeze)
     end
 
     # XXX: support 8bit (SFML supports only 16bit, so translation is required)
+    # @rbs chunk: untyped
+    # @rbs _userdata: untyped
+    # @rbs return: Integer
     def callback(chunk, _userdata)
       buff_size = @buff.size
       if buff_size < @max_buff_size

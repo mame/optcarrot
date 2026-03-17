@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 module Optcarrot
   # config manager and logger
   class Config
@@ -6,13 +8,13 @@ module Optcarrot
         opt_ppu: {
           type: :opts,
           desc: "select PPU optimizations",
-          candidates: PPU::OptimizedCodeBuilder::OPTIONS,
+          candidates: PPU::OptimizedCodeBuilder::OPTIONS, # steep:ignore
           default: nil,
         },
         opt_cpu: {
           type: :opts,
           desc: "select CPU optimizations",
-          candidates: CPU::OptimizedCodeBuilder::OPTIONS,
+          candidates: CPU::OptimizedCodeBuilder::OPTIONS, # steep:ignore
           default: nil,
         },
         opt: { shortcut: %w(--opt-ppu=all --opt-cpu=all) },
@@ -71,29 +73,41 @@ module Optcarrot
         attr_reader id
       end
     end
-    attr_reader :romfile
+    attr_reader :romfile #: String?
 
+    # @rbs opt: untyped
+    # @rbs return: void
     def initialize(opt)
       opt = Parser.new(opt).options if opt.is_a?(Array)
       DEFAULT_OPTIONS.merge(opt).each {|id, val| instance_variable_set(:"@#{ id }", val) }
     end
 
+    # @rbs msg: String
+    # @rbs return: void
     def debug(msg)
       puts "[DEBUG] " + msg if @loglevel >= 3
     end
 
+    # @rbs msg: String
+    # @rbs return: void
     def info(msg)
       puts "[INFO] " + msg if @loglevel >= 2
     end
 
+    # @rbs msg: String
+    # @rbs return: void
     def warn(msg)
       puts "[WARN] " + msg if @loglevel >= 1
     end
 
+    # @rbs msg: String
+    # @rbs return: void
     def error(msg)
       puts "[ERROR] " + msg
     end
 
+    # @rbs msg: String
+    # @rbs return: void
     def fatal(msg)
       puts "[FATAL] " + msg
       abort
@@ -101,6 +115,11 @@ module Optcarrot
 
     # command-line option parser
     class Parser
+      # @rbs @argv: untyped
+      # @rbs @options: Hash[Symbol, untyped]
+
+      # @rbs argv: Array[String]
+      # @rbs return: void
       def initialize(argv)
         @argv = argv.dup
         @options = DEFAULT_OPTIONS.dup
@@ -111,14 +130,18 @@ module Optcarrot
         exit 1
       end
 
-      attr_reader :options
+      attr_reader :options #: Hash[Symbol, untyped]
 
       class Invalid < RuntimeError; end
 
+      # @rbs msg: String
+      # @rbs return: void
       def error(msg)
         raise Invalid, msg
       end
 
+      # @rbs arg: untyped
+      # @rbs return: untyped
       def find_option(arg)
         OPTIONS.each_value do |opts|
           opts.each do |id_base, opt|
@@ -133,10 +156,12 @@ module Optcarrot
         return nil
       end
 
+      # @rbs return: void
       def parse_option
         arg, operand = @argv.shift.split("=", 2)
         if arg =~ /\A-(\w{2,})\z/
-          args = $1.chars.map {|a| "-#{ a }" }
+          matched = $1 #: String
+          args = matched.chars.map {|a| "-#{ a }" }
           args.last << "=" << operand if operand
           @argv.unshift(*args)
           return
@@ -165,6 +190,10 @@ module Optcarrot
         end
       end
 
+      # @rbs operand: untyped
+      # @rbs arg: untyped
+      # @rbs opt: Hash[Symbol, untyped]
+      # @rbs return: untyped
       def parse_operand(operand, arg, opt)
         type = opt[:type]
         operand ||= @argv.shift
@@ -184,8 +213,9 @@ module Optcarrot
         operand
       end
 
+      # @rbs return: void
       def help
-        tbl = ["Usage: #{ $PROGRAM_NAME } [OPTION]... FILE"]
+        tbl = ["Usage: #{ $PROGRAM_NAME } [OPTION]... FILE"] #: Array[String | Array[String]]
         long_name_width = 0
         OPTIONS.each do |kind, opts|
           tbl << "" << "#{ kind } options:"
@@ -221,36 +251,41 @@ module Optcarrot
         end
       end
 
+      # @rbs return: void
       def version
         puts "optcarrot #{ VERSION }"
       end
 
+      # @rbs return: void
       def list_drivers
         Driver::DRIVER_DB.each do |kind, drivers|
           puts "#{ kind } drivers: #{ drivers.keys * " " }"
         end
       end
 
+      # @rbs return: void
       def list_opts
         puts "CPU core optimizations:"
-        CPU::OptimizedCodeBuilder::OPTIONS.each do |opt|
+        CPU::OptimizedCodeBuilder::OPTIONS.each do |opt| # steep:ignore
           puts "  * #{ opt }"
         end
         puts
         puts "PPU core optimizations:"
-        PPU::OptimizedCodeBuilder::OPTIONS.each do |opt|
+        PPU::OptimizedCodeBuilder::OPTIONS.each do |opt| # steep:ignore
           puts "  * #{ opt }"
         end
         puts
         puts "(See `doc/internal.md' in detail.)"
       end
 
+      # @rbs return: void
       def dump_ppu
-        puts PPU::OptimizedCodeBuilder.new(@options[:loglevel], @options[:opt_ppu] || []).build
+        puts PPU::OptimizedCodeBuilder.new(@options[:loglevel], @options[:opt_ppu] || []).build # steep:ignore
       end
 
+      # @rbs return: void
       def dump_cpu
-        puts CPU::OptimizedCodeBuilder.new(@options[:loglevel], @options[:opt_cpu] || []).build
+        puts CPU::OptimizedCodeBuilder.new(@options[:loglevel], @options[:opt_cpu] || []).build # steep:ignore
       end
     end
   end

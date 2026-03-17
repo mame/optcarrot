@@ -1,0 +1,4 @@
+# Generated from lib/optcarrot/driver/sfml.rb with RBS::Inline
+
+module Optcarrot
+end

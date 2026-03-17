@@ -1,8 +1,19 @@
+# rbs_inline: enabled
+
 require_relative "misc"
 
 module Optcarrot
   # Video output driver for Sixel (this is a joke feature)
   class SixelVideo < Video
+    # @rbs @buff: String
+    # @rbs @line: String
+    # @rbs @seq_setup: String
+    # @rbs @seq_clr: Array[String]
+    # @rbs @seq_len: Array[String]
+    # @rbs @seq_end: String
+
+    # @rbs return: void
+    # @rbs override
     def init
       super
       @buff = "".b
@@ -21,6 +32,9 @@ module Optcarrot
       @seq_end = "\e\\"
     end
 
+    # @rbs screen: Array[Integer]
+    # @rbs return: (Integer | Float)
+    # @rbs override
     def tick(screen)
       @buff.replace(@seq_setup)
       40.times do |y|
@@ -40,17 +54,19 @@ module Optcarrot
             if prev_clr == clr
               len += 1
             elsif prev_clr
+              prev = prev_clr #: Integer
               case len
-              when 1 then @line << prev_clr
-              when 2 then @line << prev_clr << prev_clr
-              else        @line << @seq_len[len] << prev_clr
+              when 1 then @line << prev
+              when 2 then @line << prev << prev
+              else        @line << (@seq_len[len] #: String) << prev
               end
               len = 1
             end
             prev_clr = clr
           end
           if prev_clr != 63 || len != 256
-            @buff << @seq_clr[c] << @line << @seq_len[len] << prev_clr << 36 # $
+            prev = prev_clr #: Integer
+            @buff << (@seq_clr[c] #: String) << @line << (@seq_len[len] #: String) << prev << 36
             @line.clear
           end
         end

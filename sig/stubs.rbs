@@ -1,0 +1,266 @@
+module Optcarrot
+  interface _Fetchable
+    def []: (Integer) -> Integer
+  end
+
+  interface _Storable
+    def []: (Integer, Integer) -> void
+  end
+
+  class Config
+    def nestopia_palette: () -> bool
+    def audio_sample_rate: () -> Integer
+    def audio_bit_depth: () -> Integer
+    def video: () -> Symbol?
+    def audio: () -> Symbol?
+    def input: () -> Symbol?
+    def video_output: () -> String
+    def audio_output: () -> String
+    def show_fps: () -> bool
+    def key_log: () -> (String | Array[Integer])?
+    def loglevel: () -> Integer
+    def opt_cpu: () -> untyped
+    def opt_ppu: () -> untyped
+    def load_cpu: () -> String?
+    def load_ppu: () -> String?
+    def frames: () -> Integer
+    def sprite_limit: () -> bool
+    def print_fps: () -> bool
+    def print_p95fps: () -> bool
+    def print_fps_history: () -> bool
+    def print_video_checksum: () -> bool
+    def stackprof_mode: () -> untyped
+    def stackprof_output: () -> String
+  end
+
+  class CPU
+    CLK_1: Integer
+    CLK_2: Integer
+    CLK_3: Integer
+    CLK_4: Integer
+    CLK_5: Integer
+    CLK_6: Integer
+    CLK_7: Integer
+    CLK_8: Integer
+
+  end
+
+  class APU
+    class Oscillator
+      def update_freq: () -> void
+    end
+
+    class Noise
+      NEXT_BITS_1: Array[Integer]
+      NEXT_BITS_6: Array[Integer]
+    end
+  end
+
+  class ROM
+  end
+
+end
+
+module StackProf
+  def self.start: (**untyped) -> void
+  def self.stop: () -> void
+  def self.results: () -> untyped
+end
+
+# Stubs for FFI driver modules.
+# These modules use @rbs skip because attach_function methods are invisible to rbs-inline.
+
+module Optcarrot
+  module SDL2 : Module
+    INIT_TIMER: Integer
+    INIT_AUDIO: Integer
+    INIT_VIDEO: Integer
+    INIT_JOYSTICK: Integer
+    WINDOWPOS_UNDEFINED: Integer
+    WINDOW_FULLSCREEN: Integer
+    WINDOW_OPENGL: Integer
+    WINDOW_SHOWN: Integer
+    WINDOW_HIDDEN: Integer
+    WINDOW_BORDERLESS: Integer
+    WINDOW_RESIZABLE: Integer
+    WINDOW_MINIMIZED: Integer
+    WINDOW_MAXIMIZED: Integer
+    WINDOW_INPUT_GRABBED: Integer
+    WINDOW_INPUT_FOCUS: Integer
+    WINDOW_MOUSE_FOCUS: Integer
+    WINDOW_FULLSCREEN_DESKTOP: Integer
+    PACKEDORDER: Integer
+    PIXELFORMAT_8888: Integer
+    TEXTUREACCESS_STREAMING: Integer
+    AUDIO_S8: Integer
+    AUDIO_S16LSB: Integer
+    AUDIO_S16MSB: Integer
+    AUDIO_S16SYS: Integer
+
+    class KeyboardEvent
+      def self.offset_of: (Symbol) -> Integer
+    end
+    class JoyAxisEvent
+      def self.offset_of: (Symbol) -> Integer
+    end
+    class JoyButtonEvent
+      def self.offset_of: (Symbol) -> Integer
+    end
+    class JoyDeviceEvent
+      def self.offset_of: (Symbol) -> Integer
+    end
+    class AudioSpec
+      def self.new: () -> untyped
+      def self.ptr: () -> untyped
+    end
+
+    def self.AudioCallback: (untyped) -> untyped
+    def self.InitSubSystem: (Integer) -> Integer
+    def self.QuitSubSystem: (Integer) -> void
+    def self.Delay: (Integer) -> void
+    def self.GetError: () -> String
+    def self.GetTicks: () -> Integer
+    def self.GetVersion: (untyped) -> void
+    def self.CreateWindow: (String, Integer, Integer, Integer, Integer, Integer) -> untyped
+    def self.DestroyWindow: (untyped) -> void
+    def self.CreateRenderer: (untyped, Integer, Integer) -> untyped
+    def self.DestroyRenderer: (untyped) -> void
+    def self.CreateRGBSurfaceFrom: (untyped, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer) -> untyped
+    def self.FreeSurface: (untyped) -> void
+    def self.GetWindowFlags: (untyped) -> Integer
+    def self.SetWindowFullscreen: (untyped, Integer) -> Integer
+    def self.SetWindowSize: (untyped, Integer, Integer) -> void
+    def self.SetWindowTitle: (untyped, String) -> void
+    def self.SetWindowIcon: (untyped, untyped) -> void
+    def self.SetHint: (String, String) -> Integer
+    def self.RenderSetLogicalSize: (untyped, Integer, Integer) -> Integer
+    def self.CreateTexture: (untyped, Integer, Integer, Integer, Integer) -> untyped
+    def self.DestroyTexture: (untyped) -> void
+    def self.PollEvent: (untyped) -> Integer
+    def self.UpdateTexture: (untyped, untyped, untyped, Integer) -> Integer
+    def self.RenderClear: (untyped) -> Integer
+    def self.RenderCopy: (untyped, untyped, untyped, untyped) -> Integer
+    def self.RenderPresent: (untyped) -> Integer
+    def self.OpenAudioDevice: (untyped, Integer, untyped, untyped, Integer) -> Integer
+    def self.PauseAudioDevice: (Integer, Integer) -> void
+    def self.CloseAudioDevice: (Integer) -> void
+    def self.NumJoysticks: () -> Integer
+    def self.JoystickOpen: (Integer) -> untyped
+    def self.JoystickClose: (untyped) -> void
+    def self.JoystickNameForIndex: (Integer) -> String
+    def self.JoystickNumAxes: (untyped) -> Integer
+    def self.JoystickNumButtons: (untyped) -> Integer
+    def self.JoystickInstanceID: (untyped) -> Integer
+    def self.QueueAudio: (Integer, untyped, Integer) -> Integer
+    def self.GetQueuedAudioSize: (Integer) -> Integer
+    def self.ClearQueuedAudio: (Integer) -> void
+  end
+
+  module SFML : Module
+    class VideoMode
+      def self.new: () -> untyped
+    end
+    class Color
+      def self.new: () -> untyped
+    end
+    class Vector2u
+      def self.new: () -> untyped
+    end
+    class Vector2f
+      def self.new: () -> untyped
+    end
+    class FloatRect
+      def self.new: () -> untyped
+    end
+    class KeyEvent
+      def self.offset_of: (Symbol) -> Integer
+    end
+    class SizeEvent
+      def self.offset_of: (Symbol) -> Integer
+    end
+    class SoundStreamChunk
+      def self.by_ref: () -> untyped
+    end
+
+    def self.SoundStreamGetDataCallback: (untyped) -> untyped
+    def self.sfClock_create: () -> untyped
+    def self.sfClock_destroy: (untyped) -> void
+    def self.sfClock_getElapsedTime: (untyped) -> Integer
+    def self.sfClock_restart: (untyped) -> Integer
+    def self.sfRenderWindow_create: (untyped, String, Integer, untyped) -> untyped
+    def self.sfRenderWindow_clear: (untyped, untyped) -> void
+    def self.sfRenderWindow_drawSprite: (untyped, untyped, untyped) -> void
+    def self.sfRenderWindow_display: (untyped) -> void
+    def self.sfRenderWindow_close: (untyped) -> void
+    def self.sfRenderWindow_isOpen: (untyped) -> Integer
+    def self.sfRenderWindow_pollEvent: (untyped, untyped) -> Integer
+    def self.sfRenderWindow_destroy: (untyped) -> void
+    def self.sfRenderWindow_setTitle: (untyped, untyped) -> void
+    def self.sfRenderWindow_setSize: (untyped, untyped) -> void
+    def self.sfRenderWindow_setFramerateLimit: (untyped, Integer) -> void
+    def self.sfRenderWindow_setKeyRepeatEnabled: (untyped, Integer) -> void
+    def self.sfRenderWindow_setView: (untyped, untyped) -> void
+    def self.sfRenderWindow_setIcon: (untyped, Integer, Integer, untyped) -> void
+    def self.sfTexture_create: (Integer, Integer) -> untyped
+    def self.sfTexture_updateFromPixels: (untyped, untyped, Integer, Integer, Integer, Integer) -> void
+    def self.sfSprite_create: () -> untyped
+    def self.sfSprite_setTexture: (untyped, untyped, Integer) -> void
+    def self.sfView_create: () -> untyped
+    def self.sfView_destroy: (untyped) -> void
+    def self.sfView_setCenter: (untyped, untyped) -> void
+    def self.sfView_setSize: (untyped, untyped) -> void
+    def self.sfSoundStream_create: (untyped, untyped, Integer, Integer, untyped) -> untyped
+    def self.sfSoundStream_destroy: (untyped) -> void
+    def self.sfSoundStream_play: (untyped) -> void
+    def self.sfSoundStream_stop: (untyped) -> void
+  end
+
+  module Ao : Module
+    class SampleFormat
+      def self.new: () -> untyped
+    end
+    FMT_NATIVE: Integer
+
+    def self.initialize: () -> void
+    def self.default_driver_id: () -> Integer
+    def self.open_live: (Integer, untyped, untyped) -> untyped
+    def self.play: (untyped, untyped, Integer) -> Integer
+    def self.close: (untyped) -> Integer
+    def self.shutdown: () -> void
+  end
+end
+
+module FFI
+  class Struct
+    def self.layout: (*untyped) -> void
+    def self.by_value: () -> untyped
+    def self.by_ref: () -> untyped
+    def self.ptr: () -> untyped
+    def self.offset_of: (Symbol) -> Integer
+    def self.new: () -> untyped
+    def []: (Symbol) -> untyped
+    def []=: (Symbol, untyped) -> void
+  end
+
+  class MemoryPointer
+    def self.new: (Symbol, Integer) -> FFI::MemoryPointer
+           | (Symbol) -> FFI::MemoryPointer
+    def write_bytes: (String) -> FFI::MemoryPointer
+    def write_array_of_uint32: (Array[Integer]) -> void
+    def read_int: () -> Integer
+    def get_uint8: (Integer) -> Integer
+    def get_int: (Integer) -> Integer
+    def get_uint32: (Integer) -> Integer
+    def get_int16: (Integer) -> Integer
+    def write_string_length: (String, Integer) -> void
+    def put_string: (Integer, String) -> void
+    def clear: () -> void
+  end
+
+  module Library
+  end
+
+  class Function
+    def self.new: (Symbol, Array[untyped], untyped, ?blocking: bool) -> untyped
+  end
+end

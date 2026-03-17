@@ -1,25 +1,42 @@
+# rbs_inline: enabled
+
 require "io/console"
 require "io/wait"
 
 module Optcarrot
   # Input driver for terminal (this is a joke feature)
   class TermInput < Input
+    # @rbs @escape: bool
+    # @rbs @ticks: Hash[Symbol, Integer]
+
+    # @rbs return: void
+    # @rbs override
     def init
-      $stdin.raw!
+      $stdin.raw! # steep:ignore
       $stdin.getc if $stdin.ready?
       @escape = false
       @ticks = { start: 0, select: 0, a: 0, b: 0, right: 0, left: 0, down: 0, up: 0 }
     end
 
+    # @rbs return: void
+    # @rbs override
     def dispose
-      $stdin.cooked!
+      $stdin.cooked! # steep:ignore
     end
 
+    # @rbs pads: Optcarrot::Pads
+    # @rbs code: Symbol
+    # @rbs frame: Integer
+    # @rbs return: void
     def keydown(pads, code, frame)
       event(pads, :keydown, code, 0)
       @ticks[code] = frame
     end
 
+    # @rbs frame: Integer
+    # @rbs pads: Pads
+    # @rbs return: void
+    # @rbs override
     def tick(frame, pads)
       while $stdin.ready?
         ch = $stdin.getbyte

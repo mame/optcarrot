@@ -1,19 +1,21 @@
+# rbs_inline: enabled
 module Optcarrot
   # APU implementation (audio output)
   class APU
     CLK_M2_MUL   = 6
-    CLK_NTSC     = 39_375_000 * CLK_M2_MUL
+    CLK_NTSC     = 39_375_000 * CLK_M2_MUL #: Integer
     CLK_NTSC_DIV = 11
 
     CHANNEL_OUTPUT_MUL   = 256
-    CHANNEL_OUTPUT_DECAY = CHANNEL_OUTPUT_MUL / 4 - 1
+    CHANNEL_OUTPUT_DECAY = CHANNEL_OUTPUT_MUL / 4 - 1 #: Integer
 
-    FRAME_CLOCKS = [29830, 1, 1, 29828].map {|n| RP2A03_CC * n }
+    FRAME_CLOCKS = [29830, 1, 1, 29828].map {|n| RP2A03_CC * n } #: Array[Integer]
     OSCILLATOR_CLOCKS = [
       [7458, 7456, 7458, 7458],
       [7458, 7456, 7458, 7458 + 7452]
-    ].map {|a| a.map {|n| RP2A03_CC * n } }
+    ].map {|a| a.map {|n| RP2A03_CC * n } } #: Array[Array[Integer]]
 
+    # @rbs return: String
     def inspect
       "#<#{ self.class }>"
     end
@@ -21,36 +23,42 @@ module Optcarrot
     ###########################################################################
     # initialization
 
+    # @rbs conf: Config
+    # @rbs cpu: CPU
+    # @rbs rate: Integer
+    # @rbs bits: Integer
+    # @rbs return: void
     def initialize(conf, cpu, rate, bits)
-      @conf = conf
-      @cpu = cpu
+      @conf = conf #: Config
+      @cpu = cpu #: CPU
 
-      @pulse_0, @pulse_1 = Pulse.new(self), Pulse.new(self)
-      @triangle = Triangle.new(self)
-      @noise = Noise.new(self)
-      @dmc = DMC.new(@cpu, self)
-      @mixer = Mixer.new(@pulse_0, @pulse_1, @triangle, @noise, @dmc)
+      @pulse_0, @pulse_1 = Pulse.new(self), Pulse.new(self) #: Pulse
+      @triangle = Triangle.new(self) #: Triangle
+      @noise = Noise.new(self) #: Noise
+      @dmc = DMC.new(@cpu, self) #: DMC
+      @mixer = Mixer.new(@pulse_0, @pulse_1, @triangle, @noise, @dmc) #: Mixer
 
       @conf.fatal("audio sample rate must be >= 11050") if rate < 11050
       @conf.fatal("audio bit depth must be 8 or 16") if bits != 8 && bits != 16
 
-      @settings_rate = rate
+      @settings_rate = rate #: Integer
 
-      @output = []
-      @buffer = []
+      @output = [] #: Array[Integer]
+      @buffer = [] #: Array[Integer]
 
-      @fixed_clock = 1
-      @rate_clock = 1
-      @rate_counter = 0
-      @frame_counter = 0
-      @frame_divider = 0
-      @frame_irq_clock = 0
-      @frame_irq_repeat = 0
-      @dmc_clock = 0
+      @fixed_clock = 1 #: Integer
+      @rate_clock = 1 #: Integer
+      @rate_counter = 0 #: Integer
+      @frame_counter = 0 #: Integer
+      @frame_divider = 0 #: Integer
+      @frame_irq_clock = 0 #: Integer
+      @frame_irq_repeat = 0 #: Integer
+      @dmc_clock = 0 #: Integer
 
       reset(false)
     end
 
+    # @rbs return: void
     def reset_mapping
       @frame_counter /= @fixed_clock
       @rate_counter /= @fixed_clock
@@ -105,8 +113,10 @@ module Optcarrot
       @frame_irq_clock = (@frame_counter / @fixed_clock) - CPU::CLK_1
     end
 
+    # @rbs mapping: bool
+    # @rbs return: void
     def reset(mapping = true)
-      @cycles_ratecounter = 0
+      @cycles_ratecounter = 0 #: Integer
       @frame_divider = 0
       @frame_irq_clock = FOREVER_CLOCK
       @frame_irq_repeat = 0
@@ -122,34 +132,41 @@ module Optcarrot
       @dmc.reset
       @mixer.reset
       @buffer.clear
-      @oscillator_clocks = OSCILLATOR_CLOCKS[0]
+      @oscillator_clocks = OSCILLATOR_CLOCKS[0] #: Array[Integer]
     end
 
     ###########################################################################
     # other APIs
 
-    attr_reader :output
+    attr_reader :output #: Array[Integer]
 
+    # @rbs return: Integer
     def do_clock
       clock_dma(@cpu.current_clock)
       clock_frame_irq(@cpu.current_clock) if @frame_irq_clock <= @cpu.current_clock
       @dmc_clock < @frame_irq_clock ? @dmc_clock : @frame_irq_clock
     end
 
+    # @rbs clk: Integer
+    # @rbs return: void
     def clock_dma(clk)
       clock_dmc(clk) if @dmc_clock <= clk
     end
 
+    # @rbs target: untyped
+    # @rbs return: void
     def update(target = @cpu.update)
       target *= @fixed_clock
       proceed(target)
       clock_frame_counter if @frame_counter < target
     end
 
+    # @rbs return: void
     def update_latency
       update(@cpu.update + 1)
     end
 
+    # @rbs return: bool
     def update_delta
       elapsed = @cpu.update
       delta = @frame_counter != elapsed * @fixed_clock
@@ -157,6 +174,7 @@ module Optcarrot
       delta
     end
 
+    # @rbs return: void
     def vsync
       flush_sound
       update(@cpu.current_clock)
@@ -171,6 +189,8 @@ module Optcarrot
     ###########################################################################
     # helpers
 
+    # @rbs two_clocks: bool
+    # @rbs return: void
     def clock_oscillators(two_clocks)
       @pulse_0.clock_envelope
       @pulse_1.clock_envelope
@@ -183,6 +203,8 @@ module Optcarrot
       @noise.clock_length_counter
     end
 
+    # @rbs target: Integer
+    # @rbs return: void
     def clock_dmc(target)
       begin
         if @dmc.clock_dac
@@ -194,12 +216,15 @@ module Optcarrot
       end while @dmc_clock <= target
     end
 
+    # @rbs return: void
     def clock_frame_counter
       clock_oscillators(@frame_divider[0] == 1)
       @frame_divider = (@frame_divider + 1) & 3
       @frame_counter += @oscillator_clocks[@frame_divider] * @fixed_clock
     end
 
+    # @rbs target: Integer
+    # @rbs return: void
     def clock_frame_irq(target)
       @cpu.do_irq(CPU::IRQ_FRAME, @frame_irq_clock)
       begin
@@ -208,6 +233,7 @@ module Optcarrot
       end while @frame_irq_clock <= target
     end
 
+    # @rbs return: void
     def flush_sound
       if @buffer.size < @settings_rate / 60
         target = @cpu.current_clock * @fixed_clock
@@ -222,6 +248,8 @@ module Optcarrot
       @buffer.clear
     end
 
+    # @rbs target: Integer
+    # @rbs return: void
     def proceed(target)
       while @rate_counter < target && @buffer.size < @settings_rate / 60
         @buffer << @mixer.sample
@@ -233,6 +261,9 @@ module Optcarrot
     ###########################################################################
     # mapped memory handlers
 
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     # Control
     def poke_4015(_addr, data)
       update
@@ -243,6 +274,8 @@ module Optcarrot
       @dmc     .enable(data[4] == 1)
     end
 
+    # @rbs _addr: Integer
+    # @rbs return: Integer
     # Status
     def peek_4015(_addr)
       elapsed = @cpu.update
@@ -256,6 +289,9 @@ module Optcarrot
         (@dmc     .status ? 0x10 : 0)
     end
 
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     # Frame counter (NOTE: this handler is called via Pads)
     def poke_4017(_addr, data)
       n = @cpu.update
@@ -272,6 +308,8 @@ module Optcarrot
       clock_oscillators(true) if data[7] != 0
     end
 
+    # @rbs _addr: Integer
+    # @rbs return: Integer
     def peek_40xx(_addr)
       0x40
     end
@@ -285,23 +323,31 @@ module Optcarrot
         0x0a, 0xfe, 0x14, 0x02, 0x28, 0x04, 0x50, 0x06, 0xa0, 0x08, 0x3c, 0x0a, 0x0e, 0x0c, 0x1a, 0x0e,
         0x0c, 0x10, 0x18, 0x12, 0x30, 0x14, 0x60, 0x16, 0xc0, 0x18, 0x48, 0x1a, 0x10, 0x1c, 0x20, 0x1e,
       ]
+
+      # @rbs return: void
       def reset
-        @enabled = false
-        @count = 0
+        @enabled = false #: bool
+        @count = 0 #: Integer
       end
 
-      attr_reader :count
+      attr_reader :count #: Integer
 
+      # @rbs enabled: bool
+      # @rbs return: bool
       def enable(enabled)
         @enabled = enabled
         @count = 0 unless @enabled
         @enabled
       end
 
+      # @rbs data: Integer
+      # @rbs frame_counter_delta: bool
+      # @rbs return: void
       def write(data, frame_counter_delta)
         @count = @enabled ? LUT[data] : 0 if frame_counter_delta || @count == 0
       end
 
+      # @rbs return: bool
       def clock
         return false if @count == 0
         @count -= 1
@@ -311,22 +357,26 @@ module Optcarrot
 
     # Wave envelope
     class Envelope
-      attr_reader :output, :looping
+      attr_reader :output #: Integer
+      attr_reader :looping #: bool
 
+      # @rbs return: void
       def reset_clock
-        @reset = true
+        @reset = true #: bool
       end
 
+      # @rbs return: void
       def reset
-        @output = 0
-        @count = 0
-        @volume_base = @volume = 0
-        @constant = true
-        @looping = false
-        @reset = false
+        @output = 0 #: Integer
+        @count = 0 #: Integer
+        @volume_base = @volume = 0 #: Integer
+        @constant = true #: bool
+        @looping = false #: bool
+        @reset = false #: bool
         update_output
       end
 
+      # @rbs return: void
       def clock
         if @reset
           @reset = false
@@ -342,6 +392,8 @@ module Optcarrot
         update_output
       end
 
+      # @rbs data: Integer
+      # @rbs return: void
       def write(data)
         @volume_base = data & 0x0f
         @constant = data[4] == 1
@@ -349,6 +401,7 @@ module Optcarrot
         update_output
       end
 
+      # @rbs return: void
       def update_output
         @output = (@constant ? @volume_base : @volume) * CHANNEL_OUTPUT_MUL
       end
@@ -358,22 +411,30 @@ module Optcarrot
     class Mixer
       VOL   = 192
       P_F   = 900
-      P_0   = 9552 * CHANNEL_OUTPUT_MUL * VOL * (P_F / 100)
-      P_1   = 8128 * CHANNEL_OUTPUT_MUL * P_F
-      P_2   = P_F * 100
+      P_0   = 9552 * CHANNEL_OUTPUT_MUL * VOL * (P_F / 100) #: Integer
+      P_1   = 8128 * CHANNEL_OUTPUT_MUL * P_F #: Integer
+      P_2   = P_F * 100 #: Integer
       TND_F = 500
-      TND_0 = 16367 * CHANNEL_OUTPUT_MUL * VOL * (TND_F / 100)
-      TND_1 = 24329 * CHANNEL_OUTPUT_MUL * TND_F
-      TND_2 = TND_F * 100
+      TND_0 = 16367 * CHANNEL_OUTPUT_MUL * VOL * (TND_F / 100) #: Integer
+      TND_1 = 24329 * CHANNEL_OUTPUT_MUL * TND_F #: Integer
+      TND_2 = TND_F * 100 #: Integer
 
+      # @rbs pulse_0: Pulse
+      # @rbs pulse_1: Pulse
+      # @rbs triangle: Triangle
+      # @rbs noise: Noise
+      # @rbs dmc: DMC
+      # @rbs return: void
       def initialize(pulse_0, pulse_1, triangle, noise, dmc)
-        @pulse_0, @pulse_1, @triangle, @noise, @dmc = pulse_0, pulse_1, triangle, noise, dmc
+        @pulse_0, @pulse_1, @triangle, @noise, @dmc = pulse_0, pulse_1, triangle, noise, dmc #: Pulse
       end
 
+      # @rbs return: void
       def reset
-        @acc = @prev = @next = 0
+        @acc = @prev = @next = 0 #: Integer
       end
 
+      # @rbs return: Integer
       def sample
         dac0 = @pulse_0.sample + @pulse_1.sample
         dac1 = @triangle.sample + @noise.sample + @dmc.sample
@@ -392,33 +453,41 @@ module Optcarrot
 
     # base class for oscillator channels (Pulse, Triangle, and Noise)
     class Oscillator
+      # @rbs return: String
       def inspect
         "#<#{ self.class }>"
       end
 
+      # @rbs apu: APU
+      # @rbs return: void
       def initialize(apu)
-        @apu = apu
-        @rate = @fixed = 1
-        @envelope = @length_counter = @wave_length = nil
+        @apu = apu #: APU
+        @rate = @fixed = 1 #: Integer
+        @envelope = @length_counter = @wave_length = nil #: nil
       end
 
+      # @rbs return: void
       def reset
-        @timer = 2048 * @fixed # 2048: reset cycles
-        @freq = @fixed
-        @amp = 0
+        @timer = 2048 * @fixed #: Integer
+        @freq = @fixed #: Integer
+        @amp = 0 #: Integer
 
         @wave_length = 0 if @wave_length
         @envelope.reset if @envelope
         @length_counter.reset if @length_counter
-        @active = active?
+        @active = active? #: bool
       end
 
+      # @rbs return: bool
       def active?
         return false if @length_counter && @length_counter.count == 0
         return false if @envelope && @envelope.output == 0
         return true
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_0(_addr, data)
         if @envelope
           @apu.update_latency
@@ -427,6 +496,9 @@ module Optcarrot
         end
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_2(_addr, data)
         @apu.update
         if @wave_length
@@ -435,6 +507,9 @@ module Optcarrot
         end
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_3(_addr, data)
         delta = @apu.update_delta
         if @wave_length
@@ -446,21 +521,28 @@ module Optcarrot
         @active = active?
       end
 
+      # @rbs enabled: bool
+      # @rbs return: void
       def enable(enabled)
         @length_counter.enable(enabled)
         @active = active?
       end
 
+      # @rbs r: Integer
+      # @rbs f: Integer
+      # @rbs return: void
       def update_settings(r, f)
         @freq = @freq / @fixed * f
         @timer = @timer / @fixed * f
         @rate, @fixed = r, f
       end
 
+      # @rbs return: bool
       def status
         @length_counter.count > 0
       end
 
+      # @rbs return: void
       def clock_envelope
         @envelope.clock
         @active = active?
@@ -473,32 +555,37 @@ module Optcarrot
     class Pulse < Oscillator
       MIN_FREQ = 0x0008
       MAX_FREQ = 0x07ff
-      WAVE_FORM = [0b11111101, 0b11111001, 0b11100001, 0b00000110].map {|n| (0..7).map {|i| n[i] * 0x1f } }
+      WAVE_FORM = [0b11111101, 0b11111001, 0b11100001, 0b00000110].map {|n| (0..7).map {|i| n[i] * 0x1f } } #: Array[Array[Integer]]
 
+      # @rbs _apu: APU
+      # @rbs return: void
       def initialize(_apu)
         super
-        @wave_length = 0
-        @envelope = Envelope.new
-        @length_counter = LengthCounter.new
+        @wave_length = 0 #: Integer
+        @envelope = Envelope.new #: Envelope
+        @length_counter = LengthCounter.new #: LengthCounter
       end
 
+      # @rbs return: void
       def reset
         super
         @freq = @fixed * 2
-        @valid_freq = false
-        @step = 0
-        @form = WAVE_FORM[0]
-        @sweep_rate = 0
-        @sweep_count = 1
-        @sweep_reload = false
-        @sweep_increase = -1
-        @sweep_shift = 0
+        @valid_freq = false #: bool
+        @step = 0 #: Integer
+        @form = WAVE_FORM[0] #: Array[Integer]
+        @sweep_rate = 0 #: Integer
+        @sweep_count = 1 #: Integer
+        @sweep_reload = false #: bool
+        @sweep_increase = -1 #: Integer
+        @sweep_shift = 0 #: Integer
       end
 
+      # @rbs return: bool
       def active?
         super && @valid_freq
       end
 
+      # @rbs return: void
       def update_freq
         if @wave_length >= MIN_FREQ && @wave_length + (@sweep_increase & @wave_length >> @sweep_shift) <= MAX_FREQ
           @freq = (@wave_length + 1) * 2 * @fixed
@@ -509,11 +596,17 @@ module Optcarrot
         @active = active?
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_0(_addr, data)
         super
         @form = WAVE_FORM[data >> 6 & 3]
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_1(_addr, data)
         @apu.update
         @sweep_increase = data[3] != 0 ? 0 : -1
@@ -526,11 +619,16 @@ module Optcarrot
         update_freq
       end
 
+      # @rbs _addr: Integer
+      # @rbs _data: Integer
+      # @rbs return: void
       def poke_3(_addr, _data)
         super
         @step = 0
       end
 
+      # @rbs complement: Integer
+      # @rbs return: void
       def clock_sweep(complement)
         @active = false if !@envelope.looping && @length_counter.clock
         if @sweep_rate != 0
@@ -556,6 +654,7 @@ module Optcarrot
         @sweep_count = @sweep_rate
       end
 
+      # @rbs return: Integer
       def sample
         sum = @timer
         @timer -= @rate
@@ -589,33 +688,41 @@ module Optcarrot
 
     ### Triangle channel ###
     class Triangle < Oscillator
-      MIN_FREQ = 2 + 1
-      WAVE_FORM = (0..15).to_a + (0..15).to_a.reverse
+      MIN_FREQ = 2 + 1 #: Integer
+      WAVE_FORM = (0..15).to_a + (0..15).to_a.reverse #: Array[Integer]
 
+      # @rbs _apu: APU
+      # @rbs return: void
       def initialize(_apu)
         super
-        @wave_length = 0
-        @length_counter = LengthCounter.new
+        @wave_length = 0 #: Integer
+        @length_counter = LengthCounter.new #: LengthCounter
       end
 
+      # @rbs return: void
       def reset
         super
-        @step = 7
-        @status = :counting
-        @linear_counter_load = 0
-        @linear_counter_start = true
-        @linear_counter = 0
+        @step = 7 #: Integer
+        @status = :counting #: Symbol
+        @linear_counter_load = 0 #: Integer
+        @linear_counter_start = true #: bool
+        @linear_counter = 0 #: Integer
       end
 
+      # @rbs return: bool
       def active?
         super && @linear_counter != 0 && @wave_length >= MIN_FREQ
       end
 
+      # @rbs return: void
       def update_freq
         @freq = (@wave_length + 1) * @fixed
         @active = active?
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_0(_addr, data)
         super
         @apu.update
@@ -623,11 +730,15 @@ module Optcarrot
         @linear_counter_start = data[7] == 0
       end
 
+      # @rbs _addr: Integer
+      # @rbs _data: Integer
+      # @rbs return: void
       def poke_3(_addr, _data)
         super
         @status = :reload
       end
 
+      # @rbs return: void
       def clock_linear_counter
         if @status == :counting
           @linear_counter -= 1 if @linear_counter != 0
@@ -638,10 +749,12 @@ module Optcarrot
         @active = active?
       end
 
+      # @rbs return: void
       def clock_length_counter
         @active = false if @linear_counter_start && @length_counter.clock
       end
 
+      # @rbs return: Integer
       def sample
         if @active
           sum = @timer
@@ -676,29 +789,37 @@ module Optcarrot
         (0..0x7fff).map {|bits| bits[0] == bits[shifter] ? bits / 2 : bits / 2 + 0x4000 }
       end
 
+      # @rbs _apu: APU
+      # @rbs return: void
       def initialize(_apu)
         super
-        @envelope = Envelope.new
-        @length_counter = LengthCounter.new
+        @envelope = Envelope.new #: Envelope
+        @length_counter = LengthCounter.new #: LengthCounter
       end
 
+      # @rbs return: void
       def reset
         super
         @freq = LUT[0] * @fixed
-        @bits = 0x4000
-        @shifter = NEXT_BITS_1
+        @bits = 0x4000 #: Integer
+        @shifter = NEXT_BITS_1 #: Array[Integer]
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_2(_addr, data)
         @apu.update
         @freq = LUT[data & 0x0f] * @fixed
         @shifter = data[7] != 0 ? NEXT_BITS_6 : NEXT_BITS_1
       end
 
+      # @rbs return: void
       def clock_length_counter
         @active = false if !@envelope.looping && @length_counter.clock
       end
 
+      # @rbs return: Integer
       def sample
         @timer -= @rate
         if @active
@@ -729,34 +850,40 @@ module Optcarrot
 
     ### DMC channel ###
     class DMC
-      LUT = [428, 380, 340, 320, 286, 254, 226, 214, 190, 160, 142, 128, 106, 84, 72, 54].map {|n| n * RP2A03_CC }
+      LUT = [428, 380, 340, 320, 286, 254, 226, 214, 190, 160, 142, 128, 106, 84, 72, 54].map {|n| n * RP2A03_CC } #: Array[Integer]
 
+      # @rbs cpu: CPU
+      # @rbs apu: APU
+      # @rbs return: void
       def initialize(cpu, apu)
-        @apu = apu
-        @cpu = cpu
-        @freq = LUT[0]
+        @apu = apu #: APU
+        @cpu = cpu #: CPU
+        @freq = LUT[0] #: Integer
       end
 
+      # @rbs return: void
       def reset
-        @cur_sample          = 0
-        @lin_sample          = 0
+        @cur_sample          = 0 #: Integer
+        @lin_sample          = 0 #: Integer
         @freq                = LUT[0]
-        @loop                = false
-        @irq_enable          = false
-        @regs_length_counter = 1
-        @regs_address        = 0xc000
-        @out_active          = false
-        @out_shifter         = 0
-        @out_dac             = 0
-        @out_buffer          = 0x00
-        @dma_length_counter  = 0
-        @dma_buffered        = false
-        @dma_address         = 0xc000
-        @dma_buffer          = 0x00
+        @loop                = false #: bool
+        @irq_enable          = false #: bool
+        @regs_length_counter = 1 #: Integer
+        @regs_address        = 0xc000 #: Integer
+        @out_active          = false #: bool
+        @out_shifter         = 0 #: Integer
+        @out_dac             = 0 #: Integer
+        @out_buffer          = 0x00 #: Integer
+        @dma_length_counter  = 0 #: Integer
+        @dma_buffered        = false #: bool
+        @dma_address         = 0xc000 #: Integer
+        @dma_buffer          = 0x00 #: Integer
       end
 
-      attr_reader :freq
+      attr_reader :freq #: Integer
 
+      # @rbs enabled: bool
+      # @rbs return: void
       def enable(enabled)
         @cpu.clear_irq(CPU::IRQ_DMC)
         if !enabled
@@ -768,6 +895,7 @@ module Optcarrot
         end
       end
 
+      # @rbs return: Integer
       def sample
         if @cur_sample != @lin_sample
           step = CHANNEL_OUTPUT_MUL * 8
@@ -782,6 +910,7 @@ module Optcarrot
         @lin_sample
       end
 
+      # @rbs return: void
       def do_dma
         @dma_buffer = @cpu.dmc_dma(@dma_address)
         @dma_address = 0x8000 | ((@dma_address + 1) & 0x7fff)
@@ -797,10 +926,14 @@ module Optcarrot
         end
       end
 
+      # @rbs return: void
       def update
         @cur_sample = @out_dac * CHANNEL_OUTPUT_MUL
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_0(_addr, data)
         @loop = data[6] != 0
         @irq_enable = data[7] != 0
@@ -808,20 +941,30 @@ module Optcarrot
         @cpu.clear_irq(CPU::IRQ_DMC) unless @irq_enable
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_1(_addr, data)
         @apu.update
         @out_dac = data & 0x7f
         update
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_2(_addr, data)
         @regs_address = 0xc000 | (data << 6)
       end
 
+      # @rbs _addr: Integer
+      # @rbs data: Integer
+      # @rbs return: void
       def poke_3(_addr, data)
         @regs_length_counter = (data << 4) + 1
       end
 
+      # @rbs return: bool
       def clock_dac
         if @out_active
           n = @out_dac + ((@out_buffer & 1) << 2) - 2
@@ -834,6 +977,7 @@ module Optcarrot
         return false
       end
 
+      # @rbs return: void
       def clock_dma
         if @out_shifter == 0
           @out_shifter = 7
@@ -848,6 +992,7 @@ module Optcarrot
         end
       end
 
+      # @rbs return: bool
       def status
         @dma_length_counter > 0
       end

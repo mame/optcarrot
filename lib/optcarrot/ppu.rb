@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 require_relative "opt"
 
 module Optcarrot
@@ -5,19 +7,19 @@ module Optcarrot
   class PPU
     # clock/timing constants (stolen from Nestopia)
     RP2C02_CC         = 4
-    RP2C02_HACTIVE    = RP2C02_CC * 256
-    RP2C02_HBLANK     = RP2C02_CC * 85
-    RP2C02_HSYNC      = RP2C02_HACTIVE + RP2C02_HBLANK
+    RP2C02_HACTIVE    = RP2C02_CC * 256 #: Integer
+    RP2C02_HBLANK     = RP2C02_CC * 85 #: Integer
+    RP2C02_HSYNC      = RP2C02_HACTIVE + RP2C02_HBLANK #: Integer
     RP2C02_VACTIVE    = 240
     RP2C02_VSLEEP     = 1
     RP2C02_VINT       = 20
     RP2C02_VDUMMY     = 1
-    RP2C02_VBLANK     = RP2C02_VSLEEP + RP2C02_VINT + RP2C02_VDUMMY
-    RP2C02_VSYNC      = RP2C02_VACTIVE + RP2C02_VBLANK
-    RP2C02_HVSYNCBOOT = RP2C02_VACTIVE * RP2C02_HSYNC + RP2C02_CC * 312
-    RP2C02_HVINT      = RP2C02_VINT * RP2C02_HSYNC
-    RP2C02_HVSYNC_0   = RP2C02_VSYNC * RP2C02_HSYNC
-    RP2C02_HVSYNC_1   = RP2C02_VSYNC * RP2C02_HSYNC - RP2C02_CC
+    RP2C02_VBLANK     = RP2C02_VSLEEP + RP2C02_VINT + RP2C02_VDUMMY #: Integer
+    RP2C02_VSYNC      = RP2C02_VACTIVE + RP2C02_VBLANK #: Integer
+    RP2C02_HVSYNCBOOT = RP2C02_VACTIVE * RP2C02_HSYNC + RP2C02_CC * 312 #: Integer
+    RP2C02_HVINT      = RP2C02_VINT * RP2C02_HSYNC #: Integer
+    RP2C02_HVSYNC_0   = RP2C02_VSYNC * RP2C02_HSYNC #: Integer
+    RP2C02_HVSYNC_1   = RP2C02_VSYNC * RP2C02_HSYNC - RP2C02_CC #: Integer
 
     # special scanlines
     SCANLINE_HDUMMY = -1  # pre-render scanline
@@ -49,8 +51,80 @@ module Optcarrot
       end.transpose
       # Super dirty hack: This Array#transpose reduces page-faults.
       # It might generate cache-friendly memory layout...
-    end
+    end #: Array[Array[Array[Integer]]]
 
+    # @rbs @conf: Config
+    # @rbs @cpu: CPU
+    # @rbs @palette: Array[Integer]
+    # @rbs @nmt_mem: Array[Array[Integer]]
+    # @rbs @nmt_ref: Array[Array[Integer]]
+    # @rbs @output_pixels: Array[Integer]
+    # @rbs @output_color: Array[Integer]
+    # @rbs @run: bool
+    # @rbs @hclk: Integer
+    # @rbs @vclk: Integer
+    # @rbs @hclk_target: Integer
+    # @rbs @io_latch: Integer
+    # @rbs @io_buffer: Integer
+    # @rbs @regs_oam: Integer
+    # @rbs @vram_addr_inc: Integer
+    # @rbs @need_nmi: bool
+    # @rbs @pattern_end: Integer
+    # @rbs @any_show: bool
+    # @rbs @sp_overflow: bool
+    # @rbs @sp_zero_hit: bool
+    # @rbs @vblanking: bool
+    # @rbs @vblank: bool
+    # @rbs @io_addr: Integer
+    # @rbs @io_pattern: Integer
+    # @rbs @a12_monitor: untyped
+    # @rbs @a12_state: bool?
+    # @rbs @odd_frame: bool
+    # @rbs @scanline: Integer
+    # @rbs @scroll_toggle: bool
+    # @rbs @scroll_latch: Integer
+    # @rbs @scroll_xfine: Integer
+    # @rbs @scroll_addr_0_4: Integer
+    # @rbs @scroll_addr_5_14: Integer
+    # @rbs @name_io_addr: Integer
+    # @rbs @bg_enabled: bool
+    # @rbs @bg_show: bool
+    # @rbs @bg_show_edge: bool
+    # @rbs @bg_pixels: Array[Integer]
+    # @rbs @bg_pattern_base: Integer
+    # @rbs @bg_pattern_base_15: Integer
+    # @rbs @bg_pattern: Integer
+    # @rbs @bg_pattern_lut: untyped
+    # @rbs @bg_pattern_lut_fetched: untyped
+    # @rbs @sp_enabled: bool
+    # @rbs @sp_active: bool
+    # @rbs @sp_show: bool
+    # @rbs @sp_show_edge: bool
+    # @rbs @sp_base: Integer
+    # @rbs @sp_height: Integer
+    # @rbs @sp_phase: Integer?
+    # @rbs @sp_ram: Array[Integer]
+    # @rbs @sp_index: Integer
+    # @rbs @sp_addr: Integer
+    # @rbs @sp_latch: Integer
+    # @rbs @sp_limit: Integer
+    # @rbs @sp_buffer: Array[Integer]
+    # @rbs @sp_buffered: Integer
+    # @rbs @sp_visible: bool
+    # @rbs @sp_map: Array[[bool, bool, Integer]?]
+    # @rbs @sp_map_buffer: Array[[bool, bool, Integer]]
+    # @rbs @sp_zero_in_line: bool
+    # @rbs @chr_mem: Array[Integer]
+    # @rbs @chr_mem_writable: bool
+    # @rbs @palette_ram: Array[Integer]
+    # @rbs @coloring: Integer
+    # @rbs @emphasis: Integer
+    # @rbs @fiber: Fiber?
+    # @rbs @lut_update: Hash[Array[Integer], untyped]
+    # @rbs @name_lut: Array[Integer]
+    # @rbs @attr_lut: Array[untyped]
+
+    # @rbs return: String
     def inspect
       "#<#{ self.class }>"
     end
@@ -58,15 +132,19 @@ module Optcarrot
     ###########################################################################
     # initialization
 
+    # @rbs conf: Config
+    # @rbs cpu: CPU
+    # @rbs palette: Array[Integer]
+    # @rbs return: void
     def initialize(conf, cpu, palette)
       @conf = conf
       @cpu = cpu
       @palette = palette
 
       if @conf.load_ppu
-        eval(File.read(@conf.load_ppu))
+        eval(File.read(@conf.load_ppu)) # steep:ignore
       elsif @conf.opt_ppu
-        eval(OptimizedCodeBuilder.new(@conf.loglevel, @conf.opt_ppu).build, nil, "(generated PPU core)")
+        eval(OptimizedCodeBuilder.new(@conf.loglevel, @conf.opt_ppu).build, nil, "(generated PPU core)") # steep:ignore
       end
 
       @nmt_mem = [[0xff] * 0x400, [0xff] * 0x400]
@@ -79,6 +157,8 @@ module Optcarrot
       setup_lut
     end
 
+    # @rbs opt: Hash[Symbol, bool]
+    # @rbs return: void
     def reset(opt = {})
       if opt.fetch(:mapping, true)
         # setup mapped memory
@@ -188,32 +268,42 @@ module Optcarrot
       @sp_zero_in_line = false
     end
 
+    # @rbs return: void
     def update_output_color
       0x20.times do |i|
         @output_color[i] = @palette[@palette_ram[i] & @coloring | @emphasis]
       end
     end
 
+    # @rbs return: void
     def setup_lut
-      @lut_update = {}.compare_by_identity
+      empty = {} #: Hash[Array[Integer], untyped]
+      @lut_update = empty.compare_by_identity
 
       @name_lut = (0..0xffff).map do |i|
-        nmt_bank = @nmt_ref[i >> 10 & 3]
+        nmt_bank = @nmt_ref[i >> 10 & 3] || raise
         nmt_idx = i & 0x03ff
         fixed = (i >> 12 & 7) | (i[15] << 12)
-        (((@lut_update[nmt_bank] ||= [])[nmt_idx] ||= [nil, nil])[0] ||= []) << [i, fixed]
-        nmt_bank[nmt_idx] << 4 | fixed
+        bank_update = (@lut_update[nmt_bank] ||= []) #: Array[untyped]
+        pair = (bank_update[nmt_idx] ||= [nil, nil]) #: Array[untyped]
+        name_entries = (pair[0] ||= []) #: Array[untyped]
+        name_entries << [i, fixed]
+        (nmt_bank[nmt_idx] || raise) << 4 | fixed
       end
 
-      entries = {}
+      entries = {} #: Hash[untyped, untyped]
       @attr_lut = (0..0x7fff).map do |i|
         io_addr = 0x23c0 | (i & 0x0c00) | (i >> 4 & 0x0038) | (i >> 2 & 0x0007)
-        nmt_bank = @nmt_ref[io_addr >> 10 & 3]
+        nmt_bank = @nmt_ref[io_addr >> 10 & 3] || raise
         nmt_idx = io_addr & 0x03ff
         attr_shift = (i & 2) | (i >> 4 & 4)
         key = [io_addr, attr_shift]
-        entries[key] ||= [io_addr, TILE_LUT[nmt_bank[nmt_idx] >> attr_shift & 3], attr_shift]
-        (((@lut_update[nmt_bank] ||= [])[nmt_idx] ||= [nil, nil])[1] ||= []) << entries[key]
+        tile_lut = TILE_LUT[nmt_bank[nmt_idx] >> attr_shift & 3] || raise
+        entries[key] ||= [io_addr, tile_lut, attr_shift]
+        bank_update = (@lut_update[nmt_bank] ||= []) #: Array[untyped]
+        pair = (bank_update[nmt_idx] ||= [nil, nil]) #: Array[untyped]
+        attr_entries = (pair[1] ||= []) #: Array[untyped]
+        attr_entries << entries[key]
         entries[key]
       end.freeze
       entries.each_value {|a| a.uniq! {|entry| entry.object_id } }
@@ -222,8 +312,11 @@ module Optcarrot
     ###########################################################################
     # other APIs
 
-    attr_reader :output_pixels
+    attr_reader :output_pixels #: Array[Integer]
 
+    # @rbs mem: Array[Integer]
+    # @rbs writable: bool
+    # @rbs return: void
     def set_chr_mem(mem, writable)
       @chr_mem = mem
       @chr_mem_writable = writable
@@ -236,27 +329,34 @@ module Optcarrot
       first:       [0, 0, 0, 0],
       second:      [1, 1, 1, 1],
     }
+
+    # @rbs mode: Symbol
+    # @rbs return: void
     def nametables=(mode)
       update(RP2C02_CC)
-      idxs = NMT_TABLE[mode]
-      return if (0..3).all? {|i| @nmt_ref[i].equal?(@nmt_mem[idxs[i]]) }
-      @nmt_ref[0] = @nmt_mem[idxs[0]]
-      @nmt_ref[1] = @nmt_mem[idxs[1]]
-      @nmt_ref[2] = @nmt_mem[idxs[2]]
-      @nmt_ref[3] = @nmt_mem[idxs[3]]
+      idxs = NMT_TABLE[mode] || raise
+      return if (0..3).all? {|i| @nmt_ref[i].equal?(@nmt_mem[idxs[i] || raise]) }
+      @nmt_ref[0] = @nmt_mem[idxs[0] || raise]
+      @nmt_ref[1] = @nmt_mem[idxs[1] || raise]
+      @nmt_ref[2] = @nmt_mem[idxs[2] || raise]
+      @nmt_ref[3] = @nmt_mem[idxs[3] || raise]
       setup_lut
     end
 
+    # @rbs data_setup: Integer
+    # @rbs return: void
     def update(data_setup)
       sync(data_setup + @cpu.update)
     end
 
+    # @rbs return: void
     def setup_frame
       @output_pixels.clear
       @odd_frame = !@odd_frame
       @vclk, @hclk_target, @cpu.next_frame_clock = @hclk == HCLOCK_DUMMY ? DUMMY_FRAME : BOOT_FRAME
     end
 
+    # @rbs return: void
     def vsync
       if @hclk_target != FOREVER_CLOCK
         @hclk_target = FOREVER_CLOCK
@@ -265,6 +365,8 @@ module Optcarrot
       @output_pixels << @palette[15] while @output_pixels.size < 256 * 240 # fill black
     end
 
+    # @rbs monitor: untyped
+    # @rbs return: void
     def monitor_a12_rising_edge(monitor)
       @a12_monitor = monitor
     end
@@ -272,6 +374,7 @@ module Optcarrot
     ###########################################################################
     # helpers
 
+    # @rbs return: void
     def update_vram_addr
       if @vram_addr_inc == 32
         if active?
@@ -297,6 +400,7 @@ module Optcarrot
       update_scroll_address_line
     end
 
+    # @rbs return: void
     def update_scroll_address_line
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000
       if @a12_monitor
@@ -306,23 +410,29 @@ module Optcarrot
       end
     end
 
+    # @rbs return: bool
     def active?
       @scanline != SCANLINE_VBLANK && @any_show
     end
 
+    # @rbs elapsed: Integer
+    # @rbs return: void
     def sync(elapsed)
       return unless @hclk_target < elapsed
       @hclk_target = elapsed / RP2C02_CC - @vclk
       run
     end
 
+    # @rbs return: void
     def make_sure_invariants
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000
       @bg_pattern_lut_fetched = TILE_LUT[
-        @nmt_ref[@io_addr >> 10 & 3][@io_addr & 0x03ff] >> ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
-      ]
+        (@nmt_ref[@io_addr >> 10 & 3] || raise)[(@io_addr & 0x03ff)] >> ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
+      ] || raise
     end
 
+    # @rbs data: Integer
+    # @rbs return: Integer
     def io_latch_mask(data)
       if active?
         0xff
@@ -337,6 +447,9 @@ module Optcarrot
     # mapped memory handlers
 
     # PPUCTRL
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_2000(_addr, data)
       update(RP2C02_CC)
       need_nmi_old = @need_nmi
@@ -359,6 +472,9 @@ module Optcarrot
     end
 
     # PPUMASK
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_2001(_addr, data)
       update(RP2C02_CC)
       bg_show_old, bg_show_edge_old = @bg_show, @bg_show_edge
@@ -391,6 +507,8 @@ module Optcarrot
     end
 
     # PPUSTATUS
+    # @rbs _addr: Integer
+    # @rbs return: Integer
     def peek_2002(_addr)
       update(RP2C02_CC)
       v = @io_latch & 0x1f
@@ -404,12 +522,18 @@ module Optcarrot
     end
 
     # OAMADDR
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_2003(_addr, data)
       update(RP2C02_CC)
       @regs_oam = @io_latch = data
     end
 
     # OAMDATA (write)
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_2004(_addr, data)
       update(RP2C02_CC)
       @io_latch = @sp_ram[@regs_oam] = io_latch_mask(data)
@@ -417,6 +541,8 @@ module Optcarrot
     end
 
     # OAMDATA (read)
+    # @rbs _addr: Integer
+    # @rbs return: Integer
     def peek_2004(_addr)
       if !@any_show || @cpu.current_clock - (@cpu.next_frame_clock - (341 * 241) * RP2C02_CC) >= (341 * 240) * RP2C02_CC
         @io_latch = @sp_ram[@regs_oam]
@@ -427,6 +553,9 @@ module Optcarrot
     end
 
     # PPUSCROLL
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_2005(_addr, data)
       update(RP2C02_CC)
       @io_latch = data
@@ -442,6 +571,9 @@ module Optcarrot
     end
 
     # PPUADDR
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_2006(_addr, data)
       update(RP2C02_CC)
       @io_latch = data
@@ -457,6 +589,9 @@ module Optcarrot
     end
 
     # PPUDATA (write)
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_2007(_addr, data)
       update(RP2C02_CC * 4)
       addr = @scroll_addr_0_4 | @scroll_addr_5_14
@@ -490,6 +625,8 @@ module Optcarrot
     end
 
     # PPUDATA (read)
+    # @rbs _addr: Integer
+    # @rbs return: Integer
     def peek_2007(_addr)
       update(RP2C02_CC)
       addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x3fff
@@ -499,20 +636,30 @@ module Optcarrot
       @io_latch
     end
 
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_2xxx(_addr, data)
       @io_latch = data
     end
 
+    # @rbs _addr: Integer
+    # @rbs return: Integer
     def peek_2xxx(_addr)
       @io_latch
     end
 
+    # @rbs _addr: Integer
+    # @rbs return: Integer
     def peek_3000(_addr)
       update(RP2C02_CC)
       @io_latch
     end
 
     # OAMDMA
+    # @rbs _addr: Integer
+    # @rbs data: Integer
+    # @rbs return: void
     def poke_4014(_addr, data) # DMA
       @cpu.steal_clocks(CPU::CLK_1) if @cpu.odd_clock?
       update(RP2C02_CC)
@@ -536,6 +683,8 @@ module Optcarrot
       end
     end
 
+    # @rbs _addr: Integer
+    # @rbs return: Integer
     def peek_4014(_addr)
       0x40
     end
@@ -546,12 +695,16 @@ module Optcarrot
     # NOTE: These methods will be adhocly-inlined.  Keep compatibility with
     # OptimizedCodeBuilder (e.g., do not change the parameter names blindly).
 
+    # @rbs exp: Integer
+    # @rbs return: void
     def open_pattern(exp)
       return unless @any_show
       @io_addr = exp
       update_address_line
     end
 
+    # @rbs buffer_idx: Integer
+    # @rbs return: Integer
     def open_sprite(buffer_idx)
       flip_v = @sp_buffer[buffer_idx + 2][7] # OAM byte2 bit7: "Flip vertically" flag
       tmp = (@scanline - @sp_buffer[buffer_idx]) ^ (flip_v * 0xf)
@@ -560,13 +713,20 @@ module Optcarrot
       addr | (tmp & 7)
     end
 
+    # @rbs pat0: Integer
+    # @rbs pat1: Integer
+    # @rbs buffer_idx: Integer
+    # @rbs return: void
     def load_sprite(pat0, pat1, buffer_idx)
       byte2 = @sp_buffer[buffer_idx + 2]
       pos = SP_PIXEL_POSITIONS[byte2[6]] # OAM byte2 bit6: "Flip horizontally" flag
       pat = (pat0 >> 1 & 0x55) | (pat1 & 0xaa) | ((pat0 & 0x55) | (pat1 << 1 & 0xaa)) << 8
       x_base = @sp_buffer[buffer_idx + 3]
       palette_base = 0x10 + ((byte2 & 3) << 2) # OAM byte2 bit0-1: Palette
-      @sp_visible ||= @sp_map.clear
+      unless @sp_visible
+        @sp_map.clear
+        @sp_visible = true
+      end
       8.times do |dx|
         x = x_base + dx
         clr = (pat >> (pos[dx] * 2)) & 3
@@ -580,6 +740,7 @@ module Optcarrot
       @sp_active = @sp_enabled
     end
 
+    # @rbs return: void
     def update_address_line
       if @a12_monitor
         a12_state = @io_addr[12] == 1
@@ -591,23 +752,27 @@ module Optcarrot
     ###########################################################################
     # actions for PPU#run
 
+    # @rbs return: void
     def open_name
       return unless @any_show
       @io_addr = @name_io_addr
       update_address_line
     end
 
+    # @rbs return: void
     def fetch_name
       return unless @any_show
       @io_pattern = @name_lut[@scroll_addr_0_4 + @scroll_addr_5_14 + @bg_pattern_base_15]
     end
 
+    # @rbs return: void
     def open_attr
       return unless @any_show
       @io_addr, @bg_pattern_lut_fetched, = @attr_lut[@scroll_addr_0_4 + @scroll_addr_5_14]
       update_address_line
     end
 
+    # @rbs return: void
     def fetch_attr
       return unless @any_show
       @bg_pattern_lut = @bg_pattern_lut_fetched
@@ -616,16 +781,19 @@ module Optcarrot
       #     ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
     end
 
+    # @rbs return: void
     def fetch_bg_pattern_0
       return unless @any_show
       @bg_pattern = @chr_mem[@io_addr & 0x1fff]
     end
 
+    # @rbs return: void
     def fetch_bg_pattern_1
       return unless @any_show
       @bg_pattern |= @chr_mem[@io_addr & 0x1fff] * 0x100
     end
 
+    # @rbs return: void
     def scroll_clock_x
       return unless @any_show
       if @scroll_addr_0_4 < 0x001f
@@ -638,6 +806,7 @@ module Optcarrot
       end
     end
 
+    # @rbs return: void
     def scroll_reset_x
       return unless @any_show
       @scroll_addr_0_4 = @scroll_latch & 0x001f
@@ -645,6 +814,7 @@ module Optcarrot
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000 # make cache consistent
     end
 
+    # @rbs return: void
     def scroll_clock_y
       return unless @any_show
       if @scroll_addr_5_14 & 0x7000 != 0x7000
@@ -666,22 +836,26 @@ module Optcarrot
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000 # make cache consistent
     end
 
+    # @rbs return: void
     def preload_tiles
       return unless @any_show
       @bg_pixels[@scroll_xfine, 8] = @bg_pattern_lut[@bg_pattern]
     end
 
+    # @rbs return: void
     def load_tiles
       return unless @any_show
       @bg_pixels.rotate!(8)
       @bg_pixels[@scroll_xfine, 8] = @bg_pattern_lut[@bg_pattern]
     end
 
+    # @rbs return: void
     def evaluate_sprites_even
       return unless @any_show
       @sp_latch = @sp_ram[@sp_addr]
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd
       return unless @any_show
 
@@ -709,6 +883,7 @@ module Optcarrot
       end
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_1
       @sp_index += 1
       if @sp_latch <= @scanline && @scanline < @sp_latch + @sp_height
@@ -725,18 +900,21 @@ module Optcarrot
       end
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_2
       @sp_addr += 1
       @sp_phase = 3
       @sp_buffer[@sp_buffered + 1] = @sp_latch
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_3
       @sp_addr += 1
       @sp_phase = 4
       @sp_buffer[@sp_buffered + 2] = @sp_latch
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_4
       @sp_buffer[@sp_buffered + 3] = @sp_latch
       @sp_buffered += 4
@@ -754,6 +932,7 @@ module Optcarrot
       end
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_5
       if @sp_latch <= @scanline && @scanline < @sp_latch + @sp_height
         @sp_phase = 6
@@ -768,16 +947,19 @@ module Optcarrot
       end
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_6
       @sp_phase = 7
       @sp_addr = (@sp_addr + 1) & 0xff
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_7
       @sp_phase = 8
       @sp_addr = (@sp_addr + 1) & 0xff
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_8
       @sp_phase = 9
       @sp_addr = (@sp_addr + 1) & 0xff
@@ -785,10 +967,12 @@ module Optcarrot
       @sp_addr &= 0xfc
     end
 
+    # @rbs return: void
     def evaluate_sprites_odd_phase_9
       @sp_addr = (@sp_addr + 4) & 0xff
     end
 
+    # @rbs return: void
     def load_extended_sprites
       return unless @any_show
       if 32 < @sp_buffered
@@ -803,6 +987,7 @@ module Optcarrot
       end
     end
 
+    # @rbs return: void
     def render_pixel
       if @any_show
         pixel = @bg_enabled ? @bg_pixels[@hclk % 8] : 0
@@ -822,20 +1007,24 @@ module Optcarrot
     end
 
     # just a placeholder; used for batch_render_pixels optimization
+    # @rbs return: void
     def batch_render_eight_pixels
     end
 
+    # @rbs return: void
     def boot
       @vblank = true
       @hclk = HCLOCK_DUMMY
       @hclk_target = FOREVER_CLOCK
     end
 
+    # @rbs return: void
     def vblank_0
       @vblanking = true
       @hclk = HCLOCK_VBLANK_1
     end
 
+    # @rbs return: void
     def vblank_1
       @vblank ||= @vblanking
       @vblanking = false
@@ -844,6 +1033,7 @@ module Optcarrot
       @hclk = HCLOCK_VBLANK_2
     end
 
+    # @rbs return: void
     def vblank_2
       @vblank ||= @vblanking
       @vblanking = false
@@ -852,6 +1042,7 @@ module Optcarrot
       @cpu.do_nmi(@cpu.next_frame_clock) if @need_nmi && @vblank
     end
 
+    # @rbs return: void
     def update_enabled_flags
       return unless @any_show
       @bg_enabled = @bg_show
@@ -859,6 +1050,7 @@ module Optcarrot
       @sp_active = @sp_enabled && @sp_visible
     end
 
+    # @rbs return: void
     def update_enabled_flags_edge
       @bg_enabled = @bg_show_edge
       @sp_enabled = @sp_show_edge
@@ -868,13 +1060,18 @@ module Optcarrot
     ###########################################################################
     # default core
 
+    # @rbs scanline: Integer
+    # @rbs hclk: Integer
+    # @rbs hclk_target: Integer
+    # @rbs return: void
     def debug_logging(scanline, hclk, hclk_target)
-      hclk = "forever" if hclk == FOREVER_CLOCK
-      hclk_target = "forever" if hclk_target == FOREVER_CLOCK
+      hclk_s = hclk == FOREVER_CLOCK ? "forever" : hclk.to_s
+      hclk_target_s = hclk_target == FOREVER_CLOCK ? "forever" : hclk_target.to_s
 
-      @conf.debug("ppu: scanline #{ scanline }, hclk #{ hclk }->#{ hclk_target }")
+      @conf.debug("ppu: scanline #{ scanline }, hclk #{ hclk_s }->#{ hclk_target_s }")
     end
 
+    # @rbs return: void
     def run
       @fiber ||= Fiber.new do
         main_loop
@@ -885,28 +1082,35 @@ module Optcarrot
 
       make_sure_invariants
 
-      @hclk_target = (@vclk + @hclk) * RP2C02_CC unless @fiber.resume
+      fiber = @fiber || raise
+      @hclk_target = (@vclk + @hclk) * RP2C02_CC unless fiber.resume
     end
 
+    # @rbs return: void
     def dispose
       @run = false
-      raise 'PPU Fiber should have finished' unless @fiber.nil? || @fiber.resume == :done
+      fiber = @fiber
+      raise 'PPU Fiber should have finished' if fiber && fiber.resume != :done
       @fiber = nil
     end
 
+    # @rbs return: void
     def wait_frame
       Fiber.yield true
     end
 
+    # @rbs return: void
     def wait_zero_clocks
       Fiber.yield if @hclk_target <= @hclk
     end
 
+    # @rbs return: void
     def wait_one_clock
       @hclk += 1
       Fiber.yield if @hclk_target <= @hclk
     end
 
+    # @rbs return: void
     def wait_two_clocks
       @hclk += 2
       Fiber.yield if @hclk_target <= @hclk
@@ -940,6 +1144,7 @@ module Optcarrot
     # Comments like "when NNN" are markers for the purpose.
     #
     # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize, Style/SoleNestedConditional
+    # @rbs return: void
     def main_loop
       # when 685
 
@@ -1277,6 +1482,7 @@ module Optcarrot
         :fastpath, :batch_render_pixels, :oneline,
       ]
 
+      # @rbs return: String
       def build
         depends(:ivar_localization, :method_inlining)
         depends(:batch_render_pixels, :fastpath)
@@ -1284,22 +1490,22 @@ module Optcarrot
         mdefs = parse_method_definitions(__FILE__)
         handlers = parse_clock_handlers(mdefs[:main_loop].body)
 
-        handlers = specialize_clock_handlers(handlers) if @clock_specialization
-        if @fastpath
-          handlers = add_fastpath(handlers) do |fastpath, hclk|
-            @batch_render_pixels ? batch_render_pixels(fastpath, hclk) : fastpath
+        handlers = specialize_clock_handlers(handlers) if @clock_specialization # steep:ignore
+        if @fastpath # steep:ignore
+          handlers = add_fastpath(handlers) do |fastpath, hclk| # steep:ignore
+            @batch_render_pixels ? batch_render_pixels(fastpath, hclk) : fastpath # steep:ignore
           end
         end
         code = build_loop(handlers)
-        code = ppu_expand_methods(code, mdefs) if @method_inlining
+        code = ppu_expand_methods(code, mdefs) if @method_inlining # steep:ignore
 
-        if @split_show_mode
-          code, code_no_show = split_mode(code, "@any_show")
-          if @split_a12_checks
-            code, code_no_a12 = split_mode(code, "@a12_monitor")
-            code = branch("@a12_monitor", code, code_no_a12)
+        if @split_show_mode # steep:ignore
+          code, code_no_show = split_mode(code, "@any_show") # steep:ignore
+          if @split_a12_checks # steep:ignore
+            code, code_no_a12 = split_mode(code, "@a12_monitor") # steep:ignore
+            code = branch("@a12_monitor", code, code_no_a12) # steep:ignore
           end
-          code = branch("@any_show", code, code_no_show)
+          code = branch("@any_show", code, code_no_show) # steep:ignore
         end
 
         code = gen(
@@ -1308,7 +1514,7 @@ module Optcarrot
           "@hclk_target = (@vclk + @hclk) * RP2C02_CC"
         )
 
-        code = localize_instance_variables(code) if @ivar_localization
+        code = localize_instance_variables(code) if @ivar_localization # steep:ignore
 
         code = gen(
           "def self.run",
@@ -1317,7 +1523,7 @@ module Optcarrot
           "end",
         )
 
-        code = oneline(code) if @oneline
+        code = oneline(code) if @oneline # steep:ignore
 
         code
       end
@@ -1330,29 +1536,40 @@ module Optcarrot
       }
 
       # extracts the actions for each clock from CPU#main_loop
+      # @rbs main_loop: String
+      # @rbs return: Hash[Integer, String]
       def parse_clock_handlers(main_loop)
-        handlers = {}
+        handlers = {} #: Hash[Integer, String]
         main_loop.scan(/^( *)# when (.*)\n((?:\1.*\n|\n)*?\1wait_.*\n)/) do |indent, hclks, body|
-          body = indent(-indent.size, body)
-          body = body.gsub(/^( *)break\n/, "")
-          body = expand_methods(body, COMMANDS)
-          if hclks =~ /^(\d+), (\d+), \.\.\., (\d+)$/
-            first, second, last = $1.to_i, $2.to_i, $3.to_i
+          body = indent(-indent.size, body) # steep:ignore
+          body = body.gsub(/^( *)break\n/, "") # steep:ignore
+          body = expand_methods(body, COMMANDS) # steep:ignore
+          if hclks =~ /^(\d+), (\d+), \.\.\., (\d+)$/ # steep:ignore
+            s1 = $1 #: String
+            s2 = $2 #: String
+            s3 = $3 #: String
+            first, second, last = s1.to_i, s2.to_i, s3.to_i
             first.step(last, second - first) do |hclk|
-              handlers[hclk] = body
+              handlers[hclk] = body # steep:ignore
             end
           else
-            handlers[hclks.to_i] = body
+            handlers[hclks.to_i] = body # steep:ignore
           end
         end
         handlers
       end
 
       # split clock handlers that contains a branch depending on clock
+      # @rbs handlers: Hash[Integer, String]
+      # @rbs return: Hash[Integer, String]
       def specialize_clock_handlers(handlers)
         handlers.each do |hclk, handler|
           # pre-caluculate some conditions like `@hclk == 64` with `false`
-          handler = handler.gsub(/@hclk (==|>=|!=) (\d+)/) { hclk.send($1.to_sym, $2.to_i) }
+          handler = handler.gsub(/@hclk (==|>=|!=) (\d+)/) {
+            m1 = $1 #: String
+            m2 = $2 #: String
+            hclk.send(m1.to_sym, m2.to_i)
+          }
 
           # remove disabled branches like `if false ... end`
           handlers[hclk] = remove_trivial_branches(handler)
@@ -1360,24 +1577,29 @@ module Optcarrot
       end
 
       # pass a fastpath
-      def add_fastpath(handlers)
+      # @rbs handlers: Hash[Integer, String]
+      # @rbs return: Hash[Integer, String]
+      def add_fastpath(handlers) # steep:ignore
         handlers.each do |hclk, handler|
           next unless hclk % 8 == 0 && hclk < 256
-          fastpath = gen(*(0..7).map {|i| handlers[hclk + i] })
-          fastpath = yield fastpath, hclk
+          fastpath = gen(*(0..7).map {|i| handlers[hclk + i] }) # steep:ignore
+          fastpath = yield fastpath, hclk # steep:ignore
           handlers[hclk] = branch("@hclk + 8 <= @hclk_target", fastpath, handler)
         end
       end
 
       # replace eight `render_pixel` calls with one optimized batch version
+      # @rbs fastpath: String
+      # @rbs hclk: Integer
+      # @rbs return: String
       def batch_render_pixels(fastpath, hclk)
-        fastpath = expand_methods(fastpath, render_pixel: gen(
+        fastpath = expand_methods(fastpath, render_pixel: gen( # steep:ignore
           "unless @any_show",
           "  @bg_pixels[@hclk % 8] = 0",
           "  @output_pixels << @output_color[@scroll_addr_5_14 & 0x3f00 == 0x3f00 ? @scroll_addr_0_4 : 0]",
           "end",
         ))
-        expand_methods(fastpath, batch_render_eight_pixels: gen(
+        expand_methods(fastpath, batch_render_eight_pixels: gen( # steep:ignore
           "# batch-version of render_pixel",
           "if @any_show",
           "  if @sp_active",
@@ -1415,11 +1637,16 @@ module Optcarrot
       end
 
       # remove all newlines (this will reduce `trace` instructions)
+      # @rbs code: String
+      # @rbs return: String
       def oneline(code)
         code.gsub(/^ *|#.*/, "").gsub("[\n", "[").gsub(/\n *\]/, "]").tr("\n", ";")
       end
 
       # inline method calls
+      # @rbs code: String
+      # @rbs mdefs: Hash[Symbol, untyped]
+      # @rbs return: String
       def ppu_expand_methods(code, mdefs)
         code = expand_inline_methods(code, :open_sprite, mdefs[:open_sprite])
 
@@ -1429,6 +1656,9 @@ module Optcarrot
 
       # create two version of the same code by evaluating easy branches
       # CAUTION: the condition must be invariant during PPU#run
+      # @rbs code: String
+      # @rbs cond: String
+      # @rbs return: Array[String]
       def split_mode(code, cond)
         %w(true false).map do |bool|
           rebuild_loop(remove_trivial_branches(replace_cond_var(code, cond, bool)))
@@ -1436,8 +1666,10 @@ module Optcarrot
       end
 
       # generate a main code
+      # @rbs handlers: Hash[Integer, String]
+      # @rbs return: String
       def build_loop(handlers)
-        clauses = {}
+        clauses = {} #: Hash[String, Array[Integer]]
         handlers.sort.each do |hclk, handler|
           (clauses[handler] ||= []) << hclk
         end
@@ -1446,7 +1678,7 @@ module Optcarrot
           "while @hclk_target > @hclk",
           "  case @hclk",
           *clauses.invert.sort.map do |hclks, handler|
-            "  when #{ hclks * ", " }\n" + indent(4, handler)
+            "  when #{ hclks * ", " }\n" + indent(4, handler) # steep:ignore
           end,
           "  end",
           "end",
@@ -1454,11 +1686,13 @@ module Optcarrot
       end
 
       # deconstruct a loop, unify handlers, and re-generate a new loop
+      # @rbs code: String
+      # @rbs return: String
       def rebuild_loop(code)
-        handlers = {}
+        handlers = {} #: Hash[Integer, String]
         code.scan(/^  when ((?:\d+, )*\d+)\n((?:    .*\n|\n)*)/) do |hclks, handler|
-          hclks.split(", ").each do |hclk|
-            handlers[hclk.to_i] = indent(-4, handler)
+          hclks.split(", ").each do |hclk| # steep:ignore
+            handlers[hclk.to_i] = indent(-4, handler) # steep:ignore
           end
         end
         build_loop(handlers)

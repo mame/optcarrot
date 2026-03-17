@@ -1,0 +1,23 @@
+# Generated from lib/optcarrot/driver/log_input.rb with RBS::Inline
+
+module Optcarrot
+  # Input driver replaying a recorded input log
+  class LogInput < Input
+    # @rbs return: void
+    # @rbs override
+    def init: ...
+
+    # @rbs @log: untyped
+    attr_writer log: untyped
+
+    # @rbs return: void
+    # @rbs override
+    def dispose: ...
+
+    # @rbs frame: Integer
+    # @rbs pads: Pads
+    # @rbs return: void
+    # @rbs override
+    def tick: ...
+  end
+end

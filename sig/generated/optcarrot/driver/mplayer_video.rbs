@@ -1,0 +1,24 @@
+# Generated from lib/optcarrot/driver/mplayer_video.rb with RBS::Inline
+
+module Optcarrot
+  # Video output driver using mplayer
+  # Inspired from https://github.com/polmuz/pypy-image-demo/blob/master/io.py
+  class MPlayerVideo < Video
+    MAX_FPS: Integer
+
+    @mplayer: IO
+
+    # @rbs return: void
+    # @rbs override
+    def init: ...
+
+    # @rbs return: void
+    # @rbs override
+    def dispose: ...
+
+    # @rbs screen: Array[Array[Integer]]
+    # @rbs return: (Integer | Float)
+    # @rbs override
+    def tick: ...
+  end
+end

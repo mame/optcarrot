@@ -1,8 +1,15 @@
+# rbs_inline: enabled
+
 require_relative "misc"
 
 module Optcarrot
   # Video output driver saving an animation GIF file
   class GIFVideo < Video
+    # @rbs @f: File
+    # @rbs @header: String
+
+    # @rbs return: void
+    # @rbs override
     def init
       super
 
@@ -22,6 +29,8 @@ module Optcarrot
       @header << [0x2c, 0, 0, WIDTH, HEIGHT, 0, 8].pack("Cv4C*")
     end
 
+    # @rbs return: void
+    # @rbs override
     def dispose
       # Trailer
       @f << [0x3b].pack("C")
@@ -29,16 +38,24 @@ module Optcarrot
       @f.close
     end
 
+    # @rbs screen: Array[Integer]
+    # @rbs return: (Integer | Float)
+    # @rbs override
     def tick(screen)
       compress(screen)
       super
     end
 
+    # @rbs data: Array[untyped]
+    # @rbs return: void
     def compress(data)
       @f << @header
 
       max_code = 257
-      dict = (0..max_code).map {|n| [n, []] }
+      dict = (0..max_code).map {|n|
+        children = [] #: Array[untyped]
+        [n, children]
+      }
 
       buff = ""
       out = ->(code) { buff << ("%0#{ max_code.bit_length }b" % code).reverse }
@@ -53,7 +70,8 @@ module Optcarrot
           out[code]
           if max_code < 4094
             max_code += 1
-            cur_dict[d] = [max_code, []]
+            children = [] #: Array[untyped]
+            cur_dict[d] = [max_code, children]
           end
           code, cur_dict = dict[d]
         end
@@ -63,7 +81,10 @@ module Optcarrot
 
       buff = [buff].pack("b*")
 
-      buff = buff.gsub(/.{1,255}/m) { [$&.size].pack("C") + $& } + [0].pack("C")
+      buff = buff.gsub(/.{1,255}/m) do
+        matched = $& #: String
+        [matched.size].pack("C") + matched
+      end + [0].pack("C")
 
       @f << buff
     end

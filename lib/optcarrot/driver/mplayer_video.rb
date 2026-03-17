@@ -1,11 +1,17 @@
+# rbs_inline: enabled
+
 require_relative "misc"
 
 module Optcarrot
   # Video output driver using mplayer
   # Inspired from https://github.com/polmuz/pypy-image-demo/blob/master/io.py
   class MPlayerVideo < Video
-    MAX_FPS = NES::FPS
+    MAX_FPS = NES::FPS #: Integer
 
+    # @rbs @mplayer: IO
+
+    # @rbs return: void
+    # @rbs override
     def init
       super
       @mplayer = IO.popen("mplayer -really-quiet -noframedrop -vf scale - 2>/dev/null", "wb")
@@ -20,10 +26,15 @@ module Optcarrot
       end
     end
 
+    # @rbs return: void
+    # @rbs override
     def dispose
       @mplayer.close
     end
 
+    # @rbs screen: Array[Array[Integer]]
+    # @rbs return: (Integer | Float)
+    # @rbs override
     def tick(screen)
       @mplayer.write "FRAME\n"
 
@@ -31,7 +42,7 @@ module Optcarrot
 
       if @conf.show_fps && @times.size >= 2
         fps = (1.0 / (@times[-1] - @times[-2])).round
-        Driver.show_fps(screen, fps, @palette) do |y, cr, cb|
+        Driver.show_fps(screen, fps, @palette) do |y, cr, cb| # steep:ignore
           [y / 4, cr, cb]
         end
       end

@@ -1,0 +1,102 @@
+# Generated from lib/optcarrot/driver.rb with RBS::Inline
+
+module Optcarrot
+  # A manager class for drivers (user frontend)
+  module Driver
+    DRIVER_DB: ::Hash[::Symbol, ::Hash[::Symbol, ::Symbol]]
+
+    # @rbs conf: Config
+    # @rbs return: [Video, Audio, Input]
+    def self?.load: (Config conf) -> [ Video, Audio, Input ]
+
+    # @rbs conf: Config
+    # @rbs type: Symbol
+    # @rbs name: Symbol?
+    # @rbs return: untyped
+    def self?.load_each: (Config conf, Symbol type, Symbol? name) -> untyped
+  end
+
+  # A base class of video output driver
+  class Video
+    WIDTH: ::Integer
+
+    TV_WIDTH: ::Integer
+
+    HEIGHT: ::Integer
+
+    # @rbs conf: Config
+    # @rbs return: void
+    def initialize: (Config conf) -> void
+
+    attr_reader palette: Array[Integer]
+
+    # @rbs return: void
+    def init: () -> void
+
+    # @rbs return: void
+    def dispose: () -> void
+
+    # @rbs _output: untyped
+    # @rbs return: (Integer | Float)
+    def tick: (untyped _output) -> (Integer | Float)
+
+    # @rbs _scale: Integer?
+    # @rbs return: void
+    def change_window_size: (untyped _scale) -> void
+
+    # @rbs _width: Integer
+    # @rbs _height: Integer
+    # @rbs return: void
+    def on_resize: (untyped _width, untyped _height) -> void
+  end
+
+  # A base class of audio output driver
+  class Audio
+    PACK_FORMAT: ::Hash[::Integer, ::String]
+
+    BUFFER_IN_FRAME: ::Integer
+
+    # @rbs conf: Config
+    # @rbs return: void
+    def initialize: (Config conf) -> void
+
+    # @rbs return: [Integer, Integer]
+    def spec: () -> [ Integer, Integer ]
+
+    # @rbs return: void
+    def init: () -> void
+
+    # @rbs return: void
+    def dispose: () -> void
+
+    # @rbs _output: untyped
+    # @rbs return: void
+    def tick: (untyped _output) -> void
+  end
+
+  # A base class of input driver
+  class Input
+    # @rbs conf: Config
+    # @rbs video: Video
+    # @rbs return: void
+    def initialize: (Config conf, Video video) -> void
+
+    # @rbs return: void
+    def init: () -> void
+
+    # @rbs return: void
+    def dispose: () -> void
+
+    # @rbs _frame: Integer
+    # @rbs _pads: Pads
+    # @rbs return: void
+    def tick: (untyped _frame, untyped _pads) -> void
+
+    # @rbs pads: Pads
+    # @rbs type: Symbol
+    # @rbs code: Symbol
+    # @rbs player: Integer?
+    # @rbs return: void
+    def event: (Pads pads, Symbol type, Symbol code, Integer? player) -> void
+  end
+end

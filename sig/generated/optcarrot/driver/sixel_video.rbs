@@ -1,0 +1,27 @@
+# Generated from lib/optcarrot/driver/sixel_video.rb with RBS::Inline
+
+module Optcarrot
+  # Video output driver for Sixel (this is a joke feature)
+  class SixelVideo < Video
+    @buff: String
+
+    @line: String
+
+    @seq_setup: String
+
+    @seq_clr: Array[String]
+
+    @seq_len: Array[String]
+
+    @seq_end: String
+
+    # @rbs return: void
+    # @rbs override
+    def init: ...
+
+    # @rbs screen: Array[Integer]
+    # @rbs return: (Integer | Float)
+    # @rbs override
+    def tick: ...
+  end
+end

@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 module Optcarrot
   FOREVER_CLOCK = 0xffffffff
   RP2A03_CC = 12
@@ -6,13 +8,30 @@ module Optcarrot
   class NES
     FPS = 60
 
+    # @rbs @conf: Config
+    # @rbs @video: Video
+    # @rbs @audio: Audio
+    # @rbs @input: Input
+    # @rbs @cpu: CPU
+    # @rbs @apu: APU
+    # @rbs @ppu: PPU
+    # @rbs @rom: ROM
+    # @rbs @pads: Pads
+    # @rbs @frame: Integer
+    # @rbs @frame_target: Integer?
+    # @rbs @fps: (Integer | Float)?
+    # @rbs @fps_history: Array[Integer | Float]
+
+    # @rbs conf: untyped
+    # @rbs return: void
     def initialize(conf = ARGV)
       @conf = Config.new(conf)
 
       @video, @audio, @input = Driver.load(@conf)
 
       @cpu =            CPU.new(@conf)
-      @apu = @cpu.apu = APU.new(@conf, @cpu, *@audio.spec)
+      rate, bits = @audio.spec
+      @apu = @cpu.apu = APU.new(@conf, @cpu, rate, bits)
       @ppu = @cpu.ppu = PPU.new(@conf, @cpu, @video.palette)
       @rom  = ROM.load(@conf, @cpu, @ppu)
       @pads = Pads.new(@conf, @cpu, @apu)
@@ -22,12 +41,26 @@ module Optcarrot
       @fps_history = [] if save_fps_history?
     end
 
+    # @rbs return: String
     def inspect
       "#<#{ self.class }>"
     end
 
-    attr_reader :fps, :video, :audio, :input, :cpu, :ppu, :apu
+    attr_reader :fps #: (Integer | Float)?
 
+    attr_reader :video #: Video
+
+    attr_reader :audio #: Audio
+
+    attr_reader :input #: Input
+
+    attr_reader :cpu #: CPU
+
+    attr_reader :ppu #: PPU
+
+    attr_reader :apu #: APU
+
+    # @rbs return: void
     def reset
       @cpu.reset
       @apu.reset
@@ -38,6 +71,7 @@ module Optcarrot
       @rom.load_battery
     end
 
+    # @rbs return: void
     def step
       @ppu.setup_frame
       @cpu.run
@@ -55,6 +89,7 @@ module Optcarrot
       @conf.info("frame #{ @frame }") if @conf.loglevel >= 2
     end
 
+    # @rbs return: void
     def dispose
       if @fps
         @conf.info("fps: %.2f (in the last 10 frames)" % @fps)
@@ -77,6 +112,7 @@ module Optcarrot
       @ppu.dispose
     end
 
+    # @rbs return: void
     def run
       reset
 
@@ -98,6 +134,7 @@ module Optcarrot
 
     private
 
+    # @rbs return: bool
     def save_fps_history?
       @conf.print_fps_history || @conf.print_p95fps
     end

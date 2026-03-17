@@ -1,7 +1,10 @@
+# rbs_inline: enabled
+
 require "ffi"
 
 module Optcarrot
   # A minimal binding for SDL2
+  # @rbs skip -- types are hand-written in stubs.rbs (attach_function methods are invisible to rbs-inline)
   module SDL2
     extend FFI::Library
     ffi_lib "SDL2"
@@ -142,6 +145,8 @@ module Optcarrot
     end
 
     # rubocop:disable Naming/MethodName
+    # @rbs blk: untyped
+    # @rbs return: untyped
     def self.AudioCallback(blk)
       FFI::Function.new(:void, [:pointer, :pointer, :int], blk)
     end

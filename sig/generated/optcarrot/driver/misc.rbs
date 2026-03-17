@@ -1,0 +1,33 @@
+# Generated from lib/optcarrot/driver/misc.rb with RBS::Inline
+
+module Optcarrot
+  # some helper methods for drivers
+  module Driver
+    # @rbs colors: Array[Array[Integer]]
+    # @rbs limit: Integer
+    # @rbs return: [Array[Integer], Array[Array[Integer]]]
+    def self?.quantize_colors: (Array[Array[Integer]] colors, ?Integer limit) -> [ Array[Integer], Array[Array[Integer]] ]
+
+    # @rbs colors: Array[untyped]
+    # @rbs return: void
+    def self?.cutoff_overscan: (Array[untyped] colors) -> void
+
+    EMPTY_ARRAY: ::Array[untyped]
+
+    SIZE: ::Integer
+
+    # @rbs colors: Array[untyped]
+    # @rbs fps: Integer
+    # @rbs palette: Array[untyped]
+    # @rbs &block: ((Integer) -> Integer)?
+    # @rbs return: void
+    def self?.show_fps: (Array[untyped] colors, Integer fps, Array[untyped] palette) ?{ (?) -> untyped } -> void
+
+    # tiny font data for fps
+    FONT: ::Array[::Integer]
+
+    # icon data
+    # @rbs return: [Integer, Integer, untyped]
+    def self?.icon_data: () -> [ Integer, Integer, untyped ]
+  end
+end

@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 module Optcarrot
   # MMC1 mapper: http://wiki.nesdev.com/w/index.php/MMC1
   class MMC1 < ROM
@@ -7,11 +9,15 @@ module Optcarrot
     PRG_MODE = [:conseq, :conseq, :fix_first, :fix_last]
     CHR_MODE = [:conseq, :noconseq]
 
+    # @rbs override
+    # @rbs return: void
     def init
       @nmt_mode = @prg_mode = @chr_mode = nil
       @prg_bank = @chr_bank_0 = @chr_bank_1 = 0
     end
 
+    # @rbs override
+    # @rbs return: void
     def reset
       @shift = @shift_count = 0
 
@@ -26,6 +32,9 @@ module Optcarrot
       update_chr(:conseq, 0, 0)
     end
 
+    # @rbs addr: Integer
+    # @rbs val: Integer
+    # @rbs return: void
     def poke_prg(addr, val)
       if val[7] == 1
         @shift = @shift_count = 0
@@ -58,12 +67,18 @@ module Optcarrot
       end
     end
 
+    # @rbs nmt_mode: Symbol
+    # @rbs return: void
     def update_nmt(nmt_mode)
       return if @nmt_mode == nmt_mode
       @nmt_mode = nmt_mode
       @ppu.nametables = @nmt_mode
     end
 
+    # @rbs prg_mode: Symbol?
+    # @rbs prg_bank: Integer
+    # @rbs chr_bank_0: Integer
+    # @rbs return: void
     def update_prg(prg_mode, prg_bank, chr_bank_0)
       return if prg_mode == @prg_mode && prg_bank == @prg_bank && chr_bank_0 == @chr_bank_0
       @prg_mode, @prg_bank, @chr_bank_0 = prg_mode, prg_bank, chr_bank_0
@@ -85,6 +100,10 @@ module Optcarrot
       @prg_ref[0xc000, 0x4000] = @prg_banks[upper]
     end
 
+    # @rbs chr_mode: Symbol?
+    # @rbs chr_bank_0: Integer
+    # @rbs chr_bank_1: Integer
+    # @rbs return: void
     def update_chr(chr_mode, chr_bank_0, chr_bank_1)
       return if chr_mode == @chr_mode && chr_bank_0 == @chr_bank_0 && chr_bank_1 == @chr_bank_1
       @chr_mode, @chr_bank_0, @chr_bank_1 = chr_mode, chr_bank_0, chr_bank_1

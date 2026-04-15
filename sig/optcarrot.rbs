@@ -1,0 +1,67 @@
+
+module Optcarrot::CodeOptimizationHelper
+  def initialize: (Integer, Array[Symbol]) -> void
+end
+
+class Optcarrot::APU::Pulse < Optcarrot::APU::Oscillator
+  @envelope: Optcarrot::APU::Envelope
+  @length_counter: Optcarrot::APU::LengthCounter
+  @wave_length: Integer
+end
+
+class Optcarrot::APU::Triangle < Optcarrot::APU::Oscillator
+  @length_counter: Optcarrot::APU::LengthCounter
+  @wave_length: Integer
+end
+
+class Optcarrot::APU::Noise < Optcarrot::APU::Oscillator
+  @envelope: Optcarrot::APU::Envelope
+  @length_counter: Optcarrot::APU::LengthCounter
+end
+
+
+module Optcarrot::Driver
+  def self.load: (Optcarrot::Config) -> [Optcarrot::Video, Optcarrot::Audio, Optcarrot::Input]
+end
+
+class Optcarrot::CPU
+  def fetch: (Integer) -> Integer
+  def store: (Integer, Integer) -> void
+  def peek16: (Integer) -> Integer
+end
+
+class Optcarrot::Config
+  # optimization
+  def opt_ppu: -> Array[Symbol]?
+  def opt_cpu: -> Array[Symbol]?
+  def load_ppu: -> String?
+  def load_cpu: -> String?
+
+  # emulation
+  def sprite_limit: -> bool
+  def frames: -> Integer
+  def audio_sample_rate: -> Integer
+  def audio_bit_depth: -> Integer
+  def nestopia_palette: -> bool
+
+  # driver
+  def video: -> Symbol?
+  def audio: -> Symbol?
+  def input: -> Symbol?
+  def video_output: -> String
+  def audio_output: -> String
+  def show_fps: -> bool
+  def key_log: -> String?
+
+  # profiling
+  def print_fps: -> bool
+  def print_p95fps: -> bool
+  def print_fps_history: -> bool
+  def print_video_checksum: -> bool
+  def stackprof_mode: -> String?
+  def stackprof_output: -> String
+
+  # misc
+  def loglevel: -> Integer
+  def romfile: -> String?
+end

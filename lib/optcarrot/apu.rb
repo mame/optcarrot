@@ -447,7 +447,7 @@ module Optcarrot
       end
 
       def enable(enabled)
-        @length_counter.enable(enabled)
+        (@length_counter || raise).enable(enabled)
         @active = active?
       end
 
@@ -458,12 +458,16 @@ module Optcarrot
       end
 
       def status
-        @length_counter.count > 0
+        (@length_counter || raise).count > 0
       end
 
       def clock_envelope
-        @envelope.clock
+        (@envelope || raise).clock
         @active = active?
+      end
+
+      def update_freq
+        raise "abstract method"
       end
     end
 

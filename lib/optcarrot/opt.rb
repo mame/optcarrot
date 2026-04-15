@@ -12,7 +12,7 @@ module Optcarrot
       (enabled_opts - [:none, :all]).each do |opt|
         val = true
         if opt.to_s.start_with?("-")
-          opt = opt.to_s[1..-1].to_sym
+          opt = (opt.to_s[1..-1] || raise).to_sym
           val = false
         end
         raise "unknown optimization: `#{ opt }'" unless options.include?(opt)
@@ -65,6 +65,7 @@ module Optcarrot
       src = File.read(file)
       mdefs = {}
       src.scan(METHOD_DEFINITIONS_RE) do |indent, meth, params, body|
+        indent = indent || raise; meth = meth || raise; body = body || raise
         body = indent(-indent.size - 2, body)
 
         # noramlize: break `when ... then`
@@ -85,10 +86,12 @@ module Optcarrot
     def expand_methods(code, mdefs, meths = mdefs.keys)
       code.gsub(/^( *)\b(#{ meths * "|" })\b(?:\((.*?)\))?\n/) do
         indent, meth, args = $1, $2, $3
-        body = mdefs[meth.to_sym]
+        body = mdefs[meth.to_sym] || raise
         body = body.body if body.is_a?(MethodDef)
         if args
-          mdefs[meth.to_sym].params.zip(args.split(", ")) do |param, arg|
+          mdef = mdefs[meth.to_sym] || raise
+          raise "expected MethodDef but got #{ mdef.class }" unless mdef.is_a?(MethodDef)
+          mdef.params.zip(args.split(", ")) do |param, arg|
             body = replace_var(body, param, arg)
           end
         end
@@ -133,9 +136,9 @@ module Optcarrot
       nil while
         code.gsub!(TRIVIAL_BRANCH_RE) do
           if ($2 == "if") == ($3 == "true")
-            indent(-2, $4)
+            indent(-2, $4 || raise)
           else
-            $5 ? indent(-2, $5) : ""
+            $5 ? indent(-2, $5 || raise) : ""
           end
         end
       code

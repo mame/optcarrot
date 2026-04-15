@@ -147,7 +147,7 @@ module Optcarrot
             @argv.unshift(*opt[:shortcut])
             return
           elsif opt[:type] == :info
-            send(id)
+            send(id) # typeprof:ignore
             exit
           elsif opt[:type] == :switch
             error "option `#{ arg }' doesn't allow an operand" if operand
@@ -173,7 +173,7 @@ module Optcarrot
           operand = operand.split(",").map {|s| s.to_sym }
         when :driver
           operand = operand.to_sym
-          error "unknown driver: `#{ operand }'" unless opt[:candidates].include?(operand)
+          error "unknown driver: `#{ operand }'" unless opt[:candidates].include?(operand) # typeprof:ignore
         when :int
           begin
             operand = Integer(operand)
@@ -204,7 +204,7 @@ module Optcarrot
             if opt[:shortcut]
               desc = "same as `#{ [*opt[:shortcut]].join(" ") }'"
             else
-              desc = opt[:desc]
+              desc = opt[:desc] || raise
               desc += " (default: #{ opt[:default] || "none" })" if opt.key?(:default)
             end
             long_name_width = [long_name_width, long_name.size].max

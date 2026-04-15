@@ -212,9 +212,9 @@ module Optcarrot
         nmt_idx = io_addr & 0x03ff
         attr_shift = (i & 2) | (i >> 4 & 4)
         key = [io_addr, attr_shift]
-        entries[key] ||= [io_addr, TILE_LUT[nmt_bank[nmt_idx] >> attr_shift & 3], attr_shift]
-        (((@lut_update[nmt_bank] ||= [])[nmt_idx] ||= [nil, nil])[1] ||= []) << entries[key]
-        entries[key]
+        entry = entries[key] ||= [io_addr, TILE_LUT[nmt_bank[nmt_idx] >> attr_shift & 3], attr_shift]
+        (((@lut_update[nmt_bank] ||= [])[nmt_idx] ||= [nil, nil])[1] ||= []) << entry
+        entry
       end.freeze
       entries.each_value {|a| a.uniq! {|entry| entry.object_id } }
     end
@@ -238,7 +238,7 @@ module Optcarrot
     }
     def nametables=(mode)
       update(RP2C02_CC)
-      idxs = NMT_TABLE[mode]
+      idxs = NMT_TABLE[mode] || raise
       return if (0..3).all? {|i| @nmt_ref[i].equal?(@nmt_mem[idxs[i]]) }
       @nmt_ref[0] = @nmt_mem[idxs[0]]
       @nmt_ref[1] = @nmt_mem[idxs[1]]
@@ -885,7 +885,7 @@ module Optcarrot
 
       make_sure_invariants
 
-      @hclk_target = (@vclk + @hclk) * RP2C02_CC unless @fiber.resume
+      @hclk_target = (@vclk + @hclk) * RP2C02_CC unless (@fiber || raise).resume
     end
 
     def dispose
@@ -1282,7 +1282,7 @@ module Optcarrot
         depends(:batch_render_pixels, :fastpath)
 
         mdefs = parse_method_definitions(__FILE__)
-        handlers = parse_clock_handlers(mdefs[:main_loop].body)
+        handlers = parse_clock_handlers((mdefs[:main_loop] || raise).body)
 
         handlers = specialize_clock_handlers(handlers) if @clock_specialization
         if @fastpath
@@ -1303,7 +1303,7 @@ module Optcarrot
         end
 
         code = gen(
-          mdefs[:make_sure_invariants].body,
+          (mdefs[:make_sure_invariants] || raise).body,
           code,
           "@hclk_target = (@vclk + @hclk) * RP2C02_CC"
         )
@@ -1333,6 +1333,7 @@ module Optcarrot
       def parse_clock_handlers(main_loop)
         handlers = {}
         main_loop.scan(/^( *)# when (.*)\n((?:\1.*\n|\n)*?\1wait_.*\n)/) do |indent, hclks, body|
+          indent = indent || raise; hclks = hclks || raise; body = body || raise
           body = indent(-indent.size, body)
           body = body.gsub(/^( *)break\n/, "")
           body = expand_methods(body, COMMANDS)
@@ -1421,7 +1422,7 @@ module Optcarrot
 
       # inline method calls
       def ppu_expand_methods(code, mdefs)
-        code = expand_inline_methods(code, :open_sprite, mdefs[:open_sprite])
+        code = expand_inline_methods(code, :open_sprite, mdefs[:open_sprite] || raise)
 
         # twice is enough
         expand_methods(expand_methods(code, mdefs), mdefs)
@@ -1457,6 +1458,7 @@ module Optcarrot
       def rebuild_loop(code)
         handlers = {}
         code.scan(/^  when ((?:\d+, )*\d+)\n((?:    .*\n|\n)*)/) do |hclks, handler|
+          hclks = hclks || raise; handler = handler || raise
           hclks.split(", ").each do |hclk|
             handlers[hclk.to_i] = indent(-4, handler)
           end

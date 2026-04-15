@@ -31,8 +31,8 @@ module Optcarrot
       end
 
       # main memory
-      @fetch = [nil] * 0x10000
-      @store = [nil] * 0x10000
+      @fetch = [0] * 0x10000
+      @store = [0] * 0x10000
       @peeks = {}
       @pokes = {}
       @ram = [0] * 0x800
@@ -937,7 +937,7 @@ module Optcarrot
 
           @_pc += 1
 
-          send(*DISPATCH[@opcode])
+          send(*DISPATCH[@opcode]) # typeprof:ignore
 
           @ppu.sync(@clk) if @ppu_sync
         end while @clk < @clk_target
@@ -958,7 +958,7 @@ module Optcarrot
       opcodes.each do |opcode|
         if args.is_a?(Array) && [:r_op, :w_op, :rw_op].include?(args[0])
           kind, op, mode = args
-          mode = ADDRESSING_MODES[mode][opcode >> 2 & 7]
+          mode = (ADDRESSING_MODES[mode] || raise)[opcode >> 2 & 7]
           send_args = [kind, op, mode]
           send_args << (mode.to_s.start_with?("zpg") ? :store_zpg : :store_mem) if kind != :r_op
           DISPATCH[opcode] = send_args
@@ -1115,10 +1115,10 @@ module Optcarrot
           *DISPATCH.map.with_index do |args, opcode|
             if args.size > 1
               mhd, instr, = args
-              code = expand_inline_methods("#{ mhd }(#{ args.drop(1).join(", ") })", mhd, mdefs[mhd])
+              code = expand_inline_methods("#{ mhd }(#{ args.drop(1).join(", ") })", mhd, mdefs[mhd] || raise)
               code = code.gsub(/send\((\w+), (.*?)\)/) { "#{ $1 }(#{ $2 })" }
               code = code.gsub(/send\((\w+)\)/) { $1 }
-              code = code[1..-2].split("; ")
+              code = (code[1..-2] || raise).split("; ")
             else
               instr = code = args[0]
             end
@@ -1126,7 +1126,7 @@ module Optcarrot
           end,
           "end"
         )
-        main = mdefs[:run].body.sub("@conf.loglevel >= 3") { @loglevel >= 3 }
+        main = (mdefs[:run] || raise).body.sub("@conf.loglevel >= 3") { @loglevel >= 3 }
         main.sub(/^ *send.*\n/) { indent(4, dispatch) }
       end
 
@@ -1146,7 +1146,7 @@ module Optcarrot
           code = expand_methods(code, mdefs, meths)
         end
         [:fetch, :peek16, :store, :pull16, :pull8].each do |meth|
-          code = expand_inline_methods(code, meth, mdefs[meth])
+          code = expand_inline_methods(code, meth, mdefs[meth] || raise)
         end
         code
       end

@@ -30,22 +30,22 @@ module Optcarrot
     module_function
 
     def load(conf)
-      video = load_each(conf, :video, conf.video).new(conf)
-      audio = load_each(conf, :audio, conf.audio).new(conf)
-      input = load_each(conf, :input, conf.input).new(conf, video)
+      video = (load_each(conf, :video, conf.video) || raise).new(conf)
+      audio = (load_each(conf, :audio, conf.audio) || raise).new(conf)
+      input = (load_each(conf, :input, conf.input) || raise).new(conf, video)
       return video, audio, input
     end
 
     def load_each(conf, type, name)
       if name
-        klass = DRIVER_DB[type][name]
+        klass = (DRIVER_DB[type] || raise)[name]
         raise "unknown #{ type } driver: #{ name }" unless klass
         require_relative "driver/#{ name }_#{ type }" unless name == :none
         conf.debug("`#{ name }' #{ type } driver is selected")
         Optcarrot.const_get(klass)
       else
         selected = nil
-        DRIVER_DB[type].each_key do |n|
+        (DRIVER_DB[type] || raise).each_key do |n|
           begin
             selected = load_each(conf, type, n)
             break

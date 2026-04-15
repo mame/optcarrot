@@ -80,10 +80,11 @@ module Optcarrot
     def run
       reset
 
-      if @conf.stackprof_mode
+      stackprof_mode = @conf.stackprof_mode
+      if stackprof_mode
         require "stackprof"
-        out = @conf.stackprof_output.sub("MODE", @conf.stackprof_mode)
-        StackProf.start(mode: @conf.stackprof_mode.to_sym, out: out, raw: true)
+        out = @conf.stackprof_output.sub("MODE", stackprof_mode)
+        StackProf.start(mode: stackprof_mode.to_sym, out: out, raw: true)
       end
 
       step until @frame == @frame_target

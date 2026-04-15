@@ -13,13 +13,13 @@ module Optcarrot
       require "zlib"
       bin = File.binread(filename)
       loop do
-        sig, _, flags, comp, _, _, _, data_len, _, fn_len, ext_len = bin.slice!(0, 30).unpack("a4v5V3v2")
+        sig, _, flags, comp, _, _, _, data_len, _, fn_len, ext_len = (bin.slice!(0, 30) || raise).unpack("a4v5V3v2")
         break if sig != "PK\3\4".b
         fn = bin.slice!(0, fn_len)
         bin.slice!(0, ext_len)
         data = bin.slice!(0, data_len)
         next if File.extname(fn).downcase != ".nes"
-        next if flags & 0x11 != 0
+        next if flags & 0x11 != 0 # typeprof:ignore
         next if comp != 0 && comp != 8
         if comp == 8
           zs = Zlib::Inflate.new(-15)
@@ -36,7 +36,7 @@ module Optcarrot
       filename = conf.romfile
       basename = File.basename(filename)
 
-      blob = (File.extname(filename) == ".zip" ? zip_extract(filename) : File.binread(filename)).bytes
+      blob = ((File.extname(filename) == ".zip" ? zip_extract(filename) : File.binread(filename)) || raise).bytes
 
       # parse mapper
       mapper = (blob[6] >> 4) | (blob[7] & 0xf0)
@@ -73,15 +73,15 @@ module Optcarrot
       @ppu = ppu
       @basename = basename
 
-      prg_count, chr_count, wrk_count = parse_header(buf.slice!(0, 16))
+      prg_count, chr_count, wrk_count = parse_header(buf.slice!(0, 16) || raise)
 
       raise InvalidROM, "EOF in ROM bank data" if buf.size < 0x4000 * prg_count
-      @prg_banks = (0...prg_count).map { buf.slice!(0, 0x4000) }
+      @prg_banks = (0...prg_count).map { buf.slice!(0, 0x4000) || raise }
 
       raise InvalidROM, "EOF in CHR bank data" if buf.size < 0x2000 * chr_count
-      @chr_banks = (0...chr_count).map { buf.slice!(0, 0x2000) }
+      @chr_banks = (0...chr_count).map { buf.slice!(0, 0x2000) || raise }
 
-      @prg_ref = [nil] * 0x10000
+      @prg_ref = [0] * 0x10000
       @prg_ref[0x8000, 0x4000] = @prg_banks.first
       @prg_ref[0xc000, 0x4000] = @prg_banks.last
 
@@ -115,11 +115,11 @@ module Optcarrot
     end
 
     def peek_6000(addr)
-      @wrk_readable ? @wrk[addr - 0x6000] : (addr >> 8)
+      @wrk_readable ? (@wrk || raise)[addr - 0x6000] : (addr >> 8)
     end
 
     def poke_6000(addr, data)
-      @wrk[addr - 0x6000] = data if @wrk_writable
+      (@wrk || raise)[addr - 0x6000] = data if @wrk_writable
     end
 
     def vsync
@@ -130,14 +130,14 @@ module Optcarrot
       sav = @basename + ".sav"
       return unless File.readable?(sav)
       sav = File.binread(sav)
-      @wrk.replace(sav.bytes)
+      (@wrk || raise).replace(sav.bytes)
     end
 
     def save_battery
       return unless @battery
       sav = @basename + ".sav"
       puts "Saving: " + sav
-      File.binwrite(sav, @wrk.pack("C*"))
+      File.binwrite(sav, (@wrk || raise).pack("C*"))
     end
   end
 end

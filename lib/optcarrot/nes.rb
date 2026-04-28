@@ -12,7 +12,8 @@ module Optcarrot
       @video, @audio, @input = Driver.load(@conf)
 
       @cpu =            CPU.new(@conf)
-      @apu = @cpu.apu = APU.new(@conf, @cpu, *@audio.spec)
+      audio_rate, audio_bits = @audio.spec
+      @apu = @cpu.apu = APU.new(@conf, @cpu, audio_rate, audio_bits)
       @ppu = @cpu.ppu = PPU.new(@conf, @cpu, @video.palette)
       @rom  = ROM.load(@conf, @cpu, @ppu)
       @pads = Pads.new(@conf, @cpu, @apu)

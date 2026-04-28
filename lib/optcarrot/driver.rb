@@ -29,32 +29,15 @@ module Optcarrot
 
     module_function
 
+    # Spinel-AOT mode: skip the dynamic require_relative + const_get
+    # dance and always use the headless base drivers (Video / Audio /
+    # Input). bench3000 runs `--headless` anyway, so this matches the
+    # benchmark path.
     def load(conf)
-      video = load_each(conf, :video, conf.video).new(conf)
-      audio = load_each(conf, :audio, conf.audio).new(conf)
-      input = load_each(conf, :input, conf.input).new(conf, video)
+      video = Video.new(conf)
+      audio = Audio.new(conf)
+      input = Input.new(conf, video)
       return video, audio, input
-    end
-
-    def load_each(conf, type, name)
-      if name
-        klass = DRIVER_DB[type][name]
-        raise "unknown #{ type } driver: #{ name }" unless klass
-        require_relative "driver/#{ name }_#{ type }" unless name == :none
-        conf.debug("`#{ name }' #{ type } driver is selected")
-        Optcarrot.const_get(klass)
-      else
-        selected = nil
-        DRIVER_DB[type].each_key do |n|
-          begin
-            selected = load_each(conf, type, n)
-            break
-          rescue LoadError
-            conf.debug("fail to use `#{ n }' #{ type } driver")
-          end
-        end
-        selected
-      end
     end
   end
 

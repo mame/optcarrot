@@ -70,7 +70,7 @@ module Optcarrot
       end
 
       @nmt_mem = [[0xff] * 0x400, [0xff] * 0x400]
-      @nmt_ref = [0, 1, 0, 1].map {|i| @nmt_mem[i] }
+      @nmt_ref = [0, 1, 0, 1]
 
       @output_pixels = []
       @output_color = [@palette[0]] * 0x20 # palette size is 0x20
@@ -156,7 +156,7 @@ module Optcarrot
       @bg_pattern_lut_fetched = TILE_LUT[0]
       # invariant:
       #   @bg_pattern_lut_fetched == TILE_LUT[
-      #     @nmt_ref[@io_addr >> 10 & 3][@io_addr & 0x03ff] >>
+      #     @nmt_mem[@nmt_ref[@io_addr >> 10 & 3]][@io_addr & 0x03ff] >>
       #       ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
       #   ]
 
@@ -195,14 +195,14 @@ module Optcarrot
     end
 
     def setup_lut
-      @lut_update = {}.compare_by_identity
+      @lut_update = {}
 
       @name_lut = (0..0xffff).map do |i|
         nmt_bank = @nmt_ref[i >> 10 & 3]
         nmt_idx = i & 0x03ff
         fixed = (i >> 12 & 7) | (i[15] << 12)
         (((@lut_update[nmt_bank] ||= [])[nmt_idx] ||= [nil, nil])[0] ||= []) << [i, fixed]
-        nmt_bank[nmt_idx] << 4 | fixed
+        @nmt_mem[nmt_bank][nmt_idx] << 4 | fixed
       end
 
       entries = {}
@@ -212,7 +212,7 @@ module Optcarrot
         nmt_idx = io_addr & 0x03ff
         attr_shift = (i & 2) | (i >> 4 & 4)
         key = [io_addr, attr_shift]
-        entries[key] ||= [io_addr, TILE_LUT[nmt_bank[nmt_idx] >> attr_shift & 3], attr_shift]
+        entries[key] ||= [io_addr, TILE_LUT[@nmt_mem[nmt_bank][nmt_idx] >> attr_shift & 3], attr_shift]
         (((@lut_update[nmt_bank] ||= [])[nmt_idx] ||= [nil, nil])[1] ||= []) << entries[key]
         entries[key]
       end.freeze
@@ -239,11 +239,11 @@ module Optcarrot
     def nametables=(mode)
       update(RP2C02_CC)
       idxs = NMT_TABLE[mode]
-      return if (0..3).all? {|i| @nmt_ref[i].equal?(@nmt_mem[idxs[i]]) }
-      @nmt_ref[0] = @nmt_mem[idxs[0]]
-      @nmt_ref[1] = @nmt_mem[idxs[1]]
-      @nmt_ref[2] = @nmt_mem[idxs[2]]
-      @nmt_ref[3] = @nmt_mem[idxs[3]]
+      return if (0..3).all? {|i| @nmt_ref[i] == idxs[i] }
+      @nmt_ref[0] = idxs[0]
+      @nmt_ref[1] = idxs[1]
+      @nmt_ref[2] = idxs[2]
+      @nmt_ref[3] = idxs[3]
       setup_lut
     end
 
@@ -319,7 +319,7 @@ module Optcarrot
     def make_sure_invariants
       @name_io_addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x0fff | 0x2000
       @bg_pattern_lut_fetched = TILE_LUT[
-        @nmt_ref[@io_addr >> 10 & 3][@io_addr & 0x03ff] >> ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
+        @nmt_mem[@nmt_ref[@io_addr >> 10 & 3]][@io_addr & 0x03ff] >> ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
       ]
     end
 
@@ -476,8 +476,8 @@ module Optcarrot
         if addr >= 0x2000
           nmt_bank = @nmt_ref[addr >> 10 & 0x3]
           nmt_idx = addr & 0x03ff
-          if nmt_bank[nmt_idx] != data
-            nmt_bank[nmt_idx] = data
+          if @nmt_mem[nmt_bank][nmt_idx] != data
+            @nmt_mem[nmt_bank][nmt_idx] = data
 
             name_lut_update, attr_lut_update = @lut_update[nmt_bank][nmt_idx]
             name_lut_update.each {|i, b| @name_lut[i] = data << 4 | b } if name_lut_update
@@ -495,7 +495,7 @@ module Optcarrot
       addr = (@scroll_addr_0_4 | @scroll_addr_5_14) & 0x3fff
       update_vram_addr
       @io_latch = (addr & 0x3f00) != 0x3f00 ? @io_buffer : @palette_ram[addr & 0x1f] & @coloring
-      @io_buffer = addr >= 0x2000 ? @nmt_ref[addr >> 10 & 0x3][addr & 0x3ff] : @chr_mem[addr]
+      @io_buffer = addr >= 0x2000 ? @nmt_mem[@nmt_ref[addr >> 10 & 0x3]][addr & 0x3ff] : @chr_mem[addr]
       @io_latch
     end
 
@@ -612,7 +612,7 @@ module Optcarrot
       return unless @any_show
       @bg_pattern_lut = @bg_pattern_lut_fetched
       # raise unless @bg_pattern_lut_fetched ==
-      #   @nmt_ref[@io_addr >> 10 & 3][@io_addr & 0x03ff] >>
+      #   @nmt_mem[@nmt_ref[@io_addr >> 10 & 3]][@io_addr & 0x03ff] >>
       #     ((@scroll_addr_0_4 & 0x2) | (@scroll_addr_5_14[6] * 0x4)) & 3
     end
 

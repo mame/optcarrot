@@ -1,14 +1,6 @@
 module Optcarrot
   # Cartridge class (with NROM mapper implemented)
   class ROM
-    MAPPER_DB = { 0x00 => self }
-
-    # These are optional
-    require_relative "mapper/mmc1"
-    require_relative "mapper/uxrom"
-    require_relative "mapper/cnrom"
-    require_relative "mapper/mmc3"
-
     def self.zip_extract(filename)
       require "zlib"
       bin = File.binread(filename)
@@ -35,15 +27,8 @@ module Optcarrot
     def self.load(conf, cpu, ppu)
       filename = conf.romfile
       basename = File.basename(filename)
-
-      blob = (File.extname(filename) == ".zip" ? zip_extract(filename) : File.binread(filename)).bytes
-
-      # parse mapper
-      mapper = (blob[6] >> 4) | (blob[7] & 0xf0)
-
-      klass = MAPPER_DB[mapper]
-      raise NotImplementedError, "Unsupported mapper type 0x%02x" % mapper unless klass
-      klass.new(conf, cpu, ppu, basename, blob)
+      blob = File.binread(filename).bytes
+      ROM.new(conf, cpu, ppu, basename, blob)
     end
 
     class InvalidROM < StandardError

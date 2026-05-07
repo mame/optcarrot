@@ -122,6 +122,19 @@ module Optcarrot
       end
     end
 
+    # Striped variant of add_mappings — covers `start, start+stride,
+    # ..., fin`. Equivalent to `add_mappings(start.step(fin, stride),
+    # peek, poke)` but the `while` body avoids materializing an
+    # `Integer#step` Enumerator, which keeps the spinel-aot path
+    # simple (no Enumerator support needed there).
+    def add_mappings_step(start, fin, stride, peek, poke)
+      a = start
+      while a <= fin
+        add_mappings(a, peek, poke)
+        a += stride
+      end
+    end
+
     def self.poke_nop(_addr, _data)
     end
 

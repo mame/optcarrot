@@ -875,27 +875,94 @@ module Optcarrot
     # default core
 
     def r_op(instr, mode)
-      send(mode, true, false)
-      send(instr)
+      dispatch_addr(mode, true, false)
+      dispatch_instr(instr)
     end
 
     def w_op(instr, mode, store)
-      send(mode, false, true)
-      send(instr)
-      send(store)
+      dispatch_addr(mode, false, true)
+      dispatch_instr(instr)
+      dispatch_store(store)
     end
 
     def rw_op(instr, mode, store)
-      send(mode, true, true)
-      send(instr)
-      send(store)
+      dispatch_addr(mode, true, true)
+      dispatch_instr(instr)
+      dispatch_store(store)
     end
 
     def a_op(instr)
       @clk += CLK_2
       @data = @_a
-      send(instr)
+      dispatch_instr(instr)
       @_a = @data
+    end
+
+    def dispatch_addr(mode, read, write)
+      case mode
+      when :imm   then imm(read, write)
+      when :zpg   then zpg(read, write)
+      when :zpg_x then zpg_x(read, write)
+      when :zpg_y then zpg_y(read, write)
+      when :abs   then abs(read, write)
+      when :abs_x then abs_x(read, write)
+      when :abs_y then abs_y(read, write)
+      when :ind_x then ind_x(read, write)
+      when :ind_y then ind_y(read, write)
+      end
+    end
+
+    def dispatch_instr(instr)
+      case instr
+      when :_adc then _adc
+      when :_anc then _anc
+      when :_and then _and
+      when :_ane then _ane
+      when :_arr then _arr
+      when :_asl then _asl
+      when :_asr then _asr
+      when :_bit then _bit
+      when :_cmp then _cmp
+      when :_cpx then _cpx
+      when :_cpy then _cpy
+      when :_dcp then _dcp
+      when :_dec then _dec
+      when :_eor then _eor
+      when :_inc then _inc
+      when :_isb then _isb
+      when :_las then _las
+      when :_lax then _lax
+      when :_lda then _lda
+      when :_ldx then _ldx
+      when :_ldy then _ldy
+      when :_lsr then _lsr
+      when :_lxa then _lxa
+      when :_nop then _nop
+      when :_ora then _ora
+      when :_rla then _rla
+      when :_rol then _rol
+      when :_ror then _ror
+      when :_rra then _rra
+      when :_sax then _sax
+      when :_sbc then _sbc
+      when :_sbx then _sbx
+      when :_sha then _sha
+      when :_shs then _shs
+      when :_shx then _shx
+      when :_shy then _shy
+      when :_slo then _slo
+      when :_sre then _sre
+      when :_sta then _sta
+      when :_stx then _stx
+      when :_sty then _sty
+      end
+    end
+
+    def dispatch_store(store)
+      case store
+      when :store_zpg then store_zpg
+      when :store_mem then store_mem
+      end
     end
 
     def no_op(_instr, ops, ticks)
@@ -937,7 +1004,264 @@ module Optcarrot
 
           @_pc += 1
 
-          send(*DISPATCH[@opcode])
+          case @opcode
+          when 0x00 then _brk
+          when 0x01 then r_op(:_ora, :ind_x)
+          when 0x02 then _jam
+          when 0x03 then rw_op(:_slo, :ind_x, :store_mem)
+          when 0x04 then no_op(:_nop, 1, 3)
+          when 0x05 then r_op(:_ora, :zpg)
+          when 0x06 then rw_op(:_asl, :zpg, :store_zpg)
+          when 0x07 then rw_op(:_slo, :zpg, :store_zpg)
+          when 0x08 then _php
+          when 0x09 then r_op(:_ora, :imm)
+          when 0x0a then a_op(:_asl)
+          when 0x0b then r_op(:_anc, :imm)
+          when 0x0c then no_op(:_nop, 2, 4)
+          when 0x0d then r_op(:_ora, :abs)
+          when 0x0e then rw_op(:_asl, :abs, :store_mem)
+          when 0x0f then rw_op(:_slo, :abs, :store_mem)
+          when 0x10 then _bpl
+          when 0x11 then r_op(:_ora, :ind_y)
+          when 0x12 then _jam
+          when 0x13 then rw_op(:_slo, :ind_y, :store_mem)
+          when 0x14 then no_op(:_nop, 1, 4)
+          when 0x15 then r_op(:_ora, :zpg_x)
+          when 0x16 then rw_op(:_asl, :zpg_x, :store_zpg)
+          when 0x17 then rw_op(:_slo, :zpg_x, :store_zpg)
+          when 0x18 then _clc
+          when 0x19 then r_op(:_ora, :abs_y)
+          when 0x1a then no_op(:_nop, 0, 2)
+          when 0x1b then rw_op(:_slo, :abs_y, :store_mem)
+          when 0x1c then r_op(:_nop, :abs_x)
+          when 0x1d then r_op(:_ora, :abs_x)
+          when 0x1e then rw_op(:_asl, :abs_x, :store_mem)
+          when 0x1f then rw_op(:_slo, :abs_x, :store_mem)
+          when 0x20 then _jsr
+          when 0x21 then r_op(:_and, :ind_x)
+          when 0x22 then _jam
+          when 0x23 then rw_op(:_rla, :ind_x, :store_mem)
+          when 0x24 then r_op(:_bit, :zpg)
+          when 0x25 then r_op(:_and, :zpg)
+          when 0x26 then rw_op(:_rol, :zpg, :store_zpg)
+          when 0x27 then rw_op(:_rla, :zpg, :store_zpg)
+          when 0x28 then _plp
+          when 0x29 then r_op(:_and, :imm)
+          when 0x2a then a_op(:_rol)
+          when 0x2b then r_op(:_anc, :imm)
+          when 0x2c then r_op(:_bit, :abs)
+          when 0x2d then r_op(:_and, :abs)
+          when 0x2e then rw_op(:_rol, :abs, :store_mem)
+          when 0x2f then rw_op(:_rla, :abs, :store_mem)
+          when 0x30 then _bmi
+          when 0x31 then r_op(:_and, :ind_y)
+          when 0x32 then _jam
+          when 0x33 then rw_op(:_rla, :ind_y, :store_mem)
+          when 0x34 then no_op(:_nop, 1, 4)
+          when 0x35 then r_op(:_and, :zpg_x)
+          when 0x36 then rw_op(:_rol, :zpg_x, :store_zpg)
+          when 0x37 then rw_op(:_rla, :zpg_x, :store_zpg)
+          when 0x38 then _sec
+          when 0x39 then r_op(:_and, :abs_y)
+          when 0x3a then no_op(:_nop, 0, 2)
+          when 0x3b then rw_op(:_rla, :abs_y, :store_mem)
+          when 0x3c then r_op(:_nop, :abs_x)
+          when 0x3d then r_op(:_and, :abs_x)
+          when 0x3e then rw_op(:_rol, :abs_x, :store_mem)
+          when 0x3f then rw_op(:_rla, :abs_x, :store_mem)
+          when 0x40 then _rti
+          when 0x41 then r_op(:_eor, :ind_x)
+          when 0x42 then _jam
+          when 0x43 then rw_op(:_sre, :ind_x, :store_mem)
+          when 0x44 then no_op(:_nop, 1, 3)
+          when 0x45 then r_op(:_eor, :zpg)
+          when 0x46 then rw_op(:_lsr, :zpg, :store_zpg)
+          when 0x47 then rw_op(:_sre, :zpg, :store_zpg)
+          when 0x48 then _pha
+          when 0x49 then r_op(:_eor, :imm)
+          when 0x4a then a_op(:_lsr)
+          when 0x4b then r_op(:_asr, :imm)
+          when 0x4c then _jmp_a
+          when 0x4d then r_op(:_eor, :abs)
+          when 0x4e then rw_op(:_lsr, :abs, :store_mem)
+          when 0x4f then rw_op(:_sre, :abs, :store_mem)
+          when 0x50 then _bvc
+          when 0x51 then r_op(:_eor, :ind_y)
+          when 0x52 then _jam
+          when 0x53 then rw_op(:_sre, :ind_y, :store_mem)
+          when 0x54 then no_op(:_nop, 1, 4)
+          when 0x55 then r_op(:_eor, :zpg_x)
+          when 0x56 then rw_op(:_lsr, :zpg_x, :store_zpg)
+          when 0x57 then rw_op(:_sre, :zpg_x, :store_zpg)
+          when 0x58 then _cli
+          when 0x59 then r_op(:_eor, :abs_y)
+          when 0x5a then no_op(:_nop, 0, 2)
+          when 0x5b then rw_op(:_sre, :abs_y, :store_mem)
+          when 0x5c then r_op(:_nop, :abs_x)
+          when 0x5d then r_op(:_eor, :abs_x)
+          when 0x5e then rw_op(:_lsr, :abs_x, :store_mem)
+          when 0x5f then rw_op(:_sre, :abs_x, :store_mem)
+          when 0x60 then _rts
+          when 0x61 then r_op(:_adc, :ind_x)
+          when 0x62 then _jam
+          when 0x63 then rw_op(:_rra, :ind_x, :store_mem)
+          when 0x64 then no_op(:_nop, 1, 3)
+          when 0x65 then r_op(:_adc, :zpg)
+          when 0x66 then rw_op(:_ror, :zpg, :store_zpg)
+          when 0x67 then rw_op(:_rra, :zpg, :store_zpg)
+          when 0x68 then _pla
+          when 0x69 then r_op(:_adc, :imm)
+          when 0x6a then a_op(:_ror)
+          when 0x6b then r_op(:_arr, :imm)
+          when 0x6c then _jmp_i
+          when 0x6d then r_op(:_adc, :abs)
+          when 0x6e then rw_op(:_ror, :abs, :store_mem)
+          when 0x6f then rw_op(:_rra, :abs, :store_mem)
+          when 0x70 then _bvs
+          when 0x71 then r_op(:_adc, :ind_y)
+          when 0x72 then _jam
+          when 0x73 then rw_op(:_rra, :ind_y, :store_mem)
+          when 0x74 then no_op(:_nop, 1, 4)
+          when 0x75 then r_op(:_adc, :zpg_x)
+          when 0x76 then rw_op(:_ror, :zpg_x, :store_zpg)
+          when 0x77 then rw_op(:_rra, :zpg_x, :store_zpg)
+          when 0x78 then _sei
+          when 0x79 then r_op(:_adc, :abs_y)
+          when 0x7a then no_op(:_nop, 0, 2)
+          when 0x7b then rw_op(:_rra, :abs_y, :store_mem)
+          when 0x7c then r_op(:_nop, :abs_x)
+          when 0x7d then r_op(:_adc, :abs_x)
+          when 0x7e then rw_op(:_ror, :abs_x, :store_mem)
+          when 0x7f then rw_op(:_rra, :abs_x, :store_mem)
+          when 0x80 then no_op(:_nop, 1, 2)
+          when 0x81 then w_op(:_sta, :ind_x, :store_mem)
+          when 0x82 then no_op(:_nop, 1, 2)
+          when 0x83 then w_op(:_sax, :ind_x, :store_mem)
+          when 0x84 then w_op(:_sty, :zpg, :store_zpg)
+          when 0x85 then w_op(:_sta, :zpg, :store_zpg)
+          when 0x86 then w_op(:_stx, :zpg, :store_zpg)
+          when 0x87 then w_op(:_sax, :zpg, :store_zpg)
+          when 0x88 then _dey
+          when 0x89 then no_op(:_nop, 1, 2)
+          when 0x8a then _txa
+          when 0x8b then r_op(:_ane, :imm)
+          when 0x8c then w_op(:_sty, :abs, :store_mem)
+          when 0x8d then w_op(:_sta, :abs, :store_mem)
+          when 0x8e then w_op(:_stx, :abs, :store_mem)
+          when 0x8f then w_op(:_sax, :abs, :store_mem)
+          when 0x90 then _bcc
+          when 0x91 then w_op(:_sta, :ind_y, :store_mem)
+          when 0x92 then _jam
+          when 0x93 then w_op(:_sha, :ind_y, :store_mem)
+          when 0x94 then w_op(:_sty, :zpg_x, :store_zpg)
+          when 0x95 then w_op(:_sta, :zpg_x, :store_zpg)
+          when 0x96 then w_op(:_stx, :zpg_y, :store_zpg)
+          when 0x97 then w_op(:_sax, :zpg_y, :store_zpg)
+          when 0x98 then _tya
+          when 0x99 then w_op(:_sta, :abs_y, :store_mem)
+          when 0x9a then _txs
+          when 0x9b then w_op(:_shs, :abs_y, :store_mem)
+          when 0x9c then w_op(:_shy, :abs_x, :store_mem)
+          when 0x9d then w_op(:_sta, :abs_x, :store_mem)
+          when 0x9e then w_op(:_shx, :abs_y, :store_mem)
+          when 0x9f then w_op(:_sha, :abs_y, :store_mem)
+          when 0xa0 then r_op(:_ldy, :imm)
+          when 0xa1 then r_op(:_lda, :ind_x)
+          when 0xa2 then r_op(:_ldx, :imm)
+          when 0xa3 then r_op(:_lax, :ind_x)
+          when 0xa4 then r_op(:_ldy, :zpg)
+          when 0xa5 then r_op(:_lda, :zpg)
+          when 0xa6 then r_op(:_ldx, :zpg)
+          when 0xa7 then r_op(:_lax, :zpg)
+          when 0xa8 then _tay
+          when 0xa9 then r_op(:_lda, :imm)
+          when 0xaa then _tax
+          when 0xab then r_op(:_lxa, :imm)
+          when 0xac then r_op(:_ldy, :abs)
+          when 0xad then r_op(:_lda, :abs)
+          when 0xae then r_op(:_ldx, :abs)
+          when 0xaf then r_op(:_lax, :abs)
+          when 0xb0 then _bcs
+          when 0xb1 then r_op(:_lda, :ind_y)
+          when 0xb2 then _jam
+          when 0xb3 then r_op(:_lax, :ind_y)
+          when 0xb4 then r_op(:_ldy, :zpg_x)
+          when 0xb5 then r_op(:_lda, :zpg_x)
+          when 0xb6 then r_op(:_ldx, :zpg_y)
+          when 0xb7 then r_op(:_lax, :zpg_y)
+          when 0xb8 then _clv
+          when 0xb9 then r_op(:_lda, :abs_y)
+          when 0xba then _tsx
+          when 0xbb then r_op(:_las, :abs_y)
+          when 0xbc then r_op(:_ldy, :abs_x)
+          when 0xbd then r_op(:_lda, :abs_x)
+          when 0xbe then r_op(:_ldx, :abs_y)
+          when 0xbf then r_op(:_lax, :abs_y)
+          when 0xc0 then r_op(:_cpy, :imm)
+          when 0xc1 then r_op(:_cmp, :ind_x)
+          when 0xc2 then no_op(:_nop, 1, 2)
+          when 0xc3 then rw_op(:_dcp, :ind_x, :store_mem)
+          when 0xc4 then r_op(:_cpy, :zpg)
+          when 0xc5 then r_op(:_cmp, :zpg)
+          when 0xc6 then rw_op(:_dec, :zpg, :store_zpg)
+          when 0xc7 then rw_op(:_dcp, :zpg, :store_zpg)
+          when 0xc8 then _iny
+          when 0xc9 then r_op(:_cmp, :imm)
+          when 0xca then _dex
+          when 0xcb then r_op(:_sbx, :imm)
+          when 0xcc then r_op(:_cpy, :abs)
+          when 0xcd then r_op(:_cmp, :abs)
+          when 0xce then rw_op(:_dec, :abs, :store_mem)
+          when 0xcf then rw_op(:_dcp, :abs, :store_mem)
+          when 0xd0 then _bne
+          when 0xd1 then r_op(:_cmp, :ind_y)
+          when 0xd2 then _jam
+          when 0xd3 then rw_op(:_dcp, :ind_y, :store_mem)
+          when 0xd4 then no_op(:_nop, 1, 4)
+          when 0xd5 then r_op(:_cmp, :zpg_x)
+          when 0xd6 then rw_op(:_dec, :zpg_x, :store_zpg)
+          when 0xd7 then rw_op(:_dcp, :zpg_x, :store_zpg)
+          when 0xd8 then _cld
+          when 0xd9 then r_op(:_cmp, :abs_y)
+          when 0xda then no_op(:_nop, 0, 2)
+          when 0xdb then rw_op(:_dcp, :abs_y, :store_mem)
+          when 0xdc then r_op(:_nop, :abs_x)
+          when 0xdd then r_op(:_cmp, :abs_x)
+          when 0xde then rw_op(:_dec, :abs_x, :store_mem)
+          when 0xdf then rw_op(:_dcp, :abs_x, :store_mem)
+          when 0xe0 then r_op(:_cpx, :imm)
+          when 0xe1 then r_op(:_sbc, :ind_x)
+          when 0xe2 then no_op(:_nop, 1, 2)
+          when 0xe3 then rw_op(:_isb, :ind_x, :store_mem)
+          when 0xe4 then r_op(:_cpx, :zpg)
+          when 0xe5 then r_op(:_sbc, :zpg)
+          when 0xe6 then rw_op(:_inc, :zpg, :store_zpg)
+          when 0xe7 then rw_op(:_isb, :zpg, :store_zpg)
+          when 0xe8 then _inx
+          when 0xe9 then r_op(:_sbc, :imm)
+          when 0xea then no_op(:_nop, 0, 2)
+          when 0xeb then r_op(:_sbc, :imm)
+          when 0xec then r_op(:_cpx, :abs)
+          when 0xed then r_op(:_sbc, :abs)
+          when 0xee then rw_op(:_inc, :abs, :store_mem)
+          when 0xef then rw_op(:_isb, :abs, :store_mem)
+          when 0xf0 then _beq
+          when 0xf1 then r_op(:_sbc, :ind_y)
+          when 0xf2 then _jam
+          when 0xf3 then rw_op(:_isb, :ind_y, :store_mem)
+          when 0xf4 then no_op(:_nop, 1, 4)
+          when 0xf5 then r_op(:_sbc, :zpg_x)
+          when 0xf6 then rw_op(:_inc, :zpg_x, :store_zpg)
+          when 0xf7 then rw_op(:_isb, :zpg_x, :store_zpg)
+          when 0xf8 then _sed
+          when 0xf9 then r_op(:_sbc, :abs_y)
+          when 0xfa then no_op(:_nop, 0, 2)
+          when 0xfb then rw_op(:_isb, :abs_y, :store_mem)
+          when 0xfc then r_op(:_nop, :abs_x)
+          when 0xfd then r_op(:_sbc, :abs_x)
+          when 0xfe then rw_op(:_inc, :abs_x, :store_mem)
+          when 0xff then rw_op(:_isb, :abs_x, :store_mem)
+          end
 
           @ppu.sync(@clk) if @ppu_sync
         end while @clk < @clk_target

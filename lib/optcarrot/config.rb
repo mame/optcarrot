@@ -63,19 +63,68 @@ module Optcarrot
       },
     }
 
-    DEFAULT_OPTIONS = {}
-    OPTIONS.each_value do |opts|
-      opts.each do |id, opt|
-        next if opt[:shortcut]
-        DEFAULT_OPTIONS[id] = opt[:default] if opt.key?(:default)
-        attr_reader id
-      end
-    end
-    attr_reader :romfile
+    DEFAULT_OPTIONS = {
+      opt_ppu:              nil,
+      opt_cpu:              nil,
+      sprite_limit:         false,
+      frames:               0,
+      audio_sample_rate:    44100,
+      audio_bit_depth:      16,
+      nestopia_palette:     false,
+      video_output:         "video.EXT",
+      audio_output:         "audio.wav",
+      show_fps:             true,
+      print_fps:            false,
+      print_p95fps:         false,
+      print_fps_history:    false,
+      print_video_checksum: false,
+      stackprof_mode:       nil,
+      stackprof_output:     "stackprof-MODE.dump",
+      loglevel:             1,
+    }.freeze
+
+    attr_reader :romfile,
+                :opt_ppu, :opt_cpu, :load_ppu, :load_cpu,
+                :sprite_limit, :frames,
+                :audio_sample_rate, :audio_bit_depth, :nestopia_palette,
+                :video, :audio, :input,
+                :video_output, :audio_output, :show_fps, :key_log,
+                :print_fps, :print_p95fps, :print_fps_history, :print_video_checksum,
+                :stackprof_mode, :stackprof_output,
+                :loglevel
 
     def initialize(opt)
+      opt = { romfile: opt } if opt.is_a?(String)
       opt = Parser.new(opt).options if opt.is_a?(Array)
-      DEFAULT_OPTIONS.merge(opt).each {|id, val| instance_variable_set(:"@#{ id }", val) }
+      opt = DEFAULT_OPTIONS.merge(opt)
+      # `.to_s` / `.to_i` / `!!` casts pin each ivar to a single
+      # type for AOT type inference; Ruby semantics are preserved
+      # because every value coming in via DEFAULT_OPTIONS / Parser
+      # already has the matching shape.
+      @romfile              = opt[:romfile].to_s
+      @opt_ppu              = opt[:opt_ppu]
+      @opt_cpu              = opt[:opt_cpu]
+      @load_ppu             = opt[:load_ppu]
+      @load_cpu             = opt[:load_cpu]
+      @sprite_limit         = !!opt[:sprite_limit]
+      @frames               = opt[:frames].to_i
+      @audio_sample_rate    = opt[:audio_sample_rate].to_i
+      @audio_bit_depth      = opt[:audio_bit_depth].to_i
+      @nestopia_palette     = !!opt[:nestopia_palette]
+      @video                = opt[:video]
+      @audio                = opt[:audio]
+      @input                = opt[:input]
+      @video_output         = opt[:video_output]
+      @audio_output         = opt[:audio_output]
+      @show_fps             = !!opt[:show_fps]
+      @key_log              = opt[:key_log]
+      @print_fps            = !!opt[:print_fps]
+      @print_p95fps         = !!opt[:print_p95fps]
+      @print_fps_history    = !!opt[:print_fps_history]
+      @print_video_checksum = !!opt[:print_video_checksum]
+      @stackprof_mode       = opt[:stackprof_mode]
+      @stackprof_output     = opt[:stackprof_output]
+      @loglevel             = opt[:loglevel].to_i
     end
 
     def debug(msg)
@@ -87,11 +136,11 @@ module Optcarrot
     end
 
     def warn(msg)
-      puts "[WARN] " + msg if @loglevel >= 1
+      puts "[WARN] " + msg.to_s if @loglevel >= 1
     end
 
     def error(msg)
-      puts "[ERROR] " + msg
+      puts "[ERROR] " + msg.to_s
     end
 
     def fatal(msg)

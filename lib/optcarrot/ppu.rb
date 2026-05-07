@@ -75,12 +75,12 @@ module Optcarrot
       @output_pixels = []
       @output_color = [@palette[0]] * 0x20 # palette size is 0x20
 
-      reset(mapping: false)
+      reset(false)
       setup_lut
     end
 
-    def reset(opt = {})
-      if opt.fetch(:mapping, true)
+    def reset(mapping = true)
+      if mapping
         # setup mapped memory
         @cpu.add_mappings_step(0x2000, 0x3fff, 8, method(:peek_2xxx), method(:poke_2000))
         @cpu.add_mappings_step(0x2001, 0x3fff, 8, method(:peek_2xxx), method(:poke_2001))

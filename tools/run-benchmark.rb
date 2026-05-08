@@ -63,6 +63,8 @@ class DockerImage
   end
 
   def self.pregenerate
+    modes = self::SUPPORTED_MODE
+    return if modes.is_a?(Array) && (modes & %w(opt-none opt-all)).empty?
     %w(ppu cpu).each do |type|
       %w(none all).each do |opt|
         out = File.join(BENCHMARK_DIR, "#{ type }-core-opt-#{ opt }.rb")
@@ -346,6 +348,22 @@ class Monoruby < DockerImage
     "cd monoruby && cargo install --path monoruby",
   ]
   CMD = "git -C monoruby/ rev-parse HEAD && monoruby bin/optcarrot --benchmark $OPTIONS"
+end
+
+class Spinel < DockerImage
+  FROM = "ubuntu:24.04"
+  APT = %w(build-essential ruby git ca-certificates curl)
+  RUN = [
+    "git clone --depth 1 https://github.com/matz/spinel.git",
+    "cd spinel && make deps",
+    "cd spinel && make -j4",
+    [:add, ".", "."],
+    "ruby tools/pack-for-spinel.rb > optcarrot-single.rb",
+    "spinel/spinel optcarrot-single.rb -o optcarrot-single",
+  ]
+  CMD = "echo spinel $(git -C spinel rev-parse --short HEAD) && " \
+        "./optcarrot-single $OPTIONS"
+  SUPPORTED_MODE = %w(default)
 end
 
 ###############################################################################

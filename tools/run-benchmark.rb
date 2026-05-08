@@ -272,9 +272,9 @@ class Ruby187 < DockerImage
 end
 
 class TruffleRuby < DockerImage
-  URL = "https://github.com/truffleruby/truffleruby/releases/download/graal-34.0.1/truffleruby-community-jvm-34.0.1-linux-amd64.tar.gz"
+  URL = "https://github.com/truffleruby/truffleruby/releases/download/graal-34.0.1/truffleruby-jvm-34.0.1-linux-amd64.tar.gz"
   FROM = "buildpack-deps:26.04"
-  RUBY = "truffleruby-community-jvm-*/bin/ruby"
+  RUBY = "truffleruby-jvm-*/bin/ruby"
   SUPPORTED_MODE = %w(default)
 end
 

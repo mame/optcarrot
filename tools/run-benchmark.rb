@@ -159,24 +159,6 @@ end
 
 ###############################################################################
 
-# https://github.com/rbenv/ruby-build/wiki
-MASTER_APT = %w(
-  autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm6
-  libgdbm-dev libdb-dev git ruby
-)
-
-class MasterRJIT < DockerImage
-  FROM = "ubuntu:20.04"
-  APT = MASTER_APT
-  RUN = [
-    "git clone --depth 1 https://github.com/ruby/ruby.git",
-    "cd ruby && autoconf",
-    "cd ruby && ./configure --prefix=`pwd`/local",
-    "cd ruby && make && make install",
-  ]
-  RUBY = "ruby/ruby --rjit -Iruby"
-end
-
 class Ruby33RJIT < DockerImage
   FROM = "rubylang/ruby:3.3"
   RUBY = "ruby --rjit -Iruby"
@@ -197,16 +179,19 @@ class Ruby26MJIT < DockerImage
   RUBY = "ruby --jit"
 end
 
-class MasterYJIT < DockerImage
-  FROM = "rust:latest"
-  APT = MASTER_APT
-  RUN = [
-    "git clone --depth 1 https://github.com/ruby/ruby.git",
-    "cd ruby && ./autogen.sh",
-    "cd ruby && ./configure --prefix=`pwd`/local",
-    "cd ruby && make && make install",
-  ]
-  RUBY = "ruby/ruby --yjit -Iruby"
+class Ruby40ZJIT < DockerImage
+  FROM = "rubylang/ruby:4.0"
+  RUBY = "ruby --zjit -Iruby"
+end
+
+class Ruby40YJIT < DockerImage
+  FROM = "rubylang/ruby:4.0"
+  RUBY = "ruby --yjit -Iruby"
+end
+
+class Ruby34YJIT < DockerImage
+  FROM = "rubylang/ruby:3.4"
+  RUBY = "ruby --yjit -Iruby"
 end
 
 class Ruby33YJIT < DockerImage

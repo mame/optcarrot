@@ -68,8 +68,23 @@ module Optcarrot
         end
         puts "fps: #{ @fps }" if @conf.print_fps
       end
-      if @conf.print_video_checksum && @video.instance_of?(Video)
-        puts "checksum: #{ @ppu.output_pixels.pack("C*").sum }"
+      if @conf.print_video_checksum
+        # Equivalent to `@ppu.output_pixels.pack("C*").sum` (sum of
+        # low byte of each pixel, mod 2^16); written as a manual loop
+        # because spinel-aot does not lower IntArray#pack / String#sum.
+        # The original `&& @video.instance_of?(Video)` guard is dropped
+        # because spinel-aot cannot resolve `instance_of?` on a user
+        # class; subclasses of Video (sdl2_video etc.) are not part
+        # of the for-spinel single-file build, so the guard would
+        # always be true under spinel-aot anyway.
+        pixels = @ppu.output_pixels
+        s = 0
+        i = 0
+        while i < pixels.length
+          s = (s + (pixels[i] & 0xff)) & 0xffff
+          i += 1
+        end
+        puts "checksum: #{ s }"
       end
       @video.dispose
       @audio.dispose

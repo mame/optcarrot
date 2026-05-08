@@ -334,7 +334,7 @@ unless Module.const_defined?(:Process)
   end
 end
 unless Process.respond_to?(:clock_gettime) && Process.const_defined?(:CLOCK_MONOTONIC)
-  if RUBY_ENGINE == "mruby"
+  if RUBY_ENGINE == "mruby" && !Object.const_defined?(:Float)
     $stderr.puts "[shim] Process.clock_gettime for mruby (MRB_WITHOUT_FLOAT)"
     class DummyTime
       def initialize
@@ -366,13 +366,17 @@ unless Process.respond_to?(:clock_gettime) && Process.const_defined?(:CLOCK_MONO
       end
     end
 
-    def Process.clock_gettime(*)
-      DummyTime.new
+    class << Process
+      def clock_gettime(*)
+        DummyTime.new
+      end
     end
   else
     $stderr.puts "[shim] Process.clock_gettime by Time"
-    def Process.clock_gettime(*)
-      Time.now.to_f
+    class << Process
+      def clock_gettime(*)
+        Time.now.to_f
+      end
     end
   end
   Process::CLOCK_MONOTONIC = nil unless Process.const_defined?(:CLOCK_MONOTONIC)

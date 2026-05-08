@@ -23,13 +23,6 @@ module Optcarrot
     def initialize(conf)
       @conf = conf
 
-      # load the generated core
-      if @conf.load_cpu
-        eval(File.read(@conf.load_cpu))
-      elsif @conf.opt_cpu
-        eval(OptimizedCodeBuilder.new(@conf.loglevel, @conf.opt_cpu).build, nil, "(generated CPU core)")
-      end
-
       # main memory
       @fetch = [nil] * 0x10000
       @store = [nil] * 0x10000
@@ -1417,83 +1410,5 @@ module Optcarrot
     op([0x00],                                                 :_brk)
     op([0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0x62, 0x72, 0x92, 0xb2, 0xd2, 0xf2], :_jam)
 
-    ###########################################################################
-    # optimized core generator
-    class OptimizedCodeBuilder
-      include CodeOptimizationHelper
-
-      OPTIONS = [:method_inlining, :constant_inlining, :ivar_localization, :trivial_branches]
-
-      LOCALIZE_IVARS = [:@addr, :@data, :@_a, :@_x, :@_y, :@_pc, :@_sp, :@fetch, :@store, :@ram, :@opcode]
-
-      def build
-        depends(:ivar_localization, :method_inlining)
-
-        mdefs = parse_method_definitions(__FILE__)
-        code = build_loop(mdefs)
-
-        # optimize!
-        code = cpu_expand_methods(code, mdefs) if @method_inlining
-        code = remove_trivial_branches(code) if @trivial_branches
-        code = expand_constants(code) if @constant_inlining
-        code = localize_instance_variables(code, LOCALIZE_IVARS) if @ivar_localization
-
-        gen(
-          "def self.run",
-          indent(2, code),
-          "end",
-        )
-      end
-
-      # generate a main code
-      def build_loop(mdefs)
-        dispatch = gen(
-          "case @opcode",
-          *DISPATCH.map.with_index do |args, opcode|
-            if args.size > 1
-              mhd, instr, = args
-              code = expand_inline_methods("#{ mhd }(#{ args.drop(1).join(", ") })", mhd, mdefs[mhd])
-              code = code.gsub(/send\((\w+), (.*?)\)/) { "#{ $1 }(#{ $2 })" }
-              code = code.gsub(/send\((\w+)\)/) { $1 }
-              code = code[1..-2].split("; ")
-            else
-              instr = code = args[0]
-            end
-            "when 0x%02x # #{ instr }\n" % opcode + indent(2, gen(*code))
-          end,
-          "end"
-        )
-        main = mdefs[:run].body.sub("@conf.loglevel >= 3") { @loglevel >= 3 }
-        main.sub(/^ *send.*\n/) { indent(4, dispatch) }
-      end
-
-      # inline method calls
-      def cpu_expand_methods(code, mdefs)
-        code = expand_methods(code, mdefs, mdefs.keys.grep(/^_/))
-        [
-          [:_adc, :_sbc, :_cmp, :store_mem, :store_zpg],
-          [:imm, :abs, :zpg, :abs_x, :abs_y, :zpg_x, :zpg_y, :ind_x, :ind_y],
-          [:abs_reg, :zpg_reg],
-          [:read_write],
-          [:do_clock],
-          [:do_isr],
-          [:branch, :push16],
-          [:push8],
-        ].each do |meths|
-          code = expand_methods(code, mdefs, meths)
-        end
-        [:fetch, :peek16, :store, :pull16, :pull8].each do |meth|
-          code = expand_inline_methods(code, meth, mdefs[meth])
-        end
-        code
-      end
-
-      # inline constants
-      def expand_constants(handlers)
-        handlers = handlers.gsub(/CLK_(\d+)/) { eval($&) }
-        handlers = handlers.gsub(/FOREVER_CLOCK/) { "0xffffffff" }
-        handlers
-      end
-    end
   end
 end

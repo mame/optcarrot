@@ -2,26 +2,6 @@ module Optcarrot
   # config manager and logger
   class Config
     OPTIONS = {
-      optimization: {
-        opt_ppu: {
-          type: :opts,
-          desc: "select PPU optimizations",
-          candidates: PPU::OptimizedCodeBuilder::OPTIONS,
-          default: nil,
-        },
-        opt_cpu: {
-          type: :opts,
-          desc: "select CPU optimizations",
-          candidates: CPU::OptimizedCodeBuilder::OPTIONS,
-          default: nil,
-        },
-        opt: { shortcut: %w(--opt-ppu=all --opt-cpu=all) },
-        list_opts: { type: :info, desc: "list available optimizations" },
-        dump_ppu: { type: :info, desc: "print generated PPU source code" },
-        dump_cpu: { type: :info, desc: "print generated CPU source code" },
-        load_ppu: { type: "FILE", desc: "use generated PPU source code" },
-        load_cpu: { type: "FILE", desc: "use generated CPU source code" },
-      },
       emulation: {
         sprite_limit:      { type: :switch, desc: "enable/disable sprite limit", default: false },
         frames:            { type: :int, desc: "execute N frames (0 = no limit)", default: 0, aliases: [:f, :frame] },
@@ -64,8 +44,6 @@ module Optcarrot
     }
 
     DEFAULT_OPTIONS = {
-      opt_ppu:              nil,
-      opt_cpu:              nil,
       sprite_limit:         false,
       frames:               0,
       audio_sample_rate:    44100,
@@ -84,7 +62,6 @@ module Optcarrot
     }.freeze
 
     attr_reader :romfile,
-                :opt_ppu, :opt_cpu, :load_ppu, :load_cpu,
                 :sprite_limit, :frames,
                 :audio_sample_rate, :audio_bit_depth, :nestopia_palette,
                 :video, :audio, :input,
@@ -102,10 +79,6 @@ module Optcarrot
       # because every value coming in via DEFAULT_OPTIONS / Parser
       # already has the matching shape.
       @romfile              = opt[:romfile].to_s
-      @opt_ppu              = opt[:opt_ppu]
-      @opt_cpu              = opt[:opt_cpu]
-      @load_ppu             = opt[:load_ppu]
-      @load_cpu             = opt[:load_cpu]
       @sprite_limit         = !!opt[:sprite_limit]
       @frames               = opt[:frames].to_i
       @audio_sample_rate    = opt[:audio_sample_rate].to_i

@@ -178,7 +178,7 @@ class MasterRJIT < DockerImage
 end
 
 class Ruby33RJIT < DockerImage
-  FROM = "ruby:3.3-rc"
+  FROM = "rubylang/ruby:3.3"
   RUBY = "ruby --rjit -Iruby"
 end
 
@@ -210,33 +210,29 @@ class MasterYJIT < DockerImage
 end
 
 class Ruby33YJIT < DockerImage
-  FROM = "ruby:3.3-rc"
+  FROM = "rubylang/ruby:3.3"
   RUBY = "ruby --yjit -Iruby"
 end
 
 class Ruby32YJIT < DockerImage
-  FROM = "ruby:3.2"
+  FROM = "rubylang/ruby:3.2"
   RUBY = "ruby --yjit -Iruby"
 end
 
-class Master < DockerImage
-  FROM = "ubuntu:20.04"
-  APT = MASTER_APT
-  RUN = [
-    "git clone --depth 1 https://github.com/ruby/ruby.git",
-    "cd ruby && autoconf",
-    "cd ruby && ./configure --prefix=`pwd`/local",
-    "cd ruby && make && make install",
-  ]
-  RUBY = "ruby/ruby -Iruby"
+class Ruby40 < DockerImage
+  FROM = "rubylang/ruby:4.0"
+end
+
+class Ruby34 < DockerImage
+  FROM = "rubylang/ruby:3.4"
 end
 
 class Ruby33 < DockerImage
-  FROM = "ruby:3.3-rc"
+  FROM = "rubylang/ruby:3.3"
 end
 
 class Ruby32 < DockerImage
-  FROM = "ruby:3.2"
+  FROM = "rubylang/ruby:3.2"
 end
 
 class Ruby30 < DockerImage
@@ -291,10 +287,9 @@ class Ruby187 < DockerImage
 end
 
 class TruffleRuby < DockerImage
-  URL = "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-linux-amd64-20.1.0.tar.gz"
-  FROM = "buildpack-deps:focal"
-  RUN = ["cd graalvm-* && bin/gu install ruby"]
-  RUBY = "graalvm-*/bin/ruby --jvm"
+  URL = "https://github.com/truffleruby/truffleruby/releases/download/graal-34.0.1/truffleruby-community-jvm-34.0.1-linux-amd64.tar.gz"
+  FROM = "buildpack-deps:26.04"
+  RUBY = "truffleruby-community-jvm-*/bin/ruby"
   SUPPORTED_MODE = %w(default)
 end
 
@@ -310,10 +305,10 @@ class Rubinius < DockerImage
 end
 
 class MRuby < DockerImage
-  FROM = "buildpack-deps:focal"
+  FROM = "buildpack-deps:resolute"
   APT = %w(bison ruby)
   RUN = [
-    "git clone --depth 1 https://github.com/mruby/mruby.git",
+    "git clone --depth 1 -b 3.4.0 https://github.com/mruby/mruby.git",
     [:add, "tools/mruby_optcarrot_config.rb", "mruby/"],
     "cd mruby && MRUBY_CONFIG=mruby_optcarrot_config.rb ./minirake",
   ]

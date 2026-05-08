@@ -159,26 +159,6 @@ end
 
 ###############################################################################
 
-class Ruby33RJIT < DockerImage
-  FROM = "rubylang/ruby:3.3"
-  RUBY = "ruby --rjit -Iruby"
-end
-
-class Ruby30MJIT < DockerImage
-  FROM = "rubylang/ruby:3.0-focal"
-  RUBY = "ruby --jit"
-end
-
-class Ruby27MJIT < DockerImage
-  FROM = "ruby:2.7"
-  RUBY = "ruby --jit"
-end
-
-class Ruby26MJIT < DockerImage
-  FROM = "ruby:2.6"
-  RUBY = "ruby --jit"
-end
-
 class Ruby40ZJIT < DockerImage
   FROM = "rubylang/ruby:4.0"
   RUBY = "ruby --zjit -Iruby"
@@ -194,6 +174,11 @@ class Ruby34YJIT < DockerImage
   RUBY = "ruby --yjit -Iruby"
 end
 
+class Ruby33RJIT < DockerImage
+  FROM = "rubylang/ruby:3.3"
+  RUBY = "ruby --rjit -Iruby"
+end
+
 class Ruby33YJIT < DockerImage
   FROM = "rubylang/ruby:3.3"
   RUBY = "ruby --yjit -Iruby"
@@ -202,6 +187,21 @@ end
 class Ruby32YJIT < DockerImage
   FROM = "rubylang/ruby:3.2"
   RUBY = "ruby --yjit -Iruby"
+end
+
+class Ruby30MJIT < DockerImage
+  FROM = "rubylang/ruby:3.0-focal"
+  RUBY = "ruby --jit"
+end
+
+class Ruby27MJIT < DockerImage
+  FROM = "ruby:2.7"
+  RUBY = "ruby --jit"
+end
+
+class Ruby26MJIT < DockerImage
+  FROM = "ruby:2.6"
+  RUBY = "ruby --jit"
 end
 
 class Ruby40 < DockerImage

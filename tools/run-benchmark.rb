@@ -318,7 +318,7 @@ end
 
 # class Artichoke < DockerImage
 #   APT = %w(llvm clang bison ruby)
-#   FROM = "rustlang/rust:nightly-buster"
+#   FROM = "rustlang/rust:nightly-bookworm"
 #   RUN = [
 #     "git clone --depth 1 https://github.com/artichoke/artichoke.git",
 #     "cd artichoke && cargo build --release",
@@ -328,7 +328,7 @@ end
 # end
 
 class RuRuby < DockerImage
-  FROM = "rustlang/rust:nightly-buster"
+  FROM = "rustlang/rust:nightly-bookworm"
   RUN = [
     "git clone --depth 1 https://github.com/sisshiki1969/ruruby.git",
     "cd ruruby && cargo build --release",
@@ -337,8 +337,11 @@ class RuRuby < DockerImage
 end
 
 class Monoruby < DockerImage
-  FROM = "rustlang/rust:nightly-buster"
+  FROM = "rustlang/rust:nightly-bookworm"
+  URL = "https://cache.ruby-lang.org/pub/ruby/4.0/ruby-4.0.3.tar.gz"
+  APT = %w(libclang-dev libssl-dev libyaml-dev zlib1g-dev libffi-dev libgmp-dev)
   RUN = [
+    "cd ruby-*/ && ./configure --disable-install-doc && make -j4 && make install",
     "git clone --depth 1 https://github.com/sisshiki1969/monoruby.git",
     "cd monoruby && cargo install --path monoruby",
   ]

@@ -364,7 +364,7 @@ class CLI
     o.on("-c NUM", Integer, "iteration count") {|v| @count = v }
     o.on("-r FILE", String, "rom file") {|v| @romfile = v }
     o.on("-f FRAME", Integer, "target frame") {|v| @target_frame = v }
-    o.on("-h", Integer, "fps history mode") {|v| @history = v }
+    o.on("-h NUM", Integer, "fps history mode") {|v| @history = v }
     o.separator("")
     o.separator("Examples:")
     latest = DockerImage::IMAGES.find {|n| !n.tag.start_with?("master") && !n.tag.include?("mjit") }.tag
